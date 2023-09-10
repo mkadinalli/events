@@ -2,30 +2,18 @@
 #include "./include/string_buffer.h"
 #include "./include/list.h"
 #include "./include/map.h"
+#include "./include/lib.h"
 
 int 
 main () 
 {
-    map_t *map = map_create();
-    map_add(map,"vic","hello");
-    map_add(map,"virc","hello");
-    map_add(map,"vict","hello");
-    map_add(map,"vici","hello");
+    char * str = "hello world";
+    char *a = string_sub(1,5,str,strlen(str));
+    list_t *x = split_lim('l',str,strlen(str),2);
 
-    map_get(map,"vici");
-
-    map_print(map);
-
-    //printf("%d\n",map_len(map));
-
-    list_t *ls = list_create();
-    list_pushback(ls,"hey");
-    list_pushback(ls,"barbiana");
-
-    printf("%s\n",list_get(ls,1));
-
-
-    map_destroy(map);
-
+    list_print(x);
+    list_destroy(x);
+    //printf("%s\n",a);
+    free(a);
     return 0;
 }

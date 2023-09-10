@@ -87,7 +87,7 @@ fill_list_item(list_t *temp_list,char *str)
         temp_list->value[string_len] = '\0';
         temp_list->next = NULL;
 
-        free(string_builder);
+        string_destroy(string_builder);
 }
 
 void 

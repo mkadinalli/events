@@ -93,6 +93,8 @@ void fill_map_item(map_t *map,char *key,char *value)
     map->key[klen] = '\0';
     strcpy(map->value,strtmp->chars);
 
+    string_destroy(strtmp);
+
     map->next = NULL;
 }
 
