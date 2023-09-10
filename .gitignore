@@ -1,0 +1,7 @@
+cmake-build-debug
+CMakeLists.txt
+proxy
+*.o
+**.idea
+**.log
+**.txt
