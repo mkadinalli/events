@@ -115,3 +115,27 @@ bool map_destroy(map_t *map)
     return true;
 
 }
+
+char * 
+map_get(map_t *map,char *key)
+{
+    if(map_len(map) < 1)
+    {
+        printf("Key not found.\n");
+        return NULL;
+    }
+
+    map_t *tmp = map;
+
+    while(tmp != NULL)
+    {
+        if(strcmp(key,tmp->key) == 0)
+        {
+            return tmp->value;
+        }
+        tmp = tmp->next;
+    }
+
+    printf("Key not found.\n");
+    return NULL;
+}

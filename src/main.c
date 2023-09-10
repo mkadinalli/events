@@ -9,8 +9,10 @@ main ()
     map_t *map = map_create();
     map_add(map,"vic","hello");
     map_add(map,"virc","hello");
-    map_add(map,"vic","hello");
-     map_add(map,"vic","hello");
+    map_add(map,"vict","hello");
+    map_add(map,"vici","hello");
+
+    map_get(map,"vici");
 
     map_print(map);
 
