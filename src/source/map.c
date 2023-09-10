@@ -81,3 +81,23 @@ void fill_map_item(map_t *map,char *key,char *value)
 
     map->next = NULL;
 }
+
+bool map_destroy(map_t *map)
+{
+    if(map == NULL)
+        return false;
+
+    map_t * tmp = NULL;
+
+    while(map != NULL)
+    {
+        tmp = map;
+        map = map->next;
+        free(tmp->value);
+        free(tmp->key);
+        free(tmp);
+    }
+
+    return true;
+
+}

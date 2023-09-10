@@ -13,3 +13,4 @@ bool map_add(map_t *map,char *key,char *value);
 bool map_destroy(map_t *map);
 void fill_map_item(map_t * map,char * key,char *value);
 void map_print(map_t *map);
+int map_len(map_t * map);
