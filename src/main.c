@@ -10,9 +10,16 @@ main ()
     map_add(map,"vic","hello");
     map_add(map,"vic","hello");
     map_add(map,"vic","hello");
-    map_print(map);
+    //map_print(map);
 
-    printf("%d\n",map_len(map));
+    //printf("%d\n",map_len(map));
+
+    list_t *ls = list_create();
+    list_pushback(ls,"hey");
+    list_pushback(ls,"barbiana");
+
+    printf("%s\n",list_get(ls,1));
+
 
     map_destroy(map);
 
