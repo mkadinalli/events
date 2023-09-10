@@ -28,6 +28,15 @@ bool map_add(map_t *map ,char * key,char *value)
     tmp->next = new_map;
 }
 
+void map_print(map_t *map)
+{
+    map_t *tmp = map;
+    while(tmp != NULL)
+    {
+        printf("%s : %s\n",tmp->key,tmp->value);
+    }
+}
+
 void fill_map_item(map_t *map,char *key,char *value)
 {
     int vlen = strlen(value)+1;
