@@ -26,7 +26,21 @@ bool map_add(map_t *map ,char * key,char *value)
     map_t *new_map = map_create();
     while(tmp->next != NULL)
     {
+        if(strcmp(tmp->key,key) == 0)
+        {
+            printf("Key exists.\n");
+            new_map = NULL;
+            return false;
+        }
+
         tmp = tmp->next;
+    }
+
+    if(strcmp(tmp->key,key) == 0)
+    {
+        printf("Key exists.\n");
+        new_map = NULL;
+        return false;
     }
 
     fill_map_item(new_map,key,value);
