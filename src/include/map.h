@@ -9,3 +9,4 @@ struct map_t{
 
 map_t * map_create();
 bool map_add(map_t *map,char *key,char *value);
+bool map_destroy();
