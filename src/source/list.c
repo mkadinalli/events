@@ -109,6 +109,7 @@ bool list_destroy(list_t *list)
     {
         tmp = list;
         list = list->next;
+        free(tmp->value);
         free(tmp);
     }
 
