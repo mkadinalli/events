@@ -13,5 +13,35 @@ map_t * map_create()
 
 bool map_add(map_t *map ,char * key,char *value)
 {
+    if(map == NULL)
+        return false;
     
+    map_t *tmp = map;
+    map_t *new_map = map_create();
+    while(tmp->next != NULL)
+    {
+        tmp = tmp->next;
+    }
+
+    fill_map_item(new_map,key,value);
+
+    tmp->next = new_map;
+}
+
+void fill_map_item(map_t *map,char *key,char *value)
+{
+    int vlen = strlen(value)+1;
+    int klen = strlen(key)+1;
+    string_t *strtmp = string_create_from_string(key);
+
+    map->value = malloc(vlen * sizeof(char));
+    map->key = malloc(klen * sizeof(char));
+    strcpy(map->key,strtmp->chars);
+    map->value[vlen] = '\0';
+    string_destroy(strtmp);
+    strtmp = string_create_from_string(value);
+    map->key[klen] = '\0';
+    strcpy(map->value,strtmp->chars);
+
+    map->next = NULL;
 }
