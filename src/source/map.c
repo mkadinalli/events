@@ -15,6 +15,12 @@ bool map_add(map_t *map ,char * key,char *value)
 {
     if(map == NULL)
         return false;
+
+    if(map_len(map) == 0)
+    {
+        fill_map_item(map,key,value);
+        return true;
+    }
     
     map_t *tmp = map;
     map_t *new_map = map_create();
@@ -26,6 +32,26 @@ bool map_add(map_t *map ,char * key,char *value)
     fill_map_item(new_map,key,value);
 
     tmp->next = new_map;
+    return true;
+}
+
+int map_len(map_t *list)
+{
+    if(list == NULL)
+        return -1;
+
+    int size = 0;
+    map_t * temp_list = list;
+    while(temp_list->next != NULL)
+    {
+        temp_list = temp_list->next;
+        size++;
+    }
+
+    if(temp_list->value != NULL)
+        size++;
+
+    return size;
 }
 
 void map_print(map_t *map)
@@ -34,6 +60,7 @@ void map_print(map_t *map)
     while(tmp != NULL)
     {
         printf("%s : %s\n",tmp->key,tmp->value);
+        tmp = tmp->next;
     }
 }
 

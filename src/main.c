@@ -6,9 +6,7 @@
 int 
 main () 
 {
-    list_t* ls = list_create();
-    list_pushback(ls,"value");
-    list_destroy(ls);
+    map_t *map = map_create();
 
     return 0;
 }
