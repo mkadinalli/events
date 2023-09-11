@@ -14,3 +14,6 @@ string_t *string_create();
 string_t *string_create_from_string(char *string);
 bool string_append(string_t* str,char c);
 bool string_destroy(string_t * str);
+bool string_pop(string_t *str);
+char string_back(string_t *str);
+char string_front(string_t *str);
