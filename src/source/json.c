@@ -3,6 +3,15 @@
 void json_check_syntax(char *j_string)
 {
     string_t *json_string = string_create_from_string(j_string);
+    string_t *curls = string_create();
+    string_t *squares = string_create();
+    string_t *symbols = string_create();
+
+    bool quotes = false;
+
+    int line = 1, col = 1;
+
+    //string_append(symbols,' ');
 
     bool is_array = false;
 
@@ -20,7 +29,7 @@ void json_check_syntax(char *j_string)
         {
             if (json_string->chars[i] == SINGLE_QUOTE || json_string->chars[i] == DOUBLE_QUOTE)
             {
-                if(json_string->chars[i] != '\''){ 
+                if(json_string->chars[i] == '\''){ 
                     USED_QUOTATION = '\''; 
                 }else{ USED_QUOTATION = '"'; }
                 break;
@@ -48,7 +57,7 @@ void json_check_syntax(char *j_string)
         {
             if (json_string->chars[i] == SINGLE_QUOTE || json_string->chars[i] == DOUBLE_QUOTE)
             {
-                if(json_string->chars[i] != '\''){ 
+                if(json_string->chars[i] == '\''){ 
                     USED_QUOTATION = '\''; 
                 }else{ USED_QUOTATION = '"'; }
                 break;
@@ -69,16 +78,10 @@ void json_check_syntax(char *j_string)
         }
     }
 
-    string_t *curls = string_create();
-    string_t *squares = string_create();
-    string_t *symbols = string_create();
-
-    int quotes = 0, line = 1, col = 1;
-
-    // string_append(symbols,' ');
 
     for (size_t i = 0; i < strlen(json_string->chars); i++)
     {
+        //string_append(symbols, json_string->chars[i]);
 
         if (json_string->chars[i] == LINE_BREAK)
         {
@@ -86,13 +89,14 @@ void json_check_syntax(char *j_string)
             col = 1;
         }
 
-        if (json_string->chars[i] == USED_QUOTATION && quotes == 0)
+
+        if (json_string->chars[i] == USED_QUOTATION && !quotes)
         {
-            quotes = 1;
+            quotes = true;
             string_append(symbols, json_string->chars[i]);
         }
 
-        if (quotes == 0)
+        if (!quotes)
         {
 
             if (json_string->chars[i] == SQUARE_OPEN_BRACKETS)
@@ -103,10 +107,10 @@ void json_check_syntax(char *j_string)
                     string_back(symbols) == USED_QUOTATION ||
                     (string_back(symbols) >= '0' && string_back(symbols) <= '9'))
                 {
-                    printf("syntax err [%d , %d]\n", line, col);
+                    printf("1 syntax err [%d , %d]\n", line, col);
                     exit(1);
                 }
-                string_append(squares, json_string->chars[1]);
+                string_append(squares, json_string->chars[i]);
             }
 
             if (json_string->chars[i] == SQUARE_CLOSE_BRACKETS)
@@ -118,7 +122,7 @@ void json_check_syntax(char *j_string)
                 }
                 else
                 {
-                    string_append(squares, json_string->chars[1]);
+                    string_append(squares, json_string->chars[i]);
                 }
             }
 
@@ -130,15 +134,14 @@ void json_check_syntax(char *j_string)
                     string_back(symbols) == USED_QUOTATION ||
                     (string_back(symbols) >= '0' && string_back(symbols) <= '9'))
                 {
-                    printf("syntax err [%d , %d]\n", line, col);
-                    exit(1);
+                    printf("2 syntax err %s [%d , %d]\n",symbols->chars, line, col);
+                    return;
                 }
                 string_append(curls, json_string->chars[i]);
             }
-
             if (json_string->chars[i] == COMMA && string_back(symbols) == CURLY_OPEN_BRACKETS)
             {
-                printf("syntax err [%d , %d]\n", line, col);
+                printf("3 syntax err [%d , %d]\n", line, col);
                 exit(1);
             }
 
@@ -147,7 +150,7 @@ void json_check_syntax(char *j_string)
                                                    string_back(symbols) == COLON ||
                                                    string_back(symbols) != USED_QUOTATION))
             {
-                printf("syntax err [%d , %d]\n", line, col);
+                printf("4 syntax err %c [%d , %d]\n",string_back(symbols), line, col);
                 exit(1);
             }
 
@@ -155,7 +158,7 @@ void json_check_syntax(char *j_string)
             {
                 if (string_back(symbols) == COMMA)
                 {
-                    printf("syntax err [%d , %d]\n", line, col);
+                    printf("5 syntax err [%d , %d]\n", line, col);
                     exit(1);
                 }
                 if (string_back(curls) == CURLY_OPEN_BRACKETS)
@@ -180,24 +183,25 @@ void json_check_syntax(char *j_string)
             }
         }
 
-        if (json_string->chars[i] == USED_QUOTATION && quotes == 1)
+
+        if (json_string->chars[i] == USED_QUOTATION && quotes)
         {
-            quotes = 0;
+            quotes = false;
             string_append(symbols, json_string->chars[i]);
         }
 
         col++;
     }
 
-    /*if(strlen(curls->chars) > 0 || strlen(squares->chars) > 0){
+    if(strlen(curls->chars) > 0 || strlen(squares->chars) > 0){
         puts("syntax error");
-
+        printf("%s -> %s\n",curls->chars,squares->chars);
         return;
-    }*/
+    }
 
-    // string_destroy(symbols);
-    // string_destroy(curls);
-    // string_destroy(squares);
+    string_destroy(symbols);
+    string_destroy(curls);
+    string_destroy(squares);
 
     /*string temp = arg;
     for(int i = 0; i<int(arg.length());i++){
