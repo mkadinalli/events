@@ -130,7 +130,7 @@ void json_check_syntax(char *j_string)
             {
                 if (string_back(symbols) == CURLY_OPEN_BRACKETS ||
                     string_back(symbols) == CURLY_CLOSE_BRACKETS ||
-                    string_back(symbols) == SQUARE_OPEN_BRACKETS ||
+                    (string_back(symbols) == SQUARE_OPEN_BRACKETS && !is_array) ||
                     string_back(symbols) == USED_QUOTATION ||
                     (string_back(symbols) >= '0' && string_back(symbols) <= '9'))
                 {
