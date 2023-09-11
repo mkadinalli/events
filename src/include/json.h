@@ -35,5 +35,5 @@ struct json_object_t{
 
 
 void json_check_syntax(char * j_string);
-void json_check_obj_syntax(char * j_string);
-void json_check_arr_syntax(char * j_string);
+void json_check_obj_syntax(char * j_string,char * u);
+void json_check_arr_syntax(char * j_string,char * u);

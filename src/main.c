@@ -8,8 +8,10 @@
 int 
 main () 
 {
-    char * json = "['name' : 'vic' , 'age'\n : 20, {'car':'buyer'}, \n'langs' : ['c':{'key':'value'} , 'c++' , 'java'],'obj':{'key':'value'}}";
+    //char * json = "{'name'] :'vic' , 'age'\n : 20, {'car':'buyer'}, \n'langs' : ['c':{'key':'value'} , 'c++' , 'java'],'obj':{'key':'value'}}";
     
+    char * json = "['hello']";
     json_check_syntax(json);
+
     return 0;
 }
