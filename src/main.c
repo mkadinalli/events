@@ -3,17 +3,13 @@
 #include "./include/list.h"
 #include "./include/map.h"
 #include "./include/lib.h"
+#include "./json.h"
 
 int 
 main () 
 {
-    char * str = "hello world";
-    char *a = string_sub(1,5,str,strlen(str));
-    list_t *x = split_lim('l',str,strlen(str),2);
-
-    list_print(x);
-    list_destroy(x);
-    //printf("%s\n",a);
-    free(a);
+    char * json = "['name' : 'vic' , 'age'\n : 20, {'car':'buyer'}, \n'langs' : ['c':{'key':'value'} , 'c++' , 'java'],'obj':{'key':'value'}}";
+    
+    json_check_syntax(json);
     return 0;
 }

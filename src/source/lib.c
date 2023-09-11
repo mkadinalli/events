@@ -94,6 +94,12 @@ bool endswith(char c, char *str){
     return false;
 }
 
+bool startswith(char c, char *str){ 
+    if(str[0] == c) return true;
+        //putchar('d');
+    return false;
+}
+
 list_t *split(char delim, char *str, size_t str_size){
     list_t * myvec;
     string_t * bld;
