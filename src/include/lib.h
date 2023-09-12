@@ -12,3 +12,4 @@ bool endswith(char c, char *str);
 bool startswith(char c,char *str);
 list_t *split(char delim, char *str, size_t str_size);
 list_t *split_lim(char delim, char *str, size_t str_size, int lim);
+char* setchar_at(char *str,char c,size_t pos,size_t len);

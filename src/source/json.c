@@ -203,17 +203,47 @@ void json_check_syntax(char *j_string)
     string_destroy(curls);
     string_destroy(squares);
 
-    /*string temp = arg;
-    for(int i = 0; i<int(arg.length());i++){
-        if(util.compare(temp[i],USED_QUOTATION)){
-            temp = util.setCharAt(temp,i,DOUBLE_QUOTE);
+    
+    for(size_t i = 0; i<strlen(json_string->chars);i++){
+        if(json_string->chars[i] == USED_QUOTATION){
+            json_string->chars = setchar_at(json_string->chars,DOUBLE_QUOTE,i,strlen(json_string->chars));
         }
 
-        if(util.compare(json_string->chars[i],DOUBLE_QUOTE)){
+        if(json_string->chars[i]==DOUBLE_QUOTE){
 
-            if(util.compare(USED_QUOTATION,DOUBLE_QUOTE)) temp = util.setCharAt(temp,i,SINGLE_QUOTE);
-            if(util.compare(USED_QUOTATION,SINGLE_QUOTE)) temp = util.setCharAt(temp,i,DOUBLE_QUOTE);
+            if(USED_QUOTATION == DOUBLE_QUOTE) json_string->chars = setchar_at(json_string->chars,SINGLE_QUOTE,i,strlen(json_string->chars));
+            if(USED_QUOTATION == SINGLE_QUOTE) json_string->chars = setchar_at(json_string->chars,DOUBLE_QUOTE,i,strlen(json_string->chars));
         }
-    }*/
+    }
+
+    //puts(json_string->chars);
+
+    int inquotes = 0;
+	string_t *j_2 = string_create();
+	
+	for(size_t i = 0; i < strlen(json_string->chars);i++){
+		if(json_string->chars[i] == DOUBLE_QUOTE && inquotes==0){
+			inquotes = 1;
+			string_append(j_2,json_string->chars[i]);
+			continue;
+		}
+		
+		if(inquotes == 0 && (json_string->chars[i] == SPACE || json_string->chars[i] == TAB || json_string->chars[i] == LINE_BREAK)){
+			continue;
+		}
+		
+		string_append(j_2,json_string->chars[i]);
+
+
+		if(json_string->chars[i] == DOUBLE_QUOTE && inquotes==1){
+			inquotes = 0;
+		}	
+	}
+
+    string_destroy(json_string);
+
+    puts(j_2->chars);
+
+    
 }
 

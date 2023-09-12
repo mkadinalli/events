@@ -165,4 +165,25 @@ list_t *split_lim(char delim, char *str, size_t str_size, int lim){
     list_pushback(myvec,bld->chars);
     return myvec;
 }
+
+char* setchar_at(char *str,char c,size_t pos,size_t len){
+    if(pos >= len)return str;
+
+    string_t * temp = string_create();
+    for(size_t i = 0 ; i < len; i++)
+    {
+        if(i == pos)
+        {
+            string_append(temp,c);
+            continue;
+        }
+
+        string_append(temp,str[i]);
+    }
+    string_append(temp,'\0');
+    char *chars = temp->chars;
+    free(temp);
+    return chars;
+
+}
 //char *terminate_string(char *str, size_t len){}
