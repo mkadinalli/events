@@ -8,11 +8,11 @@ char *json_check_syntax(char *j_string)
     string_t *squares = string_create();
     string_t *symbols = string_create();
 
-    int line = 1, col = 1;
+    //int line = 1, col = 1;
 
     // string_append(symbols,' ');
 
-    bool quotes = false;
+    //bool quotes = false;
 
     char USED_QUOTATION = ' ';
 
@@ -87,8 +87,8 @@ char *json_check_syntax(char *j_string)
         }
     }
 
-    for (size_t i = 0; i < strlen(json_string->chars); i++)
-    {
+    //for (size_t i = 0; i < strlen(json_string->chars); i++)
+    {/*
         // string_append(symbols, json_string->chars[i]);
 
         if (json_string->chars[i] == LINE_BREAK)
@@ -196,7 +196,7 @@ char *json_check_syntax(char *j_string)
             string_append(symbols, json_string->chars[i]);
         }
 
-        col++;
+        col++;*/
     }
 
     if (strlen(curls->chars) > 0 || strlen(squares->chars) > 0)
@@ -227,7 +227,7 @@ char *json_check_syntax(char *j_string)
         }
     }
 
-    puts(json_string->chars);
+    //puts(json_string->chars);
 
     int inquotes = 0;
     string_t *j_2 = string_create();
