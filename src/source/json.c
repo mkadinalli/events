@@ -259,16 +259,19 @@ void * json_parse(char * json_string)
 
 json_array_t * json_array(char *json_string)
 {
-    list_t * objects = list_create();
+    
     json_array_t *j_array = malloc(sizeof(json_array_t));
-    j_array->j_objects = objects;
+    
 
     json_string = string_removechar_at(0,json_string,strlen(json_string));
     json_string = string_removechar_at(strlen(json_string)-1,json_string,strlen(json_string));
 
     replace_comma(&json_string);
 
-    puts(json_string);
+    list_t * objects = split(COMMA,json_string,strlen(json_string));
+    j_array->j_objects = objects;
+
+    //puts(json_string);
 
     return j_array;
 }
