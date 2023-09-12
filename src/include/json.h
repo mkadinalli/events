@@ -38,3 +38,4 @@ char* json_check_syntax(char * j_string);
 json_array_t *json_array(char * j_string);
 json_object_t *json_object(char *j_string);
 void *json_parse(char *j_string);
+void replace_comma(char **str);

@@ -244,7 +244,7 @@ char* json_check_syntax(char *j_string)
 
     string_destroy(json_string);
 
-    puts(j_2->chars);
+    return j_2->chars;
     
 }
 
@@ -255,4 +255,63 @@ void * json_parse(char * json_string)
     if(is_array) return json_array(json_string);
 
     return json_object(json_string);
+}
+
+json_array_t * json_array(char *json_string)
+{
+    list_t * objects = list_create();
+    json_array_t *j_array = malloc(sizeof(json_array_t));
+    j_array->j_objects = objects;
+
+    json_string = string_removechar_at(0,json_string,strlen(json_string));
+    json_string = string_removechar_at(strlen(json_string)-1,json_string,strlen(json_string));
+
+    replace_comma(&json_string);
+
+    puts(json_string);
+
+    return j_array;
+}
+
+json_object_t * json_object(char *json_string)
+{
+    map_t *json_pairs = map_create();
+    json_object_t *j_object = malloc(sizeof(json_object_t));
+    j_object->j_pairs = json_pairs;
+
+    return j_object;
+}
+
+void replace_comma(char **arg)
+{
+    bool isJsonArray = false;
+	int brackets = 0;
+	
+	for(size_t i = 0; i < strlen(*arg);i++)
+	{
+		
+		if((*arg)[i] == SQUARE_CLOSE_BRACKETS)
+		{
+			brackets--;
+			if(brackets == 0){
+				isJsonArray = false;
+			}
+		}
+		
+		
+		if(isJsonArray && COMMA == (*arg)[i])
+		{
+			*arg = setchar_at(*arg,SPECIAL,i,strlen(*arg));
+			//cout << (*arg)[i]<<endl;
+		}
+		
+
+		
+		if((*arg)[i] == SQUARE_OPEN_BRACKETS)
+		{
+			isJsonArray = true;
+			brackets++;
+		}
+
+	}
 }
