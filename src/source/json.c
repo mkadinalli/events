@@ -262,15 +262,18 @@ json_array_t * json_array(char *json_string)
     
     json_array_t *j_array = malloc(sizeof(json_array_t));
     
-
+    char * jtmp = json_string;
     json_string = string_removechar_at(0,json_string,strlen(json_string));
+    free(jtmp);
+    jtmp = json_string;
     json_string = string_removechar_at(strlen(json_string)-1,json_string,strlen(json_string));
+    free(jtmp);
 
     replace_comma(&json_string);
 
     list_t * objects = split(COMMA,json_string,strlen(json_string));
     j_array->j_objects = objects;
-
+    free(json_string);
     //puts(json_string);
 
     return j_array;
@@ -280,6 +283,10 @@ json_object_t * json_object(char *json_string)
 {
     map_t *json_pairs = map_create();
     json_object_t *j_object = malloc(sizeof(json_object_t));
+
+
+
+
     j_object->j_pairs = json_pairs;
 
     return j_object;
