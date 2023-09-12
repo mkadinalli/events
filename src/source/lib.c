@@ -187,3 +187,27 @@ char* setchar_at(char *str,char c,size_t pos,size_t len){
 
 }
 //char *terminate_string(char *str, size_t len){}
+
+char * read_file_to_string(char *path)
+{
+    FILE * ptr = NULL;
+    string_t *buf = string_create();
+
+    if((ptr = fopen(path,"r")))
+    {
+        char c;
+
+        while((c = fgetc(ptr)) != EOF)
+        {
+            string_append(buf,c);
+        }
+
+        fclose(ptr);
+        char * btmp = buf->chars;
+        free(buf);
+        return btmp;
+    }
+    puts("file not found");
+    free(buf);
+    return NULL;
+}

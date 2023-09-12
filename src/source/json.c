@@ -227,7 +227,7 @@ char *json_check_syntax(char *j_string)
         }
     }
 
-    // puts(json_string->chars);
+    puts(json_string->chars);
 
     int inquotes = 0;
     string_t *j_2 = string_create();

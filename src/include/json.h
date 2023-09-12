@@ -19,7 +19,8 @@ enum SYMBOLS{
     DOUBLE_QUOTE = '"',
     SPACE = ' ',
     TAB = '\t',
-    LINE_BREAK = '\n'
+    LINE_BREAK = '\n',
+    LINE_FEED = '\r'
 };
 
 

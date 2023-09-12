@@ -70,6 +70,9 @@ int map_len(map_t *list)
 
 void map_print(map_t *map)
 {
+    if(map == NULL)
+        return;
+        
     map_t *tmp = map;
     while(tmp != NULL)
     {
