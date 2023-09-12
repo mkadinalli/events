@@ -306,8 +306,6 @@ json_object_t *json_object(char *json_string)
     replace_comma(&json_string);
 
     list_t *list_of_pairs = split(COMMA, json_string, strlen(json_string));
-
-    list_print(list_of_pairs);
     list_t *tmp = list_of_pairs;
 
     while (tmp != NULL)
@@ -323,11 +321,19 @@ json_object_t *json_object(char *json_string)
         char *value = string_removechar(DOUBLE_QUOTE,
                                       list_get(this_pair, 1),
                                       strlen(list_get(this_pair, 1)));
+        char * vtmp = value;
+        value = string_replacechar(SPECIAL,COMMA,value,strlen(value));
+        free(vtmp);
+
         map_add(json_pairs,key,value);
+        free(key);
+        free(value);
         tmp = tmp->next;
     }
 
     j_object->j_pairs = json_pairs;
+
+    list_destroy(list_of_pairs);
 
     return j_object;
 }
