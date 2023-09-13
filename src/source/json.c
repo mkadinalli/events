@@ -8,12 +8,6 @@ char *json_check_syntax(char *j_string)
     string_t *squares = string_create();
     string_t *symbols = string_create();
 
-    //int line = 1, col = 1;
-
-    // string_append(symbols,' ');
-
-    //bool quotes = false;
-
     char USED_QUOTATION = ' ';
 
     if (endswith(SQUARE_CLOSE_BRACKETS, json_string->chars) &&
@@ -87,118 +81,6 @@ char *json_check_syntax(char *j_string)
         }
     }
 
-    //for (size_t i = 0; i < strlen(json_string->chars); i++)
-    {/*
-        // string_append(symbols, json_string->chars[i]);
-
-        if (json_string->chars[i] == LINE_BREAK)
-        {
-            line++;
-            col = 1;
-        }
-
-        if (json_string->chars[i] == USED_QUOTATION && !quotes)
-        {
-            quotes = true;
-            string_append(symbols, json_string->chars[i]);
-        }
-
-        if (!quotes)
-        {
-
-            if (json_string->chars[i] == SQUARE_OPEN_BRACKETS)
-            {
-                if (string_back(symbols) == CURLY_OPEN_BRACKETS ||
-                    string_back(symbols) == CURLY_CLOSE_BRACKETS ||
-                    string_back(symbols) == SQUARE_OPEN_BRACKETS ||
-                    string_back(symbols) == USED_QUOTATION ||
-                    (string_back(symbols) >= '0' && string_back(symbols) <= '9'))
-                {
-                    printf("1 syntax err [%d , %d]\n", line, col);
-                    return NULL;
-                }
-                string_append(squares, json_string->chars[i]);
-            }
-
-            if (json_string->chars[i] == SQUARE_CLOSE_BRACKETS)
-            {
-
-                if (string_back(squares) == SQUARE_OPEN_BRACKETS)
-                {
-                    string_pop(squares);
-                }
-                else
-                {
-                    string_append(squares, json_string->chars[i]);
-                }
-            }
-
-            if (json_string->chars[i] == CURLY_OPEN_BRACKETS)
-            {
-                if (string_back(symbols) == CURLY_OPEN_BRACKETS ||
-                    string_back(symbols) == CURLY_CLOSE_BRACKETS ||
-                    (string_back(symbols) == SQUARE_OPEN_BRACKETS && !is_array) ||
-                    string_back(symbols) == USED_QUOTATION ||
-                    (string_back(symbols) >= '0' && string_back(symbols) <= '9'))
-                {
-                    printf("2 syntax err %s [%d , %d]\n", symbols->chars, line, col);
-                    return NULL;
-                }
-                string_append(curls, json_string->chars[i]);
-            }
-            if (json_string->chars[i] == COMMA && string_back(symbols) == CURLY_OPEN_BRACKETS)
-            {
-                printf("3 syntax err [%d , %d]\n", line, col);
-                return NULL;
-            }
-
-            if (json_string->chars[i] == COLON && (string_back(symbols) == CURLY_CLOSE_BRACKETS ||
-                                                   string_back(symbols) == SQUARE_CLOSE_BRACKETS ||
-                                                   string_back(symbols) == COLON ||
-                                                   string_back(symbols) != USED_QUOTATION))
-            {
-                printf("4 syntax err %c [%d , %d]\n", string_back(symbols), line, col);
-                exit(1);
-            }
-
-            if (json_string->chars[i] == CURLY_CLOSE_BRACKETS)
-            {
-                if (string_back(symbols) == COMMA)
-                {
-                    printf("5 syntax err [%d , %d]\n", line, col);
-                    exit(1);
-                }
-                if (string_back(curls) == CURLY_OPEN_BRACKETS)
-                {
-                    string_pop(curls);
-                }
-                else
-                {
-                    string_append(curls, json_string->chars[i]);
-                }
-            }
-
-            if (json_string->chars[i] == COMMA ||
-                json_string->chars[i] == COLON ||
-                json_string->chars[i] == SQUARE_CLOSE_BRACKETS ||
-                json_string->chars[i] == SQUARE_OPEN_BRACKETS ||
-                json_string->chars[i] == CURLY_CLOSE_BRACKETS ||
-                json_string->chars[i] == CURLY_OPEN_BRACKETS ||
-                (json_string->chars[i] >= '0' && json_string->chars[i] <= '9'))
-            {
-                string_append(symbols, json_string->chars[i]);
-            }
-        }
-
-        if (json_string->chars[i] == USED_QUOTATION && quotes)
-        {
-            quotes = false;
-            string_append(symbols, json_string->chars[i]);
-        }
-
-        col++;*/
-    }
-
     if (strlen(curls->chars) > 0 || strlen(squares->chars) > 0)
     {
         puts("syntax error");
@@ -227,7 +109,7 @@ char *json_check_syntax(char *j_string)
         }
     }
 
-    //puts(json_string->chars);
+    // puts(json_string->chars);
 
     int inquotes = 0;
     string_t *j_2 = string_create();
@@ -317,15 +199,23 @@ json_object_t *json_object(char *json_string)
         char *key = string_removechar(DOUBLE_QUOTE,
                                       list_get(this_pair, 0),
                                       strlen(list_get(this_pair, 0)));
+        char *ktmp = key;
 
-        char *value = string_removechar(DOUBLE_QUOTE,
-                                      list_get(this_pair, 1),
-                                      strlen(list_get(this_pair, 1)));
-        char * vtmp = value;
-        value = string_replacechar(SPECIAL,COMMA,value,strlen(value));
-        free(vtmp);
+        key = string_removechar(SINGLE_QUOTE,
+                                      list_get(this_pair, 0),
+                                      strlen(list_get(this_pair, 0)));
 
-        map_add(json_pairs,key,value);
+        free(ktmp);
+
+        /*char *value = string_removechar(DOUBLE_QUOTE,
+                                        list_get(this_pair, 1),
+                                        strlen(list_get(this_pair, 1)));
+        char *vtmp = value;*/
+        char *value = string_replacechar(SPECIAL, COMMA, list_get(this_pair, 1),
+                                        strlen(list_get(this_pair, 1)));
+        //free(vtmp);
+
+        map_add(json_pairs, key, value);
         free(key);
         free(value);
         tmp = tmp->next;
