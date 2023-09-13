@@ -19,5 +19,6 @@ bool list_popfront(list_t ** list);
 char * list_back(list_t * list);
 char * list_front(list_t * list);
 bool list_destroy(list_t * list);
-int list_len(list_t *list);
+unsigned int list_len(list_t *list);
 void fill_list_item(list_t *list,char *str);
+char * list_get(list_t * list,unsigned int index);

@@ -1,7 +1,8 @@
 #include "../include/list.h"
 #include <assert.h>
 
-list_t *list_create()
+list_t *
+list_create()
 {
     list_t* t = malloc(sizeof(list_t));
     t->next = NULL;
@@ -9,7 +10,8 @@ list_t *list_create()
     return t;
 }
 
-bool list_pushback(list_t * list,char *str)
+bool 
+list_pushback(list_t * list,char *str)
 {
     if(list == NULL)
         return false;
@@ -35,7 +37,8 @@ bool list_pushback(list_t * list,char *str)
 
 }
 
-bool list_pushfront(list_t **list,char * str)
+bool 
+list_pushfront(list_t **list,char * str)
 {
     if(*list == NULL)
         return false;
@@ -54,7 +57,8 @@ bool list_pushfront(list_t **list,char * str)
     return true; 
 }
 
-int list_len(list_t *list)
+unsigned int 
+list_len(list_t *list)
 {
     if(list == NULL)
         return -1;
@@ -73,7 +77,8 @@ int list_len(list_t *list)
     return size;
 }
 
-void fill_list_item(list_t *temp_list,char *str)
+void 
+fill_list_item(list_t *temp_list,char *str)
 {
         string_t *string_builder = string_create_from_string(str);
         int string_len = strlen(string_builder->chars)+1;
@@ -82,10 +87,11 @@ void fill_list_item(list_t *temp_list,char *str)
         temp_list->value[string_len] = '\0';
         temp_list->next = NULL;
 
-        free(string_builder);
+        string_destroy(string_builder);
 }
 
-void list_print(list_t * list)
+void 
+list_print(list_t * list)
 {
     if(list_len(list) < 1 || list == NULL)
         return;
@@ -98,7 +104,8 @@ void list_print(list_t * list)
     }
 }
 
-bool list_destroy(list_t *list)
+bool 
+list_destroy(list_t *list)
 {
     if(list == NULL)
         return false;
@@ -117,7 +124,8 @@ bool list_destroy(list_t *list)
 
 }
 
-char * list_back(list_t *list)
+char * 
+list_back(list_t *list)
 {
     if(list_len(list) < 1)
         return "";
@@ -131,7 +139,8 @@ char * list_back(list_t *list)
     return t->value;
 }
 
-char * list_front(list_t *list)
+char * 
+list_front(list_t *list)
 {
     if(list_len(list) < 1)
         return "";
@@ -139,7 +148,8 @@ char * list_front(list_t *list)
     return list->value; 
 }
 
-bool list_popback(list_t *list)
+bool 
+list_popback(list_t *list)
 {
     if(list_len(list) < 1)
         return false;
@@ -164,7 +174,8 @@ bool list_popback(list_t *list)
     return true;
 }
 
-bool list_popfront(list_t **list)
+bool 
+list_popfront(list_t **list)
 {
 
     if(list_len(*list) < 1)
@@ -182,5 +193,29 @@ bool list_popfront(list_t **list)
     *list = malloc(sizeof(list_t));
     *list = tmp;
     return true;
+}
+
+char * 
+list_get(list_t *list, unsigned int index)
+{
+    if(index >= list_len(list)){
+        printf("Index outta bounds.\n");
+        return NULL;
+    }
+
+    unsigned 
+    int pos = 0;
+    list_t *tmp = list;
+
+    while(tmp != NULL)
+    {
+        if(pos == index){
+            break;
+        }
+        tmp = tmp->next;
+        pos++;
+    }
+
+    return tmp->value;
 }
 
