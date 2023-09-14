@@ -10,13 +10,32 @@
 
 int main()
 {
-    struct json_object * jobj;
+    struct json_object * obj1,*obj2,*res;
+    obj1 = json_object_new_object();
+    obj2 = json_object_new_object();
 
-    char *str = "{'hello':'world}";
+    json_object_object_add(obj1,"one",json_object_new_int(123));
+    json_object_object_add(obj2,"two",json_object_new_int(432));
 
-    printf("%s",str);
+    printf("%s\n",json_object_to_json_string(obj1));
+    printf("%s\n",json_object_to_json_string(obj2));
 
-    jobj = json_tokener_parse(str);
+    struct json_object * sub;
 
-    printf("%s\n",json_object_to_json_string_ext(jobj,JSON_C_TO_STRING_PRETTY));
+    json_object_object_get_ex(obj1,"one",&sub);
+    
+
+    res = json_object_new_array();
+
+    json_object_array_add(res,obj1);
+    json_object_array_add(res,obj2);
+
+    printf("%s\n",json_object_to_json_string(res));
+
+    json_object_put(obj1);
+    json_object_put(obj2);
+    json_object_put(res);
+
+    
+    
 }
