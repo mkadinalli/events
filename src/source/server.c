@@ -39,9 +39,9 @@ void *handle_request(void *args)
         exit(1);
     }
 
-    hashtable_t *http_req = parse_http_req(buff, strlen(buff));
+    /*map_t *http_req = parse_http_req(buff, strlen(buff));
 
-    if (strcmp(hashtable_get(http_req, "method"), "GET") != 0)
+    if (strcmp(map_get(http_req, "method"), "GET") != 0)
     {
         puts("bad method");
     }
@@ -49,6 +49,8 @@ void *handle_request(void *args)
     {
         serve_client(their_socket, hashtable_get(http_req, "url"));
     }
+
+    map_destroy(http_req);*/
 
     return 0;
 }

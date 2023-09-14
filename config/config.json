@@ -2,6 +2,6 @@
     "username": "vic",
     "password": "1234Victor",
     "host": "localhost",
-    "atabase": "test",
+    "database": "test",
     "port": 2000
 }

@@ -20,3 +20,6 @@ char* setchar_at(char *str,char c,size_t pos,size_t len);
 
 char * read_file_to_string(char *path);
 MYSQL * create_connection_from_a_file(MYSQL ** sql_struct,char *path_to_config);
+
+
+//==========================================================http;
