@@ -1,6 +1,6 @@
 # Compiler settings
 CC = gcc
-CFLAGS = -Wall -Wextra -Isrc/include `mysql_config --libs` `mysql_config --cflags`
+CFLAGS = -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
 # Directories
 SRCDIR = src/source
 INCDIR = src/include
