@@ -14,6 +14,9 @@
 #include <signal.h>
 
 #include "./map.h"
+#include "./lib.h"
+
 char *write_http_request_from_map(map_t * map);
 char * send_http_request(map_t *map,char * url);
 void *get_in_addr(struct sockaddr * sa);
+map_t * parse_http_req(char *req);
