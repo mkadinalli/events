@@ -69,12 +69,7 @@ char *send_http_request(map_t *map, char *url)
         return NULL;
     }
 
-    /*if((bytes_received = recv(socketfd,&recv_buf,1023,0)) == -1)
-    {
-        perror("recv");
-        //printf("%d ",bytes_received);
-        return NULL;
-    }*/
+
     char end_of_header[] = "\r\n\r\n";
     int marker = 0;
 
@@ -113,16 +108,12 @@ char *send_http_request(map_t *map, char *url)
 
         if (marker == 4)
         {
-            puts("end found");
             map_print(parse_http_req(b->chars));
             file_reached = true;
         }
         bzero(&recv_buf, sizeof recv_buf);
     }
 
-    //printf("%s\n", b->chars);
-
-    // write()
     close(socketfd);
     fclose(ptr);
     free(server_info);
