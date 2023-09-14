@@ -2,6 +2,8 @@
 #include "./string_buffer.h"
 #include "./list.h"
 #include "./map.h"
+#include <mysql/mysql.h>
+#include <json-c/json.h>
 
 char *string_removechar(char c, char *buffer, size_t len);
 char *string_replacechar(char previous, char current, char *buffer, size_t len);
@@ -17,3 +19,6 @@ char* setchar_at(char *str,char c,size_t pos,size_t len);
 //===========================================================file
 
 char * read_file_to_string(char *path);
+MYSQL * create_connection_from_a_file(MYSQL ** sql_struct,char *path_to_config);
+
+//==========================================================http;

@@ -1,6 +1,7 @@
 cmake-build-debug
 CMakeLists.txt
 proxy
+bin
 *.o
 **.idea
 **.log

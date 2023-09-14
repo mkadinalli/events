@@ -3,20 +3,12 @@
 #include "./include/list.h"
 #include "./include/map.h"
 #include "./include/lib.h"
-#include "./json.h"
+#include "./include/requests.h"
+#include "./include/dbc.h"
+#include <json-c/json.h>
 
-int 
-main () 
+int main()
 {
-    //char * json = "{'n a me': '', 'age'\n : 20, {'car':'buyer'}, \n'langs' : ['c':{'key':'value'} , 'c++' , 'java'],'obj':{'key':'value'}}";
-    //char *json = "[{'hello':'world'},{'hello2':'world2'},{'hello3':'world3'}]";
-    char *json = read_file_to_string("../.vscode/js.json");
-    json_object_t * j = json_parse(json);
-
-    //list_t *l = split(COMMA,json,strlen(json));
-
-    if(j) map_print(j->j_pairs);
-    //puts(json);
-    //free(json);
-    return 0;
+    map_t *map = map_create();
+    send_http_request(map,"localhost");
 }
