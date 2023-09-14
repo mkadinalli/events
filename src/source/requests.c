@@ -14,7 +14,7 @@ char *send_http_request(map_t *map,char *url)
     hints.ai_flags = AI_PASSIVE;
 
     // 0 for success
-    int status = getaddrinfo(url, "http", &hints, &server_info);
+    int status = getaddrinfo(url, "2000", &hints, &server_info);
 
     if (status != 0)
     {
@@ -56,12 +56,12 @@ char *send_http_request(map_t *map,char *url)
 
     printf("Connecting to %s\n",address);
 
-    char recv_buf[10];
+    char recv_buf[2];
     int bytes_received;
 
-    char * message = "GET / HTTP/1.1\r\n";
+    char * message = "GET /song.mp3 HTTP/1.1\r\nContent-Type: text\r\n";
 
-    //string_t * b = string_create();
+    string_t * b = string_create();
 
     if((send(socketfd,message,strlen(message),0)) == -1)
     {
@@ -75,8 +75,13 @@ char *send_http_request(map_t *map,char *url)
         //printf("%d ",bytes_received);
         return NULL;
     }*/
+    char end_of_header[] = "\r\n\r\n";
+    int marker = 0;
 
-    while((bytes_received = recv(socketfd,recv_buf,9,0)))
+    FILE * ptr = fopen("readfile.mp3","a");
+    bool file_reached = false;
+
+    while((bytes_received = recv(socketfd,recv_buf,1,0)))
     {
         if(bytes_received == -1)
         {
@@ -88,15 +93,31 @@ char *send_http_request(map_t *map,char *url)
             break;
         }
 
-        printf("%s",recv_buf);
+        if(!file_reached){
+             string_append(b,recv_buf[0]);
+         }
+        else { fwrite(recv_buf,1,sizeof recv_buf-1,ptr); }
+
+        
+        if(recv_buf[0] == end_of_header[marker])
+        {
+            marker++;
+        }else{ marker = 0; }
+
+        if(marker == 4){
+            puts("end found");
+            file_reached = true;
+            //break;
+        }
+        //map_destroy(map);
         bzero(&recv_buf,sizeof recv_buf);
-        map_destroy(map);
     }
 
-    printf("%s\n",recv_buf);
+    printf("%s\n",b->chars);
     
     //write()
     close(socketfd);
+    fclose(ptr);
     free(server_info);
     return NULL;
 }

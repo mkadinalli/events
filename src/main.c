@@ -9,15 +9,6 @@
 
 int main()
 {
-  MYSQL * sql = NULL;
-  sql = mysql_init(sql);
-
-  if((create_connection_from_a_file(&sql,"/home/vic/Desktop/ev2/events/config/config.json")) == NULL)
-  {
-    puts("connection failed");
-    mysql_close(sql);
-    exit(EXIT_FAILURE);
-  }
-
-  mysql_close(sql);
+    map_t *map = map_create();
+    send_http_request(map,"localhost");
 }
