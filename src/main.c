@@ -4,19 +4,68 @@
 #include "./include/map.h"
 #include "./include/lib.h"
 #include "./json.h"
+#include "./include/requests.h"
+#include "./include/dbc.h"
+#include <json.h>
 
-int 
-main () 
+int main()
 {
-    //char * json = "{'n a me': '', 'age'\n : 20, {'car':'buyer'}, \n'langs' : ['c':{'key':'value'} , 'c++' , 'java'],'obj':{'key':'value'}}";
-    //char *json = "[{'hello':'world'},{'hello2':'world2'},{'hello3':'world3'}]";
-    char *json = read_file_to_string("../.vscode/js.json");
-    json_object_t * j = json_parse(json);
+    const char *username = "vic";
+    const char *password = "1234Victor";
+    const char *host = "localhost";
+    const char *database = "test";
+    //const char *socket_name = "conn";
+    //unsigned int sql_port = 2000;
 
-    //list_t *l = split(COMMA,json,strlen(json));
+    MYSQL *mysql = NULL;
 
-    if(j) map_print(j->j_pairs);
-    //puts(json);
-    //free(json);
+    mysql = mysql_init(mysql);
+
+    if ((mysql_real_connect(mysql,
+                           host,
+                           username,
+                           password,
+                           database,
+                           MYSQL_PORT,
+                           NULL,
+                           CLIENT_MULTI_STATEMENTS)) == NULL)
+    {
+        puts("connection failed ");
+        //printf("%s\n",mysql->);
+        mysql_close(mysql);
+        exit(EXIT_FAILURE);
+    }
+
+    int status = 0;
+
+    status = mysql_query(mysql,"select * from users");
+
+    if(status)
+    {
+        puts("could not execute statement");
+        exit(EXIT_FAILURE);
+    }
+
+    MYSQL_RES * result;
+
+    do {
+        result = mysql_store_result(mysql);
+
+        if(result)
+        {
+            mysql_free_result(result);
+        }
+        else
+        {
+            puts("could not get results");
+            break;
+        }
+
+        status = mysql_next_result(mysql);
+
+    } while (status == 0);
+
+    mysql_close(mysql);
+    
     return 0;
 }
