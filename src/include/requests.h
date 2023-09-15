@@ -16,7 +16,17 @@
 #include "./map.h"
 #include "./lib.h"
 
-char *write_http_request_from_map(map_t * map);
+typedef struct http_t http_res;
+struct http_t {
+    int code;
+    char * code_name;
+    char * url;
+    char * content_type;
+    int content_length;
+    char *http_version;
+};
+
+char *write_http_header_from_struct(http_res * http);
 char * send_http_request(map_t *map,char * url);
 void *get_in_addr(struct sockaddr * sa);
 map_t * parse_http_req(char *req);
