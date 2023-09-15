@@ -5,7 +5,7 @@
 #include <mysql/mysql.h>
 #include <json-c/json.h>
 
-char *string_removechar(char c, char *buffer, size_t len);
+char * string_removechar(char c, char *buffer, size_t len);
 char *string_replacechar(char previous, char current, char *buffer, size_t len);
 char *string_removechar_at(unsigned int pos, char *buffer, size_t len);
 int string_last_index_of(char c, char *str, unsigned int len);
