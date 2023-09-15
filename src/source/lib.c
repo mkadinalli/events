@@ -276,3 +276,19 @@ MYSQL *create_connection_from_a_file(MYSQL **sql_struct, char *path_to_config)
 
     return tmp;
 }
+
+bool starts_with_word(char *word,char *str)
+{
+    bool truth = true;
+
+    if(word == NULL || str == NULL) return false;
+
+    if(strlen(word) > strlen(str)) return false;
+
+    for(size_t i = 0; i < strlen(word); i++)
+    {
+        if(word[i] != str[i]) truth = false;
+    }
+
+    return truth;
+}

@@ -57,7 +57,7 @@ char *send_http_request(map_t *map, char *url)
     printf("Connecting to %s\n", address);
 
     char *message = "GET /song.mp3 HTTP/1.1\r\nContent-Type: text\r\n";
-    
+
     if ((send(socketfd, message, strlen(message), 0)) == -1)
     {
         perror("send");
@@ -142,4 +142,9 @@ map_t *parse_http_req(char *req)
     }
     free(req);
     return map;
+}
+
+
+char *write_http_header_from_struct(http_res * http){
+    
 }
