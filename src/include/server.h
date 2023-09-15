@@ -12,10 +12,30 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
 
 #define IPV_4 0
 #define IPV_6 1
 #define BACKLOG 4
+
+enum codes{
+    OK = 200,
+    NOT_FOUND = 404,
+    BAD_REQ = 400
+};
+
+enum methods{
+    POST = 100,
+    GET,
+    PUT,
+    PATCH,
+    DELETE
+};
+
+enum files{
+    IMAGE =10,
+    JSON
+};
 
 void signal_handler(int sig);
 void *handle_request(void *args);
