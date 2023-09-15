@@ -102,7 +102,7 @@ void *handle_request(void *args)
                     {
                         file_type = IMAGE;
                         char filename[100];
-                        sprintf(filename,"image%u.jpg",(unsigned) time(NULL));
+                        sprintf(filename,"/home/vic/Desktop/ev2/events/files/image%lu.jpg",(unsigned long) time(NULL));
 
                        if((ptr = fopen(filename, "a")) == NULL){
                             puts("failed to open file");
@@ -145,6 +145,7 @@ void *handle_request(void *args)
     if(error_code == OK && req_method)
     {
         //serve_client(their_socket,req_method,map_get(http_req, "url"));
+        //if(!)
     }
 
     if(file_type == JSON) puts(json_b->chars);
