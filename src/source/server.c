@@ -31,7 +31,7 @@ void clean_up()
 void *handle_request(void *args)
 {
     int *th = (int *)args;
-    int x, their_socket = *th;
+    int their_socket = *th;
 
     char recv_buf[2];
     int bytes_received;
@@ -50,7 +50,7 @@ void *handle_request(void *args)
 
     map_t * http_req = NULL;
 
-    while ((bytes_received = recv(socketfd, recv_buf, 1, 0)))
+    while ((bytes_received = recv(their_socket, recv_buf, 1, 0)))
     {
         if (bytes_received == -1)
         {
@@ -92,38 +92,46 @@ void *handle_request(void *args)
                 if(!strcmp(map_get(http_req,"method"),"GET"))
                 {
                     req_method = GET;
+                    puts("method is get");
                     break;
                 }else if (!strcmp(map_get(http_req,"method"),"POST"))
                 {
                     req_method = POST;
-
-                    if(!strcmp(map_get(http_req,"Content-Type"),"image/jpg"))
+                    puts("method is post");
+                    if(!strcmp(map_get(http_req,"Content-Type"),"image/jpeg"))
                     {
                         file_type = IMAGE;
                         char filename[100];
-                        sprintf(filename,"../../uploads/image%u.jpg",(unsigned) time(NULL));
+                        sprintf(filename,"image%u.jpg",(unsigned) time(NULL));
 
-                        ptr = fopen(filename, "a");
+                       if((ptr = fopen(filename, "a")) == NULL){
+                            puts("failed to open file");
+                       }
+                        puts("file is iamge");
 
                     }else if(!strcmp(map_get(http_req,"Content-Type"),"application/json"))
                     {
                         file_type = JSON;
+                        puts("file is json");
                     }
 
                 }else if (!strcmp(map_get(http_req,"method"),"PUT"))
                 {
                     req_method = PUT;
+                    puts("method is put");
                 }
 
                 else if (!strcmp(map_get(http_req,"method"),"PATCH"))
                 {
                     req_method = PATCH;
+                    puts("method is patch");
                 }
                 else if (!strcmp(map_get(http_req,"method"),"DELETE"))
                 {
                     req_method = DELETE;
+                    puts("method is delete");
                 }
-                else { error_code = BAD_REQ; }
+                else { error_code = BAD_REQ; puts("request is bad") ;}
             }
         }
         
@@ -132,13 +140,17 @@ void *handle_request(void *args)
 
     if(!file_reached) error_code = BAD_REQ;
 
+    puts(b->chars);
 
     if(error_code == OK && req_method)
     {
         //serve_client(their_socket,req_method,map_get(http_req, "url"));
     }
 
+    if(file_type == JSON) puts(json_b->chars);
+
     map_destroy(http_req);
+    close(their_socket);
 
     return 0;
 }
