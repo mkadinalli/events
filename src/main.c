@@ -6,9 +6,16 @@
 #include "./include/requests.h"
 #include "./include/dbc.h"
 #include <json-c/json.h>
+#include <time.h>
 
 int main()
 {
-    map_t *map = map_create();
-    send_http_request(map,"localhost");
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time( &rawtime );
+
+    timeinfo = localtime( &rawtime );
+
+    printf("%u\n",(unsigned) time(NULL));
 }
