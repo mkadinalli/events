@@ -64,8 +64,6 @@ char *send_http_request(map_t *map, char *url)
         return NULL;
     }
 
-
-    
     close(socketfd);
     free(server_info);
     return NULL;
@@ -94,8 +92,9 @@ map_t *parse_http_req(char *req)
     // printf("\n%s\n",vl->value);
     list_t *vc = split(' ', vl->value, strlen(vl->value));
 
-    if(list_len(vc) != 3){
-        fprintf(stderr,"Invalid request\n");
+    if (list_len(vc) != 3)
+    {
+        fprintf(stderr, "Invalid request\n");
         return NULL;
     }
 
@@ -124,7 +123,8 @@ map_t *parse_http_req(char *req)
     {
         vc = split_lim(':', vl->value, strlen(vl->value), 2);
 
-        if(list_len(vc) != 2) continue;
+        if (list_len(vc) != 2)
+            continue;
 
         map_add(
             map,
@@ -144,7 +144,19 @@ map_t *parse_http_req(char *req)
     return map;
 }
 
+char *write_http_header_from_struct(http_res *http)
+{
+    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n";
+    char res[500];
 
-char *write_http_header_from_struct(http_res * http){
-    
+    sprintf(res,
+            res_fmt,
+            http->http_version,
+            http->code,
+            http->code_name,
+            http->content_type,
+            http->content_length);
+
+    return string_create_from_string(res)->chars;
+
 }

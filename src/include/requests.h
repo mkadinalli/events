@@ -20,7 +20,6 @@ typedef struct http_t http_res;
 struct http_t {
     int code;
     char * code_name;
-    char * url;
     char * content_type;
     int content_length;
     char *http_version;
