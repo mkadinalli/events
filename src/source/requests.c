@@ -81,15 +81,19 @@ void *get_in_addr(struct sockaddr *sa)
 
 map_t *parse_http_req(char *req)
 {
+    
     int len = strlen(req);
-    list_t *lines;
+    char *rq = req;
+    
     req = string_removechar('\r', req, len);
-    lines = split('\n', req, strlen(req));
+    
+    free(rq);
+    list_t *lines = split('\n', req, strlen(req));
     list_popback(lines);
     list_popback(lines);
 
     list_t *vl = lines;
-    // printf("\n%s\n",vl->value);
+
     list_t *vc = split(' ', vl->value, strlen(vl->value));
 
     if (list_len(vc) != 3)
@@ -117,36 +121,38 @@ map_t *parse_http_req(char *req)
 
     vl = vl->next;
 
+    puts("not here");
+
     list_destroy(vc);
 
     while (vl != NULL)
     {
         vc = split_lim(':', vl->value, strlen(vl->value), 2);
-
         if (list_len(vc) != 2)
+        {
+            list_destroy(vc);
             continue;
+        }
 
-        map_add(
-            map,
-            string_removechar(' ',
-                              list_get(vc, 0),
-                              strlen(list_get(vc, 0))),
+        char * ss = string_removechar_at(0,
+                                       list_get(vc, 1),
+                                       strlen(list_get(vc, 1)));
 
-            string_removechar(' ',
-                              list_get(vc, 1),
-                              strlen(list_get(vc, 1))));
+        map_add(map,list_get(vc,0),ss);
+
+        free(ss);
 
         list_destroy(vc);
-
         vl = vl->next;
     }
+
     free(req);
     return map;
 }
 
 char *write_http_header_from_struct(http_res *http)
 {
-    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n";
+    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\n\r\n";
     char res[500];
 
     sprintf(res,
@@ -154,9 +160,86 @@ char *write_http_header_from_struct(http_res *http)
             http->http_version,
             http->code,
             http->code_name,
-            http->content_type,
-            http->content_length);
+            http->content_type);
 
     return string_create_from_string(res)->chars;
+}
 
+bool upload_file(FILE *file, int sock)
+{
+    //write_404(sock);
+    bool success = true;
+
+    if (file == NULL)
+    {
+        return false;
+    }
+
+    fseek(file,0,SEEK_END);
+    int file_size = ftell(file);
+    rewind(file);
+
+    http_res *hp = malloc(sizeof(http_res));
+
+    hp->code = 200;
+    hp->code_name = "OK";
+    hp->content_length = 0;
+    hp->content_type = "image/jpeg";
+    hp->http_version = "1.1";
+
+    if(!write_header(write_http_header_from_struct(hp), sock))
+    {
+        puts("error writing socket");
+    }
+
+    //free(hd);
+    //free(hp);
+
+    char buff[100] = {0};
+    while (!feof(file))
+    {
+        fread(buff, 1, sizeof buff, file);
+
+        if ((send(sock, buff, sizeof buff, 0)) < 0)
+        {
+            // perror("send");
+            success = false;
+            break;
+        }
+
+        bzero(buff, sizeof buff);
+    }
+
+    fclose(file);
+
+    return success;
+}
+
+bool write_header(char *header, int sock)
+{
+    if ((write(sock, header, strlen(header))) == -1)
+    {
+        //puts(header);
+        return false;
+    }
+
+    //puts(header);
+
+    return true;
+}
+
+bool write_404(int sock)
+{
+    http_res *h_err = malloc(sizeof(http_res));
+
+    h_err->code = 404;
+    h_err->code_name = "NOT FOUND";
+    h_err->content_length = 0;
+    h_err->http_version = "1.1";
+    h_err->content_type = "NULL";
+
+    bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    free(h_err);
+    return bl;
 }

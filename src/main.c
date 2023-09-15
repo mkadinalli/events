@@ -11,16 +11,5 @@
 
 int main()
 {
-    http_res * h = malloc(sizeof(http_res));
-    h->code = 200;
-    h->code_name = "OK";
-    h->content_length = 500;
-    h->content_type = "application/json";
-    h->http_version = "1.1";
-
-    char * res = write_http_header_from_struct(h);
-
-    puts(res);
-    //set_up_server("3000");
-
+    set_up_server("3000");
 }

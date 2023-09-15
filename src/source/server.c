@@ -50,6 +50,7 @@ void *handle_request(void *args)
 
     map_t * http_req = NULL;
 
+
     while ((bytes_received = recv(their_socket, recv_buf, 1, 0)))
     {
         if (bytes_received == -1)
@@ -59,6 +60,7 @@ void *handle_request(void *args)
 
         if (bytes_received == 0)
         {
+            if(file_reached) fclose(ptr);
             break;
         }
 
@@ -86,7 +88,8 @@ void *handle_request(void *args)
 
         if (marker == 4)
         {
-            file_reached = true;
+
+        file_reached = true;
             if((http_req = parse_http_req(b->chars)) != NULL)
             {
                 if(!strcmp(map_get(http_req,"method"),"GET"))
@@ -107,7 +110,7 @@ void *handle_request(void *args)
                        if((ptr = fopen(filename, "a")) == NULL){
                             puts("failed to open file");
                        }
-                        puts("file is iamge");
+                        puts("file is image");
 
                     }else if(!strcmp(map_get(http_req,"Content-Type"),"application/json"))
                     {
@@ -140,13 +143,27 @@ void *handle_request(void *args)
 
     if(!file_reached) error_code = BAD_REQ;
 
-    puts(b->chars);
+    //puts(b->chars);
 
     if(error_code == OK && req_method)
     {
-        if(starts_with_word("/file",map_get(http_req,"url")))
+        char file_dir[] = "/home/vic/Desktop/ev2/events";
+        char *f = strcat(file_dir,map_get(http_req,"url"));
+        puts(f);
+
+        if(starts_with_word("/files",map_get(http_req,"url")))
         {
             //serve_file(); no json
+            FILE * myfile;
+            myfile = fopen(f,"rb");
+
+            if(myfile == NULL){
+                write_404(their_socket);
+            }else{ 
+                upload_file(myfile,their_socket);
+                //puts("iploading file");
+                //write_404(their_socket);
+            }
         }
         else if(starts_with_word("/api",map_get(http_req,"url")))
         {
@@ -163,12 +180,16 @@ void *handle_request(void *args)
             //serve_page no json
         }
         else{ 
-            //serve error
+           write_404(their_socket);
         }
     }
 
-    if(file_type == JSON) puts(json_b->chars);
+    if(file_type == JSON){
+        puts(json_b->chars);
+    }
 
+    string_destroy(json_b);
+    b= NULL;
     map_destroy(http_req);
     close(their_socket);
 
@@ -183,6 +204,7 @@ void accept_connections(int socketfd)
     while (1)
     {
         int their_socket;
+
         if ((their_socket = accept(socketfd, (struct sockaddr *)&their_address, &len)) < 0)
         {
             perror("Accept");
