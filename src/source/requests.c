@@ -238,3 +238,8 @@ bool write_OK(int sock,char *mime)
     free(hp);
     return b;
 }
+
+bool write_json(struct json_object * obj,int sock)
+{
+    
+}

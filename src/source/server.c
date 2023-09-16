@@ -159,11 +159,13 @@ void *handle_request(void *args)
         {
             //serve_api
             if(req_method == GET){
-                write_OK(their_socket,"application/json");
+                //write_OK(their_socket,"application/json");
+                //query_db(map_get(http_req,"url"),their_socket);
             }
             else {
                 //write_OK(their_socket,)
                 //json must
+                //modify_db(map_get(http_req,"url"),json_b->chars,their_socket);
             }
         }
         else if(starts_with_word("/js",map_get(http_req,"url")))
