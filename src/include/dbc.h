@@ -3,4 +3,5 @@
 #include <mysql/mysql.h>
 #include <stdio.h>
 
-void connect_to_db();
+
+void empty();

@@ -80,13 +80,10 @@ void *get_in_addr(struct sockaddr *sa)
 }
 
 map_t *parse_http_req(char *req)
-{
-    
+{   
     int len = strlen(req);
     char *rq = req;
-    
     req = string_removechar('\r', req, len);
-    
     free(rq);
     list_t *lines = split('\n', req, strlen(req));
     list_popback(lines);
@@ -120,8 +117,6 @@ map_t *parse_http_req(char *req)
         list_get(vc, 2));
 
     vl = vl->next;
-
-    puts("not here");
 
     list_destroy(vc);
 
@@ -165,40 +160,25 @@ char *write_http_header_from_struct(http_res *http)
     return string_create_from_string(res)->chars;
 }
 
-bool upload_file(FILE *file, int sock)
+bool upload_file(char *file_name,char *type, int sock)
 {
-    //write_404(sock);
     bool success = true;
 
-    if (file == NULL)
-    {
+    FILE * myfile;
+    myfile = fopen(file_name,"rb");
+
+    if(myfile == NULL){
+        write_404(sock);
         return false;
     }
+    
+    write_OK(sock,type);
 
-    fseek(file,0,SEEK_END);
-    int file_size = ftell(file);
-    rewind(file);
-
-    http_res *hp = malloc(sizeof(http_res));
-
-    hp->code = 200;
-    hp->code_name = "OK";
-    hp->content_length = 0;
-    hp->content_type = "image/jpeg";
-    hp->http_version = "1.1";
-
-    if(!write_header(write_http_header_from_struct(hp), sock))
-    {
-        puts("error writing socket");
-    }
-
-    //free(hd);
-    //free(hp);
 
     char buff[100] = {0};
-    while (!feof(file))
+    while (!feof(myfile))
     {
-        fread(buff, 1, sizeof buff, file);
+        fread(buff, 1, sizeof buff, myfile);
 
         if ((send(sock, buff, sizeof buff, 0)) < 0)
         {
@@ -210,7 +190,7 @@ bool upload_file(FILE *file, int sock)
         bzero(buff, sizeof buff);
     }
 
-    fclose(file);
+    fclose(myfile);
 
     return success;
 }
@@ -242,4 +222,24 @@ bool write_404(int sock)
 
     free(h_err);
     return bl;
+}
+
+bool write_OK(int sock,char *mime)
+{
+    http_res *hp = malloc(sizeof(http_res));
+
+    hp->code = 200;
+    hp->code_name = "OK";
+    hp->content_length = 0;
+    hp->content_type = mime;
+    hp->http_version = "1.1";
+
+    bool b =  write_header(write_http_header_from_struct(hp), sock);
+    free(hp);
+    return b;
+}
+
+bool write_json(struct json_object * obj,int sock)
+{
+    
 }
