@@ -29,6 +29,7 @@ char *write_http_header_from_struct(http_res * http);
 char * send_http_request(map_t *map,char * url);
 void *get_in_addr(struct sockaddr * sa);
 map_t * parse_http_req(char *req);
-bool upload_file(FILE *file, int sock);
+bool upload_file(char *file_name,char *type, int sock);
 bool write_header(char *header,int sock);
 bool write_404(int sock);
+bool write_OK(int sock,char *mime);

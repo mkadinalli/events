@@ -59,5 +59,5 @@ void connect_to_db()
 
     mysql_close(mysql);
     
-    return 0;
+    return;
 }

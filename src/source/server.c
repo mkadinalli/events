@@ -153,31 +153,30 @@ void *handle_request(void *args)
 
         if(starts_with_word("/files",map_get(http_req,"url")))
         {
-            //serve_file(); no json
-            FILE * myfile;
-            myfile = fopen(f,"rb");
-
-            if(myfile == NULL){
-                write_404(their_socket);
-            }else{ 
-                upload_file(myfile,their_socket);
-                //puts("iploading file");
-                //write_404(their_socket);
-            }
+            upload_file(f,"image/jpeg",their_socket);
         }
         else if(starts_with_word("/api",map_get(http_req,"url")))
         {
             //serve_api
             if(req_method == GET){
-                //no_json
+                write_OK(their_socket,"application/json");
             }
             else {
+                //write_OK(their_socket,)
                 //json must
             }
         }
+        else if(starts_with_word("/js",map_get(http_req,"url")))
+        {
+            upload_file(f,"text/javascript",their_socket);
+        }
+        else if(starts_with_word("/css",map_get(http_req,"url")))
+        {
+            upload_file(f,"text/css",their_socket);
+        }
         else if(starts_with_word("/pages",map_get(http_req,"url")))
         {
-            //serve_page no json
+            upload_file(f,"text/html",their_socket);
         }
         else{ 
            write_404(their_socket);
@@ -189,7 +188,7 @@ void *handle_request(void *args)
     }
 
     string_destroy(json_b);
-    b= NULL;
+    b = NULL;
     map_destroy(http_req);
     close(their_socket);
 
