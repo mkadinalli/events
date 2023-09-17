@@ -2,6 +2,6 @@
     "username": "vic",
     "password": "1234Victor",
     "host": "localhost",
-    "database": "test",
+    "database": "events",
     "port": 2000
 }

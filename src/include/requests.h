@@ -8,11 +8,10 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <threads.h>
+#include <threads.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <signal.h>
-
 #include "./map.h"
 #include "./lib.h"
 
