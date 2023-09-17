@@ -25,3 +25,6 @@ MYSQL * create_connection_from_a_file(MYSQL * sql_struct,char *path_to_config);
 //==========================================================http;
 map_t * parse_url(char * url);
 map_t * parse_url_query(char *query);
+
+//==========================================================json
+json_object * create_json_object_from_map(map_t * map);

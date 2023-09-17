@@ -9,60 +9,30 @@
 #include <json-c/json.h>
 #include <time.h>
 
-map_t * parse_url_query(char *query)
+json_object * create_json_object_from_map(map_t * map)
 {
-    list_t *param_parts = split_lim('&',
-                                    query,
-                                    strlen(query),
-                                    2);
-    
-    if(list_len(param_parts) == 0)
+    if(map == NULL)
         return NULL;
-    
+        
+    json_object * jobj = json_object_new_object();
 
-    list_t * tmp = param_parts;
-
-    map_t * params = map_create();
+    map_t *tmp = map;
 
     while(tmp != NULL)
     {
-        list_t * this_pair = split_lim('=',tmp->value,strlen(tmp->value),2);
-
-        if(list_len(this_pair) != 2)
-        {   tmp = tmp->next;
-            continue;
-        }
-        
-        map_add(params,list_get(this_pair,0),list_get(this_pair,1));
-
-        list_destroy(this_pair);
-
+        json_object_object_add(jobj,tmp->key,json_object_new_string(tmp->value));
         tmp = tmp->next;
     }
-
-    list_destroy(param_parts);
-    return params;
-}
-
-map_t * parse_url(char * url)
-{
-    list_t *url_parts = split_lim('?', url, strlen(url), 2);
-
-    if(list_len(url_parts) != 2)
-    {
-        return NULL;
-    }
-
-    map_t *my_parts = map_create();
-    map_add(my_parts,"url",list_get(url_parts,0));
-    map_add(my_parts,"query",list_get(url_parts,1));
-
-    list_destroy(url_parts);
-    return my_parts;
+    return jobj;
 }
 
 int main()
 {
+    map_t * m = map_create();
+    map_add(m,"hello","world");
+    map_add(m,"hi","there");
+
+    create_json_object_from_map(m);
 
     // set_up_server("2000");
 }
