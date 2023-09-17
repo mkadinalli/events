@@ -224,7 +224,7 @@ char *read_file_to_string(char *path)
     return NULL;
 }
 
-MYSQL *create_connection_from_a_file(MYSQL **sql_struct, char *path_to_config)
+MYSQL *create_connection_from_a_file(MYSQL *sql_struct, char *path_to_config)
 {
     char *str = read_file_to_string(path_to_config);
     struct json_object *jobj,*host, *password, *username, *db;
@@ -258,7 +258,7 @@ MYSQL *create_connection_from_a_file(MYSQL **sql_struct, char *path_to_config)
     }
 
     free(str);
-    MYSQL *tmp =  mysql_real_connect(*sql_struct,
+    sql_struct =  mysql_real_connect(sql_struct,
                                json_object_get_string(host),
                                json_object_get_string(username),
                                json_object_get_string(password),
@@ -266,15 +266,8 @@ MYSQL *create_connection_from_a_file(MYSQL **sql_struct, char *path_to_config)
                                MYSQL_PORT,
                                NULL,
                                CLIENT_MULTI_STATEMENTS);
-    
-    
-    json_object_put(host);
-    json_object_put(username);
-    json_object_put(password);
-    json_object_put(db);
-    json_object_put(jobj);
 
-    return tmp;
+    return sql_struct;
 }
 
 bool starts_with_word(char *word,char *str)

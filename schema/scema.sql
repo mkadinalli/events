@@ -6,6 +6,9 @@ create table users(
     username varchar(100) NOT NULL UNIQUE,
     password varchar(100) NOT NULL,
     email varchar(100) NOT NULL UNIQUE,
+    avater varchar(100) NULL,
+    bio varchar(1000) NULL,
+    about varchar(50) NULL,
 
     constraint users_pk primary key(id)
 );

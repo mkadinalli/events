@@ -33,3 +33,4 @@ bool write_header(char *header,int sock);
 bool write_404(int sock);
 bool write_OK(int sock,char *mime);
 bool write_json(struct json_object * obj,int sock);
+bool serve_JSON(int sock,char *url);

@@ -1,4 +1,36 @@
 #include "../include/dbc.h"
+#include <string.h>
+
+bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value)
+{
+    char *queryfmt = "select * from %s where %s = '%s'";
+
+    char query[100];
+
+    sprintf(query,queryfmt,table_name,colname,value);
+
+    if(mysql_query(conn,query))
+    {
+        return true;
+    }
+
+    MYSQL_RES *result = NULL;
+    result = mysql_store_result(conn);
+
+    if(!result)
+        return true;
+
+    if(mysql_num_rows(result) == 0)
+    {
+        return false;
+    }
+
+    mysql_free_result(result);
+
+    return true;
+}
+
+
 
 void empty()
 {
@@ -142,5 +174,31 @@ void empty()
     }
 
     exit:
-    mysql_close(conn);*/
+    mysql_close(conn);
+    
+    ////////////////////////////////create schema
+
+
+        MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    create_connection_from_a_file(&conn,
+                                  "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if(conn == NULL)
+    {
+        puts("failed to connect");
+        mysql_close(conn);
+        exit(1);
+    }
+
+    char * query = read_file_to_string("/home/vic/Desktop/ev2/events/schema/scema.sql");
+
+    if(!mysql_real_query(conn,query,strlen(query)))
+    {
+        puts(mysql_error(conn));
+    }
+
+    mysql_close(conn);
+    
+    */
 }

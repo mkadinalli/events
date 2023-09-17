@@ -159,8 +159,7 @@ void *handle_request(void *args)
         {
             //serve_api
             if(req_method == GET){
-                //write_OK(their_socket,"application/json");
-                //query_db(map_get(http_req,"url"),their_socket);
+                serve_JSON(their_socket,map_get(http_req,"url"));
             }
             else {
                 //write_OK(their_socket,)

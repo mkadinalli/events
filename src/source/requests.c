@@ -241,5 +241,19 @@ bool write_OK(int sock,char *mime)
 
 bool write_json(struct json_object * obj,int sock)
 {
-    
+    write_OK(sock,"application/json");
+    char json[] = "{\"hello\" : \"world\"}";
+
+    if(write(sock,json,strlen(json)) == -1)
+    {
+        puts("error sending");
+        return false;
+    }
+    return true;
+}
+
+bool serve_JSON(int sock,char *url)
+{
+    json_object * j = json_object_new_object();
+    write_json(j,sock);
 }

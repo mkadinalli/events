@@ -20,6 +20,6 @@ bool starts_with_word(char *word,char *str);
 //===========================================================file
 
 char * read_file_to_string(char *path);
-MYSQL * create_connection_from_a_file(MYSQL ** sql_struct,char *path_to_config);
+MYSQL * create_connection_from_a_file(MYSQL * sql_struct,char *path_to_config);
 
 //==========================================================http;
