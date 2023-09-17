@@ -1,6 +1,7 @@
 #include "../include/dbc.h"
 #include <string.h>
 
+
 bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value)
 {
     char *queryfmt = "select * from %s where %s = '%s'";
@@ -30,11 +31,28 @@ bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value
     return true;
 }
 
+bool start_db_connection()
+{
+    MYSQL * db_conn = NULL;
+    db_conn = mysql_init(db_conn);
+    db_conn = create_connection_from_a_file(db_conn,
+                                  "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if(db_conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    return true;
+}
+
+
 
 
 void empty()
 {
-    /*    MYSQL *conn = NULL;
+    /*MYSQL *conn = NULL;
     conn = mysql_init(conn);
     create_connection_from_a_file(&conn,
                                   "/home/vic/Desktop/ev2/events/config/config.json");

@@ -216,6 +216,10 @@ list_get(list_t *list, unsigned int index)
         pos++;
     }
 
-    return tmp->value;
+    int len = strlen(tmp->value);
+    char *res = malloc(sizeof(char) * len);
+    strcpy(res,tmp->value);
+    res[len] = '\0';
+    return res;
 }
 

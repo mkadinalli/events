@@ -14,6 +14,7 @@
 #include <signal.h>
 #include "./map.h"
 #include "./lib.h"
+#include "./index.h"
 
 typedef struct http_t http_res;
 struct http_t {
@@ -31,6 +32,7 @@ map_t * parse_http_req(char *req);
 bool upload_file(char *file_name,char *type, int sock);
 bool write_header(char *header,int sock);
 bool write_404(int sock);
+bool write_BAD(int sock);
 bool write_OK(int sock,char *mime);
 bool write_json(struct json_object * obj,int sock);
 bool serve_JSON(int sock,char *url);

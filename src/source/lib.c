@@ -110,14 +110,8 @@ bool startswith(char c, char *str)
 
 list_t *split(char delim, char *str, size_t str_size)
 {
-    list_t *myvec;
-    string_t *bld;
-
-    memset(&myvec, 0, sizeof myvec);
-    memset(&bld, 0, sizeof bld);
-
-    myvec = list_create();
-    bld = string_create();
+    list_t *myvec = list_create();
+    string_t * bld = string_create();
 
     for (size_t i = 0; i < str_size; i++)
     {
@@ -126,7 +120,7 @@ list_t *split(char delim, char *str, size_t str_size)
             string_append(bld, '\0');
             list_pushback(myvec, bld->chars);
 
-            string_destroy(bld);
+            free(bld);
             bld = string_create();
 
             continue;
@@ -142,14 +136,8 @@ list_t *split(char delim, char *str, size_t str_size)
 
 list_t *split_lim(char delim, char *str, size_t str_size, int lim)
 {
-    list_t *myvec;
-    string_t *bld;
-
-    memset(&myvec, 0, sizeof myvec);
-    memset(&bld, 0, sizeof bld);
-
-    myvec = list_create();
-    bld = string_create();
+    list_t *myvec = list_create();
+    string_t * bld = string_create();
 
     bool found = false;
     int times_found = 1;
@@ -161,7 +149,7 @@ list_t *split_lim(char delim, char *str, size_t str_size, int lim)
         {
             string_append(bld, '\0');
             list_pushback(myvec, bld->chars);
-            string_destroy(bld);
+            free(bld);
             bld = string_create();
             times_found++;
             if (times_found == lim)
@@ -334,7 +322,7 @@ map_t * parse_url(char * url)
     map_add(my_parts,"url",list_get(url_parts,0));
     map_add(my_parts,"query",list_get(url_parts,1));
 
-    list_destroy(url_parts);
+    //list_destroy(url_parts);
     return my_parts;
 }
 

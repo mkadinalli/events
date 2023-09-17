@@ -239,21 +239,44 @@ bool write_OK(int sock,char *mime)
     return b;
 }
 
+
+bool write_BAD(int sock)
+{
+    http_res *h_err = malloc(sizeof(http_res));
+
+    h_err->code = 400;
+    h_err->code_name = "BAD REQUEST";
+    h_err->content_length = 0;
+    h_err->http_version = "1.1";
+    h_err->content_type = "NULL";
+
+    bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    free(h_err);
+    return bl;
+}
+
 bool write_json(struct json_object * obj,int sock)
 {
     write_OK(sock,"application/json");
-    char json[] = "{\"hello\" : \"world\"}";
+    const char *json = json_object_to_json_string(obj);
 
     if(write(sock,json,strlen(json)) == -1)
     {
-        puts("error sending");
         return false;
     }
     return true;
 }
 
+
+//==================================
 bool serve_JSON(int sock,char *url)
 {
-    json_object * j = json_object_new_object();
-    write_json(j,sock);
+    if(starts_with_word("/api/login",url))
+    {
+        login(url,sock);
+        puts("done again");
+    }
+    return true;
 }
+//==============================

@@ -126,7 +126,6 @@ map_get(map_t *map,char *key)
 {
     if(map_len(map) < 1)
     {
-        printf("Key not found.\n");
         return NULL;
     }
 
@@ -136,11 +135,15 @@ map_get(map_t *map,char *key)
     {
         if(strcmp(key,tmp->key) == 0)
         {
-            return tmp->value;
+            int len = strlen(tmp->value);
+            char *res = malloc(sizeof(char) * len);
+            strcpy(res,tmp->value);
+            res[len] = '\0';
+            return res;
         }
         tmp = tmp->next;
     }
 
-    printf("Key not found.\n");
+    puts("key not found");
     return NULL;
 }

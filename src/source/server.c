@@ -296,7 +296,7 @@ bool set_up_server(char *PORT)
     }
 
     thread_pool = tpool_create(2);
-
+    
     accept_connections(socketfd);
 
     close(socketfd);
