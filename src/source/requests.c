@@ -82,9 +82,7 @@ void *get_in_addr(struct sockaddr *sa)
 map_t *parse_http_req(char *req)
 {   
     int len = strlen(req);
-    char *rq = req;
     req = string_removechar('\r', req, len);
-    free(rq);
     list_t *lines = split('\n', req, strlen(req));
     list_popback(lines);
     list_popback(lines);
@@ -92,6 +90,7 @@ map_t *parse_http_req(char *req)
     list_t *vl = lines;
 
     list_t *vc = split(' ', vl->value, strlen(vl->value));
+
 
     if (list_len(vc) != 3)
     {
@@ -126,6 +125,7 @@ map_t *parse_http_req(char *req)
         if (list_len(vc) != 2)
         {
             list_destroy(vc);
+            vl = vl->next;
             continue;
         }
 
@@ -275,7 +275,6 @@ bool serve_JSON(int sock,char *url)
     if(starts_with_word("/api/login",url))
     {
         login(url,sock);
-        puts("done again");
     }
     return true;
 }

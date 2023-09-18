@@ -10,25 +10,47 @@ bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value
 
     sprintf(query,queryfmt,table_name,colname,value);
 
+    puts(query);
+    
+    if(find_row_count(conn,query) == 0)
+        return false;
+    return true;
+}
+
+bool check_if_user_exists(MYSQL *conn,char *identity,char * password,bool by_email)
+{
+    char *queryfmt = "select * from users where %s = '%s' and password = '%s'";
+
+    char query[100];
+
+    sprintf(query,queryfmt, by_email ? "email" : "username",identity,password);
+
+    puts(query);
+
+    if(find_row_count(conn,query) == 0)
+        return false;
+    return true;
+}
+
+int find_row_count(MYSQL * conn,char *query)
+{
+    
     if(mysql_query(conn,query))
     {
-        return true;
+        return -1;
     }
 
     MYSQL_RES *result = NULL;
     result = mysql_store_result(conn);
 
     if(!result)
-        return true;
+        return -1;
 
-    if(mysql_num_rows(result) == 0)
-    {
-        return false;
-    }
+    int rows = mysql_num_rows(result);
 
     mysql_free_result(result);
 
-    return true;
+    return rows;
 }
 
 bool start_db_connection()

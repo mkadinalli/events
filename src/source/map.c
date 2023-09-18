@@ -104,6 +104,8 @@ bool map_destroy(map_t *map)
         free(tmp);
     }
 
+    puts("----------------map free");
+
     return true;
 
 }

@@ -181,6 +181,7 @@ void *handle_request(void *args)
         }
         else{ 
            write_404(their_socket);
+           puts("404 not found");
         }
     }
 
@@ -192,7 +193,7 @@ void *handle_request(void *args)
     b = NULL;
     map_destroy(http_req);
     close(their_socket);
-
+    puts("closed socket");
     return 0;
 }
 

@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "./lib.h"
+
 typedef struct string_t string_t;
 struct string_t{
     char * chars;

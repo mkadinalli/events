@@ -8,6 +8,7 @@
 char *string_removechar(char c, char *buffer, size_t len)
 {
     string_t *temp = string_create();
+
     for (size_t i = 0; i < len; i++)
     {
         if (buffer[i] == c)
@@ -286,6 +287,7 @@ struct map_t * parse_url_query(char *query)
     if(list_len(param_parts) == 0)
         return NULL;
     
+    list_print(param_parts);
 
     list_t * tmp = param_parts;
 
@@ -346,9 +348,8 @@ json_object * create_json_object_from_map(map_t * map)
 }
 
 char * string_create_copy(char *str){
-    int len = strlen(str);
+    int len = strlen(str)+1;
     char *res = malloc(sizeof(char) * len);
     strcpy(res,str);
-    res[len] = '\0';
     return res;
 }

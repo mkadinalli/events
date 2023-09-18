@@ -25,7 +25,9 @@ string_t *string_create_from_string(char * string)
 bool string_append(string_t* str,char c)
 {
     if(str != NULL){
+
         int len = strlen(str->chars);
+
         str->chars = realloc(str->chars,len+2);
         str->chars[len] = c;
         str->chars[len+1] = '\0';
