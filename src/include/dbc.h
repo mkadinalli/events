@@ -8,8 +8,12 @@
 
 void empty();
 
-bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value);
-bool check_if_user_exists(MYSQL *conn,char *identity,char * password,bool by_email);
-int find_row_count(MYSQL * conn,char *query);
+bool check_if_user_data_exists(char *username,char *email);
+bool check_if_user_exists(char *identity,char * password,bool by_email);
+int find_row_count(char *query);
+bool inser_into_users(char *name,char *username,char *email,char *password);
+bool execute_query(char *query);
+MYSQL * start_db_connection();
+
 
 

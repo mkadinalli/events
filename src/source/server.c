@@ -11,7 +11,7 @@ tpool_t *thread_pool = NULL;
 
 void signal_handler(int sig)
 {
-    if(sig == 20 || sig == 2)
+    if (sig == 20 || sig == 2)
         clean_up();
 }
 
@@ -48,8 +48,7 @@ void *handle_request(void *args)
     int req_method = 0;
     int file_type = 0;
 
-    map_t * http_req = NULL;
-
+    map_t *http_req = NULL;
 
     while ((bytes_received = recv(their_socket, recv_buf, 1, 0)))
     {
@@ -60,7 +59,8 @@ void *handle_request(void *args)
 
         if (bytes_received == 0)
         {
-            if(file_reached) fclose(ptr);
+            if (file_reached)
+                fclose(ptr);
             break;
         }
 
@@ -70,10 +70,10 @@ void *handle_request(void *args)
         }
         else
         {
-            if(ptr && file_type == IMAGE)
+            if (ptr && file_type == IMAGE)
                 fwrite(recv_buf, 1, sizeof recv_buf - 1, ptr);
 
-            if(file_type == JSON)
+            if (file_type == JSON)
                 string_append(json_b, recv_buf[0]);
         }
 
@@ -89,103 +89,114 @@ void *handle_request(void *args)
         if (marker == 4)
         {
 
-        file_reached = true;
-            if((http_req = parse_http_req(b->chars)) != NULL)
+            file_reached = true;
+            if ((http_req = parse_http_req(b->chars)) != NULL)
             {
-                if(!strcmp(map_get(http_req,"method"),"GET"))
+                if (!strcmp(map_get(http_req, "method"), "GET"))
                 {
                     req_method = GET;
                     puts("method is get");
                     break;
-                }else if (!strcmp(map_get(http_req,"method"),"POST"))
+                }
+                else if (!strcmp(map_get(http_req, "method"), "POST"))
                 {
                     req_method = POST;
                     puts("method is post");
-                    if(!strcmp(map_get(http_req,"Content-Type"),"image/jpeg"))
+                    if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
                     {
                         file_type = IMAGE;
                         char filename[100];
-                        sprintf(filename,"/home/vic/Desktop/ev2/events/files/image%lu.jpg",(unsigned long) time(NULL));
+                        sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
 
-                       if((ptr = fopen(filename, "a")) == NULL){
+                        if ((ptr = fopen(filename, "a")) == NULL)
+                        {
                             puts("failed to open file");
-                       }
+                        }
                         puts("file is image");
-
-                    }else if(!strcmp(map_get(http_req,"Content-Type"),"application/json"))
+                    }
+                    else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
                     {
                         file_type = JSON;
                         puts("file is json");
                     }
-
-                }else if (!strcmp(map_get(http_req,"method"),"PUT"))
+                }
+                else if (!strcmp(map_get(http_req, "method"), "PUT"))
                 {
                     req_method = PUT;
                     puts("method is put");
                 }
 
-                else if (!strcmp(map_get(http_req,"method"),"PATCH"))
+                else if (!strcmp(map_get(http_req, "method"), "PATCH"))
                 {
                     req_method = PATCH;
                     puts("method is patch");
                 }
-                else if (!strcmp(map_get(http_req,"method"),"DELETE"))
+                else if (!strcmp(map_get(http_req, "method"), "DELETE"))
                 {
                     req_method = DELETE;
                     puts("method is delete");
                 }
-                else { error_code = BAD_REQ; puts("request is bad") ;}
+                else
+                {
+                    error_code = BAD_REQ;
+                    puts("request is bad");
+                }
             }
         }
-        
+
         bzero(&recv_buf, sizeof recv_buf);
     }
 
-    if(!file_reached) error_code = BAD_REQ;
+    if (!file_reached)
+        error_code = BAD_REQ;
 
-    //puts(b->chars);
+    // puts(b->chars);
 
-    if(error_code == OK && req_method)
+    if (error_code == OK && req_method)
     {
         char file_dir[] = "/home/vic/Desktop/ev2/events";
-        char *f = strcat(file_dir,map_get(http_req,"url"));
+        char *f = strcat(file_dir, map_get(http_req, "url"));
         puts(f);
 
-        if(starts_with_word("/files",map_get(http_req,"url")))
+        if (starts_with_word("/files", map_get(http_req, "url")))
         {
-            upload_file(f,"image/jpeg",their_socket);
+            upload_file(f, "image/jpeg", their_socket);
         }
-        else if(starts_with_word("/api",map_get(http_req,"url")))
+        else if (starts_with_word("/api", map_get(http_req, "url")))
         {
-            //serve_api
-            if(req_method == GET){
-                serve_JSON(their_socket,map_get(http_req,"url"));
+            // serve_api
+            if (req_method == GET)
+            {
+                serve_JSON(their_socket, map_get(http_req, "url"));
             }
-            else {
-                //write_OK(their_socket,)
-                //json must
-                //modify_db(map_get(http_req,"url"),json_b->chars,their_socket);
+            else if (req_method == POST)
+            {
+                receive_json(their_socket,
+                             map_get(http_req, "url"),
+                             string_create_copy(json_b->chars));
             }
         }
-        else if(starts_with_word("/js",map_get(http_req,"url")))
+        else if (starts_with_word("/js", map_get(http_req, "url")))
         {
-            upload_file(f,"text/javascript",their_socket);
+            upload_file(f, "text/javascript", their_socket);
         }
-        else if(starts_with_word("/css",map_get(http_req,"url")))
+        else if (starts_with_word("/css", map_get(http_req, "url")))
         {
-            upload_file(f,"text/css",their_socket);
+            upload_file(f, "text/css", their_socket);
         }
-        else if(starts_with_word("/pages",map_get(http_req,"url")))
+        else if (starts_with_word("/pages", map_get(http_req, "url")))
         {
-            upload_file(f,"text/html",their_socket);
+            upload_file(f, "text/html", their_socket);
         }
-        else{ 
-           write_404(their_socket);
-           puts("404 not found");
+        else
+        {
+            write_404(their_socket);
+            puts("404 not found");
         }
     }
 
-    if(file_type == JSON){
+    if (file_type == JSON)
+    {
         puts(json_b->chars);
     }
 
@@ -212,8 +223,8 @@ void accept_connections(int socketfd)
             exit(EXIT_FAILURE);
         }
 
-        tpool_add_work(thread_pool,handle_request,&their_socket);
-        //handle_request(&their_socket);
+        tpool_add_work(thread_pool, handle_request, &their_socket);
+        // handle_request(&their_socket);
     }
 }
 
@@ -297,7 +308,7 @@ bool set_up_server(char *PORT)
     }
 
     thread_pool = tpool_create(2);
-    
+
     accept_connections(socketfd);
 
     close(socketfd);

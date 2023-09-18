@@ -1,22 +1,7 @@
 #include "../include/index.h"
 
 void login(char *url, int sock)
-{
-    MYSQL *db_conn = NULL;
-    db_conn = mysql_init(db_conn);
-    db_conn = create_connection_from_a_file(db_conn,
-                                            "/home/vic/Desktop/ev2/events/config/config.json");
-
-    if (db_conn == NULL)
-    {
-        puts("failed to connect to db");
-        return;
-    }
-
-    puts("connection suuc");
-
-    // mysql_close(db_conn);
-
+{  
     map_t *url_m = parse_url(url);
     if (url_m == NULL)
     {
@@ -30,7 +15,6 @@ void login(char *url, int sock)
         map_destroy(url_m);
         return;
     }
-
     puts(map_get(url_m, "query"));
 
     map_t *params = parse_url_query(map_get(url_m, "query"));
@@ -43,9 +27,6 @@ void login(char *url, int sock)
         write_BAD(sock);
         return;
     }
-
-    map_print(params);
-    puts("-----");
 
     if (map_len(params) != 2)
     {
@@ -64,43 +45,84 @@ void login(char *url, int sock)
         colname = map_get(params, "username");
     }
 
-    puts(colname);
-
     if (colname == NULL || !map_get(params, "password"))
     {
         write_BAD(sock);
         return;
     }
 
-    puts("connection");
-
     map_t *res = map_create();
     json_object *jb = NULL;
 
-    puts("json init to null..........");
 
-    if (!check_if_user_exists(db_conn,
+    if (!check_if_user_exists(
                               log_wit_email ? map_get(params, "email") : map_get(params, "username"),
                               map_get(params, "password"),
                               log_wit_email ? true : false))
     {
         map_add(res, "found", "false");
-
-        map_print(res);
         jb = create_json_object_from_map(res);
         write_json(jb, sock);
         goto clean_up;
     }
 
     map_add(res, "found", "true");
-    map_print(res);
     jb = create_json_object_from_map(res);
     write_json(jb, sock);
 
 clean_up:
-    mysql_close(db_conn);
     json_object_put(jb);
     map_destroy(params);
     map_destroy(url_m);
     map_destroy(res);
+}
+
+void sign_up(char *url,int sock,char *json_load)
+{
+    json_object * jobj = json_tokener_parse(json_load);
+    json_object *name,*username,*email,*password;
+
+    if(!json_object_get_string(json_object_object_get_ex(jobj,"name",&name)))
+    {
+        write_BAD(sock);
+        //todo
+        return;
+    }
+
+    if(!json_object_get_string(json_object_object_get_ex(jobj,"username",&username)))
+    {
+        write_BAD(sock);
+        //todo
+        return;
+    }
+
+    if(!json_object_get_string(json_object_object_get_ex(jobj,"email",&email)))
+    {
+        write_BAD(sock);
+        //todo
+        return;
+    }
+
+    if(!json_object_get_string(json_object_object_get_ex(jobj,"password",&password)))
+    {
+        write_BAD(sock);
+        //todo
+        return;
+    }
+
+    map_t * res = map_create();
+    json_object * j_res = NULL;
+
+    if(check_if_user_data_exists(json_object_get_string(username),json_object_get_string(email)))
+    {
+        map_add(res,"success","false");
+        j_res = create_json_object_from_map(res);
+        goto clean_up;
+    }
+
+    map_add(res,"success","true");
+    j_res = create_json_object_from_map(res);
+
+    clean_up:
+    write_json(j_res,sock);
 }

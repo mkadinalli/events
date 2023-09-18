@@ -270,12 +270,29 @@ bool write_json(struct json_object * obj,int sock)
 
 
 //==================================
-bool serve_JSON(int sock,char *url)
+void serve_JSON(int sock,char *url)
 {
     if(starts_with_word("/api/login",url))
     {
         login(url,sock);
     }
-    return true;
 }
 //==============================
+
+void receive_json(int sock,
+            char *url,
+            char *json)
+{
+// {
+//      "name" : "blablabla",
+//      "username" : "......",
+//      "email" : ".......",
+//      "password": "......."
+//  }
+
+    if(starts_with_word("/api/signup",url))
+    {
+        sign_up(url,sock,json);
+    }
+
+}

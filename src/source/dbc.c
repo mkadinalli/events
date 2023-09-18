@@ -2,22 +2,23 @@
 #include <string.h>
 
 
-bool check_if_data_exists(MYSQL *conn,char *table_name,char *colname,char *value)
+bool check_if_user_data_exists(char *username,char *email)
 {
-    char *queryfmt = "select * from %s where %s = '%s'";
+    char *queryfmt = "select * from users where email = '%s' or username = '%s'";
 
     char query[100];
 
-    sprintf(query,queryfmt,table_name,colname,value);
+    sprintf(query,queryfmt,email,username);
 
     puts(query);
-    
-    if(find_row_count(conn,query) == 0)
+    int r = find_row_count(query);
+
+    if( r > 0)
         return false;
     return true;
 }
 
-bool check_if_user_exists(MYSQL *conn,char *identity,char * password,bool by_email)
+bool check_if_user_exists(char *identity,char * password,bool by_email)
 {
     char *queryfmt = "select * from users where %s = '%s' and password = '%s'";
 
@@ -27,13 +28,23 @@ bool check_if_user_exists(MYSQL *conn,char *identity,char * password,bool by_ema
 
     puts(query);
 
-    if(find_row_count(conn,query) == 0)
+    if(find_row_count(query) == 0)
         return false;
     return true;
 }
 
-int find_row_count(MYSQL * conn,char *query)
+int find_row_count(char *query)
 {
+    MYSQL * conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                  "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if(conn == NULL)
+    {
+        puts("failed to connect to db");
+        return -1;
+    }
     
     if(mysql_query(conn,query))
     {
@@ -49,28 +60,50 @@ int find_row_count(MYSQL * conn,char *query)
     int rows = mysql_num_rows(result);
 
     mysql_free_result(result);
+    mysql_close(conn);
 
     return rows;
 }
 
-bool start_db_connection()
+bool execute_query(char *query)
 {
-    MYSQL * db_conn = NULL;
-    db_conn = mysql_init(db_conn);
-    db_conn = create_connection_from_a_file(db_conn,
+    MYSQL * conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
                                   "/home/vic/Desktop/ev2/events/config/config.json");
 
-    if(db_conn == NULL)
+    if(conn == NULL)
     {
         puts("failed to connect to db");
         return false;
     }
+    
+    if(mysql_query(conn,query))
+    {
+        return false;
+    }
+
+    mysql_close(conn);
 
     return true;
 }
 
+bool inser_into_users(char *name,char *username,char *email,char *password)
+{
+    char *queryfmt = "insert into users (\
+        name,username,email\
+        )";
 
+    char query[100];
 
+    sprintf(query,);
+
+    puts(query);
+
+    if(find_row_count(query) == 0)
+        return false;
+    return true;
+}
 
 void empty()
 {
