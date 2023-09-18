@@ -165,16 +165,24 @@ void *handle_request(void *args)
         else if (starts_with_word("/api", map_get(http_req, "url")))
         {
             // serve_api
-            if (req_method == GET)
-            {
-                serve_JSON(their_socket, map_get(http_req, "url"));
-            }
-            else if (req_method == POST)
-            {
-                receive_json(their_socket,
+            //switch (req_method)
+            //{
+                /*case GET : serve_JSON(their_socket, map_get(http_req, "url"));
+                    break;*/
+
+                //case POST :
+                    receive_json(their_socket,
                              map_get(http_req, "url"),
                              string_create_copy(json_b->chars));
-            }
+                //write_404(their_socket);
+
+                //puts("hit>>>>>>>>>>>>>>>>>>>");
+                //break;
+
+                //default:
+                    //write_BAD(their_socket);
+                    //break;
+            //}
         }
         else if (starts_with_word("/js", map_get(http_req, "url")))
         {

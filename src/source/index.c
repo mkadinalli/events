@@ -78,7 +78,8 @@ clean_up:
 
 void sign_up(int sock, char *json_load)
 {
-    json_object *jobj = json_tokener_parse(json_load);
+    write_404(sock);
+    /*json_object *jobj = json_tokener_parse(json_load);
     json_object *name, *username, *email, *password;
 
     if (!json_object_object_get_ex(jobj, "name", &name))
@@ -109,6 +110,8 @@ void sign_up(int sock, char *json_load)
         return;
     }
 
+    write_404(sock);
+
     map_t *res = map_create();
     json_object *j_res = NULL;
 
@@ -116,6 +119,7 @@ void sign_up(int sock, char *json_load)
     {
         map_add(res, "success", "exists");
         j_res = create_json_object_from_map(res);
+        write_json(j_res, sock);
         goto clean_up;
     }
 
@@ -128,6 +132,7 @@ void sign_up(int sock, char *json_load)
     {
         map_add(res, "success", "false");
         j_res = create_json_object_from_map(res);
+        write_json(j_res, sock);
         goto clean_up;
     }
 
@@ -135,8 +140,8 @@ void sign_up(int sock, char *json_load)
 
     map_add(res, "success", "true");
     j_res = create_json_object_from_map(res);
+    write_json(j_res, sock);
 
 clean_up:
-    write_json(j_res, sock);
-    json_object_put(j_res);
+    json_object_put(j_res);*/
 }

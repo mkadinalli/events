@@ -14,8 +14,8 @@ bool check_if_user_data_exists(const char *username,const char *email)
     int r = find_row_count(query);
 
     if( r > 0)
-        return false;
-    return true;
+        return true;
+    return false;
 }
 
 bool check_if_user_exists(char *identity,char * password,bool by_email)
