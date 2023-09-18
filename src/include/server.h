@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include "./dbc.h"
 
 #define IPV_4 0
 #define IPV_6 1

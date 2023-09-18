@@ -82,9 +82,7 @@ void *get_in_addr(struct sockaddr *sa)
 map_t *parse_http_req(char *req)
 {   
     int len = strlen(req);
-    char *rq = req;
     req = string_removechar('\r', req, len);
-    free(rq);
     list_t *lines = split('\n', req, strlen(req));
     list_popback(lines);
     list_popback(lines);
@@ -92,6 +90,7 @@ map_t *parse_http_req(char *req)
     list_t *vl = lines;
 
     list_t *vc = split(' ', vl->value, strlen(vl->value));
+
 
     if (list_len(vc) != 3)
     {
@@ -126,6 +125,7 @@ map_t *parse_http_req(char *req)
         if (list_len(vc) != 2)
         {
             list_destroy(vc);
+            vl = vl->next;
             continue;
         }
 
@@ -239,7 +239,61 @@ bool write_OK(int sock,char *mime)
     return b;
 }
 
+
+bool write_BAD(int sock)
+{
+    http_res *h_err = malloc(sizeof(http_res));
+
+    h_err->code = 400;
+    h_err->code_name = "BAD REQUEST";
+    h_err->content_length = 0;
+    h_err->http_version = "1.1";
+    h_err->content_type = "NULL";
+
+    bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    free(h_err);
+    return bl;
+}
+
 bool write_json(struct json_object * obj,int sock)
 {
-    
+    write_OK(sock,"application/json");
+    const char *json = json_object_to_json_string(obj);
+
+    if(write(sock,json,strlen(json)) == -1)
+    {
+        return false;
+    }
+    return true;
+}
+
+
+//==================================
+void serve_JSON(int sock,char *url)
+{
+    if(starts_with_word("/api/login",url))
+    {
+        login(url,sock);
+    }
+}
+//==============================
+
+void receive_json(int sock,
+            char *url,
+            char *json)
+{
+// {
+//      "name" : "blablabla",
+//      "username" : "......",
+//      "email" : ".......",
+//      "password": "......."
+//  }
+
+    if(starts_with_word("/api/signup",url))
+    {
+        strlen(url);
+        sign_up(sock,json);
+    }
+
 }

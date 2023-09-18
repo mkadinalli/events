@@ -83,21 +83,8 @@ void map_print(map_t *map)
 
 void fill_map_item(map_t *map,char *key,char *value)
 {
-    int vlen = strlen(value)+1;
-    int klen = strlen(key)+1;
-    string_t *strtmp = string_create_from_string(key);
-
-    map->value = malloc(vlen * sizeof(char));
-    map->key = malloc(klen * sizeof(char));
-    strcpy(map->key,strtmp->chars);
-    map->value[vlen] = '\0';
-    string_destroy(strtmp);
-    strtmp = string_create_from_string(value);
-    map->key[klen] = '\0';
-    strcpy(map->value,strtmp->chars);
-
-    string_destroy(strtmp);
-
+    map->key = string_create_copy(key);
+    map->value = string_create_copy(value);
     map->next = NULL;
 }
 
@@ -117,6 +104,8 @@ bool map_destroy(map_t *map)
         free(tmp);
     }
 
+    puts("----------------map free");
+
     return true;
 
 }
@@ -126,7 +115,6 @@ map_get(map_t *map,char *key)
 {
     if(map_len(map) < 1)
     {
-        printf("Key not found.\n");
         return NULL;
     }
 
@@ -136,11 +124,11 @@ map_get(map_t *map,char *key)
     {
         if(strcmp(key,tmp->key) == 0)
         {
-            return tmp->value;
+            return string_create_copy(tmp->value);
         }
         tmp = tmp->next;
     }
 
-    printf("Key not found.\n");
+    puts("key not found");
     return NULL;
 }

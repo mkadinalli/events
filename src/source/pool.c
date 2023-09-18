@@ -92,7 +92,7 @@ int tpool_worker(void *arg)
 tpool_t *tpool_create(size_t num)
 {
     tpool_t *tm;
-    pthread_t thread;
+    thrd_t thread;
     size_t i;
 
     if (num == 0)

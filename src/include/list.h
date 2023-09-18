@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "./string_buffer.h"
+#include "./lib.h"
 
 typedef struct list_t list_t;
 struct list_t{

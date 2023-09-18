@@ -1,6 +1,9 @@
 #pragma once
 #include <stdbool.h>
 #include "./string_buffer.h"
+#include "./lib.h"
+
+
 typedef struct map_t map_t;
 struct map_t{
     char * key;
