@@ -120,7 +120,7 @@ list_t *split(char delim, char *str, size_t str_size)
             string_append(bld, '\0');
             list_pushback(myvec, bld->chars);
 
-            free(bld);
+            string_destroy(bld);
             bld = string_create();
 
             continue;
@@ -130,7 +130,7 @@ list_t *split(char delim, char *str, size_t str_size)
     }
     string_append(bld, '\0');
     list_pushback(myvec, bld->chars);
-
+    string_destroy(bld);
     return myvec;
 }
 
@@ -149,7 +149,7 @@ list_t *split_lim(char delim, char *str, size_t str_size, int lim)
         {
             string_append(bld, '\0');
             list_pushback(myvec, bld->chars);
-            free(bld);
+            string_destroy(bld);
             bld = string_create();
             times_found++;
             if (times_found == lim)
@@ -162,6 +162,7 @@ list_t *split_lim(char delim, char *str, size_t str_size, int lim)
 
     string_append(bld, '\0');
     list_pushback(myvec, bld->chars);
+    string_destroy(bld);
     return myvec;
 }
 
@@ -274,7 +275,8 @@ bool starts_with_word(char *word,char *str)
     return truth;
 }
 
-map_t * parse_url_query(char *query)
+
+struct map_t * parse_url_query(char *query)
 {
     list_t *param_parts = split_lim('&',
                                     query,
@@ -309,7 +311,7 @@ map_t * parse_url_query(char *query)
     return params;
 }
 
-map_t * parse_url(char * url)
+struct map_t * parse_url(char * url)
 {
     list_t *url_parts = split_lim('?', url, strlen(url), 2);
 
@@ -322,7 +324,7 @@ map_t * parse_url(char * url)
     map_add(my_parts,"url",list_get(url_parts,0));
     map_add(my_parts,"query",list_get(url_parts,1));
 
-    //list_destroy(url_parts);
+    list_destroy(url_parts);
     return my_parts;
 }
 
@@ -341,4 +343,12 @@ json_object * create_json_object_from_map(map_t * map)
         tmp = tmp->next;
     }
     return jobj;
+}
+
+char * string_create_copy(char *str){
+    int len = strlen(str);
+    char *res = malloc(sizeof(char) * len);
+    strcpy(res,str);
+    res[len] = '\0';
+    return res;
 }

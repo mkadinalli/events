@@ -80,14 +80,8 @@ list_len(list_t *list)
 void 
 fill_list_item(list_t *temp_list,char *str)
 {
-        string_t *string_builder = string_create_from_string(str);
-        int string_len = strlen(string_builder->chars)+1;
-        temp_list->value = malloc(sizeof(char) * string_len);
-        strcpy(temp_list->value,string_builder->chars);
-        temp_list->value[string_len] = '\0';
-        temp_list->next = NULL;
-
-        string_destroy(string_builder);
+    temp_list->value = string_create_copy(str);
+    temp_list->next = NULL;
 }
 
 void 
@@ -136,16 +130,16 @@ list_back(list_t *list)
         t = t->next;
     }
 
-    return t->value;
+    return string_create_copy(t->value);
 }
 
 char * 
 list_front(list_t *list)
 {
     if(list_len(list) < 1)
-        return "";
+        return NULL;
 
-    return list->value; 
+    return string_create_copy(list->value); 
 }
 
 bool 
@@ -216,10 +210,6 @@ list_get(list_t *list, unsigned int index)
         pos++;
     }
 
-    int len = strlen(tmp->value);
-    char *res = malloc(sizeof(char) * len);
-    strcpy(res,tmp->value);
-    res[len] = '\0';
-    return res;
+    return string_create_copy(tmp->value);
 }
 
