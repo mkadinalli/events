@@ -292,7 +292,8 @@ void receive_json(int sock,
 
     if(starts_with_word("/api/signup",url))
     {
-        sign_up(url,sock,json);
+        strlen(url);
+        sign_up(sock,json);
     }
 
 }

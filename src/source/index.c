@@ -1,7 +1,7 @@
 #include "../include/index.h"
 
 void login(char *url, int sock)
-{  
+{
     map_t *url_m = parse_url(url);
     if (url_m == NULL)
     {
@@ -54,11 +54,10 @@ void login(char *url, int sock)
     map_t *res = map_create();
     json_object *jb = NULL;
 
-
     if (!check_if_user_exists(
-                              log_wit_email ? map_get(params, "email") : map_get(params, "username"),
-                              map_get(params, "password"),
-                              log_wit_email ? true : false))
+            log_wit_email ? map_get(params, "email") : map_get(params, "username"),
+            map_get(params, "password"),
+            log_wit_email ? true : false))
     {
         map_add(res, "found", "false");
         jb = create_json_object_from_map(res);
@@ -77,52 +76,67 @@ clean_up:
     map_destroy(res);
 }
 
-void sign_up(char *url,int sock,char *json_load)
+void sign_up(int sock, char *json_load)
 {
-    json_object * jobj = json_tokener_parse(json_load);
-    json_object *name,*username,*email,*password;
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *name, *username, *email, *password;
 
-    if(!json_object_get_string(json_object_object_get_ex(jobj,"name",&name)))
+    if (!json_object_object_get_ex(jobj, "name", &name))
     {
         write_BAD(sock);
-        //todo
+        // todo
         return;
     }
 
-    if(!json_object_get_string(json_object_object_get_ex(jobj,"username",&username)))
+    if (!json_object_object_get_ex(jobj, "username", &username))
     {
         write_BAD(sock);
-        //todo
+        // todo
         return;
     }
 
-    if(!json_object_get_string(json_object_object_get_ex(jobj,"email",&email)))
+    if (!json_object_object_get_ex(jobj, "email", &email))
     {
         write_BAD(sock);
-        //todo
+        // todo
         return;
     }
 
-    if(!json_object_get_string(json_object_object_get_ex(jobj,"password",&password)))
+    if (!json_object_object_get_ex(jobj, "password", &password))
     {
         write_BAD(sock);
-        //todo
+        // todo
         return;
     }
 
-    map_t * res = map_create();
-    json_object * j_res = NULL;
+    map_t *res = map_create();
+    json_object *j_res = NULL;
 
-    if(check_if_user_data_exists(json_object_get_string(username),json_object_get_string(email)))
+    if (check_if_user_data_exists(json_object_get_string(username), json_object_get_string(email)))
     {
-        map_add(res,"success","false");
+        map_add(res, "success", "exists");
         j_res = create_json_object_from_map(res);
         goto clean_up;
     }
 
-    map_add(res,"success","true");
+    puts("data not exist pass ========================");
+
+    if (!inser_into_users(json_object_get_string(name),
+                          json_object_get_string(username),
+                          json_object_get_string(email),
+                          json_object_get_string(password)))
+    {
+        map_add(res, "success", "false");
+        j_res = create_json_object_from_map(res);
+        goto clean_up;
+    }
+
+    puts("=====================insert pass=============================");
+
+    map_add(res, "success", "true");
     j_res = create_json_object_from_map(res);
 
-    clean_up:
-    write_json(j_res,sock);
+clean_up:
+    write_json(j_res, sock);
+    json_object_put(j_res);
 }

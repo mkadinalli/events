@@ -2,7 +2,7 @@
 #include <string.h>
 
 
-bool check_if_user_data_exists(char *username,char *email)
+bool check_if_user_data_exists(const char *username,const char *email)
 {
     char *queryfmt = "select * from users where email = '%s' or username = '%s'";
 
@@ -88,21 +88,89 @@ bool execute_query(char *query)
     return true;
 }
 
-bool inser_into_users(char *name,char *username,char *email,char *password)
+bool inser_into_users(const char *name,const char *username,const char *email,const char *password)
 {
-    char *queryfmt = "insert into users (\
-        name,username,email\
-        )";
+    MYSQL * conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                  "/home/vic/Desktop/ev2/events/config/config.json");
 
-    char query[100];
-
-    sprintf(query,);
-
-    puts(query);
-
-    if(find_row_count(query) == 0)
+    if(conn == NULL)
+    {
+        puts("failed to connect to db");
         return false;
+    }
+
+    char *query = "insert into users (name,username,email,password) values (?,?,?,?)";
+
+    unsigned long name_l = strlen(name),
+        username_l = strlen(username),
+        email_l = strlen(email),
+        pass_l = strlen(password);
+
+
+    MYSQL_BIND bind[4];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if(!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if(mysql_stmt_prepare(stmt,query,strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &name_l;
+    bind[0].buffer_length = 50;
+    bind[0].buffer = name;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &username_l;
+    bind[1].buffer_length = 50;
+    bind[1].buffer = username;
+
+    bind[2].buffer_type = MYSQL_TYPE_STRING;
+    bind[2].is_null = 0;
+    bind[2].length =  &email_l;
+    bind[2].buffer_length = 50;
+    bind[2].buffer = email;
+
+    bind[3].buffer_type = MYSQL_TYPE_STRING;
+    bind[3].is_null = 0;
+    bind[3].length = &pass_l;
+    bind[3].buffer_length = 50;
+    bind[3].buffer = password;
+
+    if(mysql_stmt_bind_param(stmt,bind))
+    {
+        goto exit_with_error;
+    }
+
+    if(mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    puts("exiting norm==============================================");
     return true;
+
+
+    exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    puts("exiting err==================================================");
+    return false;
+
 }
 
 void empty()
