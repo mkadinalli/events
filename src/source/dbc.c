@@ -1,49 +1,48 @@
 #include "../include/dbc.h"
 #include <string.h>
 
-
-bool check_if_user_data_exists(const char *username,const char *email)
+bool check_if_user_data_exists(const char *username, const char *email)
 {
     char *queryfmt = "select * from users where email = '%s' or username = '%s'";
 
     char query[100];
 
-    sprintf(query,queryfmt,email,username);
+    sprintf(query, queryfmt, email, username);
 
     int r = find_row_count(query);
 
-    if( r > 0)
+    if (r > 0)
         return true;
     return false;
 }
 
-bool check_if_user_exists(char *identity,char * password,bool by_email)
+bool check_if_user_exists(char *identity, char *password, bool by_email)
 {
     char *queryfmt = "select * from users where %s = '%s' and password = '%s'";
 
     char query[100];
 
-    sprintf(query,queryfmt, by_email ? "email" : "username",identity,password);
+    sprintf(query, queryfmt, by_email ? "email" : "username", identity, password);
 
-    if(find_row_count(query) == 0)
+    if (find_row_count(query) == 0)
         return false;
     return true;
 }
 
 int find_row_count(char *query)
 {
-    MYSQL * conn = NULL;
+    MYSQL *conn = NULL;
     conn = mysql_init(conn);
     conn = create_connection_from_a_file(conn,
-                                  "/home/vic/Desktop/ev2/events/config/config.json");
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
 
-    if(conn == NULL)
+    if (conn == NULL)
     {
         puts("failed to connect to db");
         return -1;
     }
-    
-    if(mysql_query(conn,query))
+
+    if (mysql_query(conn, query))
     {
         return -1;
     }
@@ -51,7 +50,7 @@ int find_row_count(char *query)
     MYSQL_RES *result = NULL;
     result = mysql_store_result(conn);
 
-    if(!result)
+    if (!result)
         return -1;
 
     int rows = mysql_num_rows(result);
@@ -64,18 +63,18 @@ int find_row_count(char *query)
 
 bool execute_query(char *query)
 {
-    MYSQL * conn = NULL;
+    MYSQL *conn = NULL;
     conn = mysql_init(conn);
     conn = create_connection_from_a_file(conn,
-                                  "/home/vic/Desktop/ev2/events/config/config.json");
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
 
-    if(conn == NULL)
+    if (conn == NULL)
     {
         puts("failed to connect to db");
         return false;
     }
-    
-    if(mysql_query(conn,query))
+
+    if (mysql_query(conn, query))
     {
         return false;
     }
@@ -85,14 +84,14 @@ bool execute_query(char *query)
     return true;
 }
 
-bool inser_into_users(const char *name,const char *username,const char *email,const char *password)
+bool inser_into_users(const char *name, const char *username, const char *email, const char *password)
 {
-    MYSQL * conn = NULL;
+    MYSQL *conn = NULL;
     conn = mysql_init(conn);
     conn = create_connection_from_a_file(conn,
-                                  "/home/vic/Desktop/ev2/events/config/config.json");
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
 
-    if(conn == NULL)
+    if (conn == NULL)
     {
         puts("failed to connect to db");
         return false;
@@ -101,23 +100,22 @@ bool inser_into_users(const char *name,const char *username,const char *email,co
     char *query = "insert into users (name,username,email,password) values (?,?,?,?)";
 
     unsigned long name_l = strlen(name),
-        username_l = strlen(username),
-        email_l = strlen(email),
-        pass_l = strlen(password);
-
+                  username_l = strlen(username),
+                  email_l = strlen(email),
+                  pass_l = strlen(password);
 
     MYSQL_BIND bind[4];
     MYSQL_STMT *stmt;
 
     stmt = mysql_stmt_init(conn);
 
-    if(!stmt)
+    if (!stmt)
     {
         mysql_close(conn);
         return false;
     }
 
-    if(mysql_stmt_prepare(stmt,query,strlen(query)))
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
     {
         goto exit_with_error;
     }
@@ -136,7 +134,7 @@ bool inser_into_users(const char *name,const char *username,const char *email,co
 
     bind[2].buffer_type = MYSQL_TYPE_STRING;
     bind[2].is_null = 0;
-    bind[2].length =  &email_l;
+    bind[2].length = &email_l;
     bind[2].buffer_length = 50;
     bind[2].buffer = email;
 
@@ -146,12 +144,12 @@ bool inser_into_users(const char *name,const char *username,const char *email,co
     bind[3].buffer_length = 50;
     bind[3].buffer = password;
 
-    if(mysql_stmt_bind_param(stmt,bind))
+    if (mysql_stmt_bind_param(stmt, bind))
     {
         goto exit_with_error;
     }
 
-    if(mysql_stmt_execute(stmt))
+    if (mysql_stmt_execute(stmt))
     {
         goto exit_with_error;
     }
@@ -160,12 +158,10 @@ bool inser_into_users(const char *name,const char *username,const char *email,co
     mysql_stmt_close(stmt);
     return true;
 
-
-    exit_with_error:
+exit_with_error:
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
     return false;
-
 }
 
 void empty()
@@ -311,7 +307,7 @@ void empty()
 
     exit:
     mysql_close(conn);
-    
+
     ////////////////////////////////create schema
 
 
@@ -335,6 +331,6 @@ void empty()
     }
 
     mysql_close(conn);
-    
+
     */
 }

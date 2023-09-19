@@ -19,13 +19,15 @@
 #define IPV_6 1
 #define BACKLOG 4
 
-enum codes{
+enum codes
+{
     OK = 200,
     NOT_FOUND = 404,
     BAD_REQ = 400
 };
 
-enum methods{
+enum methods
+{
     POST = 100,
     GET,
     PUT,
@@ -33,8 +35,9 @@ enum methods{
     DELETE
 };
 
-enum files{
-    IMAGE =10,
+enum files
+{
+    IMAGE = 10,
     JSON
 };
 

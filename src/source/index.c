@@ -78,7 +78,7 @@ clean_up:
 
 void sign_up(int sock, char *json_load)
 {
-    //write_404(sock);
+    // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
     json_object *name, *username, *email, *password;
 
@@ -110,7 +110,7 @@ void sign_up(int sock, char *json_load)
         return;
     }
 
-    //write_404(sock);
+    // write_404(sock);
 
     map_t *res = map_create();
     json_object *j_res = NULL;
