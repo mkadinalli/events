@@ -74,8 +74,4 @@ void string_concat(string_t *dest, char *src, size_t len_src)
     }
 
     string_append(dest, '\0');
-
-    puts("");
-    puts(dest->chars);
-    puts("");
 }
