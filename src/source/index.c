@@ -123,8 +123,6 @@ void sign_up(int sock, char *json_load)
         goto clean_up;
     }
 
-    puts("data not exist pass ========================");
-
     if (!inser_into_users(json_object_get_string(name),
                           json_object_get_string(username),
                           json_object_get_string(email),
@@ -135,8 +133,6 @@ void sign_up(int sock, char *json_load)
         write_json(j_res, sock);
         goto clean_up;
     }
-
-    puts("=====================insert pass=============================");
 
     map_add(res, "success", "true");
     j_res = create_json_object_from_map(res);

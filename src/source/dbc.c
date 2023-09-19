@@ -10,7 +10,6 @@ bool check_if_user_data_exists(const char *username,const char *email)
 
     sprintf(query,queryfmt,email,username);
 
-    puts(query);
     int r = find_row_count(query);
 
     if( r > 0)
@@ -25,8 +24,6 @@ bool check_if_user_exists(char *identity,char * password,bool by_email)
     char query[100];
 
     sprintf(query,queryfmt, by_email ? "email" : "username",identity,password);
-
-    puts(query);
 
     if(find_row_count(query) == 0)
         return false;
@@ -161,14 +158,12 @@ bool inser_into_users(const char *name,const char *username,const char *email,co
 
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
-    puts("exiting norm==============================================");
     return true;
 
 
     exit_with_error:
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
-    puts("exiting err==================================================");
     return false;
 
 }
