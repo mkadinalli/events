@@ -112,7 +112,7 @@ bool startswith(char c, char *str)
 list_t *split(char delim, char *str, size_t str_size)
 {
     list_t *myvec = list_create();
-    string_t * bld = string_create();
+    string_t *bld = string_create();
 
     for (size_t i = 0; i < str_size; i++)
     {
@@ -138,7 +138,7 @@ list_t *split(char delim, char *str, size_t str_size)
 list_t *split_lim(char delim, char *str, size_t str_size, int lim)
 {
     list_t *myvec = list_create();
-    string_t * bld = string_create();
+    string_t *bld = string_create();
 
     bool found = false;
     int times_found = 1;
@@ -217,9 +217,9 @@ char *read_file_to_string(char *path)
 MYSQL *create_connection_from_a_file(MYSQL *sql_struct, char *path_to_config)
 {
     char *str = read_file_to_string(path_to_config);
-    struct json_object *jobj,*host, *password, *username, *db;
+    struct json_object *jobj, *host, *password, *username, *db;
 
-    //puts(str);
+    // puts(str);
 
     jobj = json_tokener_parse(str);
 
@@ -248,61 +248,64 @@ MYSQL *create_connection_from_a_file(MYSQL *sql_struct, char *path_to_config)
     }
 
     free(str);
-    sql_struct =  mysql_real_connect(sql_struct,
-                               json_object_get_string(host),
-                               json_object_get_string(username),
-                               json_object_get_string(password),
-                               json_object_get_string(db),
-                               MYSQL_PORT,
-                               NULL,
-                               CLIENT_MULTI_STATEMENTS);
+    sql_struct = mysql_real_connect(sql_struct,
+                                    json_object_get_string(host),
+                                    json_object_get_string(username),
+                                    json_object_get_string(password),
+                                    json_object_get_string(db),
+                                    MYSQL_PORT,
+                                    NULL,
+                                    CLIENT_MULTI_STATEMENTS);
 
     return sql_struct;
 }
 
-bool starts_with_word(char *word,char *str)
+bool starts_with_word(char *word, char *str)
 {
     bool truth = true;
 
-    if(word == NULL || str == NULL) return false;
+    if (word == NULL || str == NULL)
+        return false;
 
-    if(strlen(word) > strlen(str)) return false;
+    if (strlen(word) > strlen(str))
+        return false;
 
-    for(size_t i = 0; i < strlen(word); i++)
+    for (size_t i = 0; i < strlen(word); i++)
     {
-        if(word[i] != str[i]) truth = false;
+        if (word[i] != str[i])
+            truth = false;
     }
 
     return truth;
 }
 
-
-struct map_t * parse_url_query(char *query)
+struct map_t *parse_url_query(char *query)
 {
     list_t *param_parts = split_lim('&',
                                     query,
                                     strlen(query),
                                     2);
-    
-    if(list_len(param_parts) == 0)
+
+    if (list_len(param_parts) == 0)
         return NULL;
-    
+
     list_print(param_parts);
 
-    list_t * tmp = param_parts;
+    list_t *tmp = param_parts;
 
-    map_t * params = map_create();
+    map_t *params = map_create();
 
-    while(tmp != NULL)
+    while (tmp != NULL)
     {
-        list_t * this_pair = split_lim('=',tmp->value,strlen(tmp->value),2);
+        list_t *this_pair = split_lim('=', tmp->value, strlen(tmp->value), 2);
 
-        if(list_len(this_pair) != 2)
-        {   tmp = tmp->next;
+        if (list_len(this_pair) != 2)
+        {
+            tmp = tmp->next;
             continue;
         }
-        
-        map_add(params,list_get(this_pair,0),list_get(this_pair,1));
+
+        map_add(params, list_get(this_pair, 0), list_get(this_pair, 1));
 
         list_destroy(this_pair);
 
@@ -313,43 +316,44 @@ struct map_t * parse_url_query(char *query)
     return params;
 }
 
-struct map_t * parse_url(char * url)
+struct map_t *parse_url(char *url)
 {
     list_t *url_parts = split_lim('?', url, strlen(url), 2);
 
-    if(list_len(url_parts) != 2)
+    if (list_len(url_parts) != 2)
     {
         return NULL;
     }
 
     map_t *my_parts = map_create();
-    map_add(my_parts,"url",list_get(url_parts,0));
-    map_add(my_parts,"query",list_get(url_parts,1));
+    map_add(my_parts, "url", list_get(url_parts, 0));
+    map_add(my_parts, "query", list_get(url_parts, 1));
 
     list_destroy(url_parts);
     return my_parts;
 }
 
-json_object * create_json_object_from_map(map_t * map)
+json_object *create_json_object_from_map(map_t *map)
 {
-    if(map == NULL)
+    if (map == NULL)
         return NULL;
-        
-    json_object * jobj = json_object_new_object();
+
+    json_object *jobj = json_object_new_object();
 
     map_t *tmp = map;
 
-    while(tmp != NULL)
+    while (tmp != NULL)
     {
-        json_object_object_add(jobj,tmp->key,json_object_new_string(tmp->value));
+        json_object_object_add(jobj, tmp->key, json_object_new_string(tmp->value));
         tmp = tmp->next;
     }
     return jobj;
 }
 
-char * string_create_copy(char *str){
-    int len = strlen(str)+1;
+char *string_create_copy(char *str)
+{
+    int len = strlen(str) + 1;
     char *res = malloc(sizeof(char) * len);
-    strcpy(res,str);
+    strcpy(res, str);
     return res;
 }

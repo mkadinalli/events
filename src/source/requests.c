@@ -80,7 +80,7 @@ void *get_in_addr(struct sockaddr *sa)
 }
 
 map_t *parse_http_req(char *req)
-{   
+{
     int len = strlen(req);
     req = string_removechar('\r', req, len);
     list_t *lines = split('\n', req, strlen(req));
@@ -90,7 +90,6 @@ map_t *parse_http_req(char *req)
     list_t *vl = lines;
 
     list_t *vc = split(' ', vl->value, strlen(vl->value));
-
 
     if (list_len(vc) != 3)
     {
@@ -129,11 +128,11 @@ map_t *parse_http_req(char *req)
             continue;
         }
 
-        char * ss = string_removechar_at(0,
-                                       list_get(vc, 1),
-                                       strlen(list_get(vc, 1)));
+        char *ss = string_removechar_at(0,
+                                        list_get(vc, 1),
+                                        strlen(list_get(vc, 1)));
 
-        map_add(map,list_get(vc,0),ss);
+        map_add(map, list_get(vc, 0), ss);
 
         free(ss);
 
@@ -160,20 +159,20 @@ char *write_http_header_from_struct(http_res *http)
     return string_create_from_string(res)->chars;
 }
 
-bool upload_file(char *file_name,char *type, int sock)
+bool upload_file(char *file_name, char *type, int sock)
 {
     bool success = true;
 
-    FILE * myfile;
-    myfile = fopen(file_name,"rb");
+    FILE *myfile;
+    myfile = fopen(file_name, "rb");
 
-    if(myfile == NULL){
+    if (myfile == NULL)
+    {
         write_404(sock);
         return false;
     }
-    
-    write_OK(sock,type);
 
+    write_OK(sock, type);
 
     char buff[100] = {0};
     while (!feof(myfile))
@@ -199,11 +198,11 @@ bool write_header(char *header, int sock)
 {
     if ((write(sock, header, strlen(header))) == -1)
     {
-        //puts(header);
+        // puts(header);
         return false;
     }
 
-    //puts(header);
+    // puts(header);
 
     return true;
 }
@@ -224,7 +223,7 @@ bool write_404(int sock)
     return bl;
 }
 
-bool write_OK(int sock,char *mime)
+bool write_OK(int sock, char *mime)
 {
     http_res *hp = malloc(sizeof(http_res));
 
@@ -234,11 +233,10 @@ bool write_OK(int sock,char *mime)
     hp->content_type = mime;
     hp->http_version = "1.1";
 
-    bool b =  write_header(write_http_header_from_struct(hp), sock);
+    bool b = write_header(write_http_header_from_struct(hp), sock);
     free(hp);
     return b;
 }
-
 
 bool write_BAD(int sock)
 {
@@ -256,44 +254,42 @@ bool write_BAD(int sock)
     return bl;
 }
 
-bool write_json(struct json_object * obj,int sock)
+bool write_json(struct json_object *obj, int sock)
 {
-    write_OK(sock,"application/json");
+    write_OK(sock, "application/json");
     const char *json = json_object_to_json_string(obj);
 
-    if(write(sock,json,strlen(json)) == -1)
+    if (write(sock, json, strlen(json)) == -1)
     {
         return false;
     }
     return true;
 }
 
-
 //==================================
-void serve_JSON(int sock,char *url)
+void serve_JSON(int sock, char *url)
 {
-    if(starts_with_word("/api/login",url))
+    if (starts_with_word("/api/login", url))
     {
-        login(url,sock);
+        login(url, sock);
     }
 }
 //==============================
 
 void receive_json(int sock,
-            char *url,
-            char *json)
+                  char *url,
+                  char *json)
 {
-// {
-//      "name" : "blablabla",
-//      "username" : "......",
-//      "email" : ".......",
-//      "password": "......."
-//  }
+    // {
+    //      "name" : "blablabla",
+    //      "username" : "......",
+    //      "email" : ".......",
+    //      "password": "......."
+    //  }
 
-    if(starts_with_word("/api/signup",url))
+    if (starts_with_word("/api/signup", url))
     {
-        strlen(url);
-        sign_up(sock,json);
+        // strlen(url);
+        sign_up(sock, json);
     }
-
 }
