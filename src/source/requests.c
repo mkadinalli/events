@@ -293,11 +293,7 @@ void receive_json(int sock,
     if(starts_with_word("/api/signup",url))
     {
         //strlen(url);
-        //sign_up(sock,json);
-        puts("er=..................................>>>>>>>>>");
-        write_404(sock);
-        puts("{===================}");
-        close(sock);
+        sign_up(sock,json);
     }
 
 }

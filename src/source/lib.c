@@ -258,6 +258,7 @@ MYSQL *create_connection_from_a_file(MYSQL *sql_struct, char *path_to_config)
                                CLIENT_MULTI_STATEMENTS);
 
     return sql_struct;
+
 }
 
 bool starts_with_word(char *word,char *str)
@@ -353,3 +354,5 @@ char * string_create_copy(char *str){
     strcpy(res,str);
     return res;
 }
+
+

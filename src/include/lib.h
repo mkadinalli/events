@@ -21,6 +21,7 @@ char* setchar_at(char *str,char c,size_t pos,size_t len);
 bool starts_with_word(char *word,char *str);
 char * string_create_copy(char *str);
 
+
 //===========================================================file
 
 char * read_file_to_string(char *path);

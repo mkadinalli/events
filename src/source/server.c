@@ -33,8 +33,8 @@ void *handle_request(void *args)
     int *th = (int *)args;
     int their_socket = *th;
 
-    char recv_buf[1];
-    char recv_buff_f[100];
+    char recv_buf[1] = {0};
+    char recv_buff_f[100] = {0};
     int bytes_received;
     string_t *b = string_create();
     string_t *json_b = string_create();
@@ -51,11 +51,12 @@ void *handle_request(void *args)
 
     map_t *http_req = NULL;
 
+    int lopps = 0;
+
     while (true)
     {
-        bytes_received = recv(their_socket, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1 , 0);
+        bytes_received = recv(their_socket, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1, 0);
 
-        printf("%d  ", bytes_received);
         if (bytes_received == -1)
         {
             perror("recv");
@@ -65,14 +66,18 @@ void *handle_request(void *args)
         if (!file_reached)
         {
             string_append(b, recv_buf[0]);
+            // puts("appending to header------->>>");
         }
         else
         {
-            /*if (ptr && file_type == IMAGE)
-                fwrite(recv_buf, 1, sizeof recv_buf - 1, ptr);
+            if (ptr && file_type == IMAGE)
+                fwrite(recv_buff_f, 1, bytes_received, ptr);
 
             if (file_type == JSON)
-                string_append(json_b, recv_buf[0]);*/
+            {
+                string_concat(json_b, recv_buff_f, bytes_received);
+                // printf("Concat to json ==== %s\n",recv_buff_f);
+            }
         }
 
         if (recv_buf[0] == end_of_header[marker])
@@ -84,13 +89,21 @@ void *handle_request(void *args)
             marker = 0;
         }
 
+        if (bytes_received < 99 && file_reached)
+        {
+            printf("Breaking after %d\n loops", lopps);
+            break;
+        }
+
         if (marker == 4)
         {
 
-            //recv_buf
+            // recv_buf
 
             file_reached = true;
-           /** if ((http_req = parse_http_req(b->chars)) == NULL)
+            lopps = 0;
+
+            if ((http_req = parse_http_req(b->chars)) == NULL)
             {
                 write_BAD(their_socket);
 
@@ -152,17 +165,16 @@ void *handle_request(void *args)
                 error_code = BAD_REQ;
                 puts("request is bad");
                 break;
-            }*/
+            }
         }
 
-        bzero(&recv_buf, sizeof recv_buf);
+        file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
+                     : bzero(&recv_buf, sizeof recv_buf);
 
-        if(bytes_received < 99 && file_reached) break;
+        lopps++;
     }
 
-    close(their_socket);
-
-    /*puts("poceding ===========");
+    puts("poceding ===========");
 
     if (!file_reached)
         error_code = BAD_REQ;
@@ -188,24 +200,20 @@ void *handle_request(void *args)
     else if (starts_with_word("/api", map_get(http_req, "url")))
     {
         // serve_api
-        // switch (req_method)
-        //{
-        case GET : serve_JSON(their_socket, map_get(http_req, "url"));
+        switch (req_method)
+        {
+        case GET:
+            serve_JSON(their_socket, map_get(http_req, "url"));
             break;
-
-        // case POST :
-        // receive_json(their_socket,
-        //             map_get(http_req, "url"),
-        //             string_create_copy(json_b->chars));
-        // write_404(their_socket);
-
-        // puts("hit>>>>>>>>>>>>>>>>>>>");
-        // break;
-
-        // default:
-        write_404(their_socket);
-        // break;
-        //}
+        case POST:
+            receive_json(their_socket,
+                         map_get(http_req, "url"),
+                         string_create_copy(json_b->chars));
+            break;
+        default:
+            write_404(their_socket);
+            break;
+        }
     }
     else if (starts_with_word("/js", map_get(http_req, "url")))
     {
@@ -228,14 +236,15 @@ void *handle_request(void *args)
     if (file_type == JSON)
     {
         puts(json_b->chars);
+        // puts("json printed");
     }
 
 clean_me:
-    string_destroy(json_b);
+
     b = NULL;
     map_destroy(http_req);
     close(their_socket);
-    puts("closed socket");*/
+    puts("closed socket");
     return NULL;
 }
 

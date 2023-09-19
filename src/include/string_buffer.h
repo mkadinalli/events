@@ -19,3 +19,4 @@ bool string_destroy(string_t * str);
 bool string_pop(string_t *str);
 char string_back(string_t *str);
 char string_front(string_t *str);
+void string_concat(string_t * dest,char * src,size_t len);

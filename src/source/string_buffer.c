@@ -59,3 +59,17 @@ char string_back(string_t *str){
 char string_front(string_t *str){
     return str->chars[0];
 }
+
+void string_concat(string_t * dest,char * src,size_t len_src)
+{
+    for(size_t i = 0; i < len_src; i++)
+    {
+        string_append(dest,src[i]);
+    }
+
+    string_append(dest,'\0');
+
+    puts("");
+    puts(dest->chars);
+    puts("");
+}
