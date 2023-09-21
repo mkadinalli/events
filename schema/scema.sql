@@ -1,94 +1,215 @@
 /*Mysql only*/
 
---== who wrote is vic ==--
+-- == who wrote is vic ==--
+drop schema if exists events;
+create schema events;
+
+use events;
+set block_encryption_mode = 'aes-256-cbc';
+
+-- =======USERS=================================================================
 
 drop table if exists users;
 create table users(
-    id int auto_increment UNIQUE,
+    id binary(16) UNIQUE,
     name varchar(100) NOT NULL,
     username varchar(100) NOT NULL UNIQUE,
-    password varchar(100) NOT NULL,
+    password blob NOT NULL,
+    salt binary(16),
     email varchar(100) NOT NULL UNIQUE,
     avater varchar(100) NULL,
     bio varchar(1000) NULL,
     about varchar(50) NULL,
+    date_created timestamp,
+    date_modified timestamp,
+    
 
-    constraint users_pk primary key(id)
+    constraint
+		users_pk primary key(id)
 );
 
-/*=========================================*/
+/*=========PUBLISHED EVENTS================================*/
 
 drop table if exists published;
 create table published(
-    id int auto_increment UNIQUE,
+    id binary(16) UNIQUE,
     title varchar(200) NOT NULL,
     description varchar(1000) NOT NULL,
     venue varchar(50) NOT NULL,
-    publisher int NOT NULL,
+    publisher_id binary(16)  NOT NULL,
+	date_created timestamp,
+    date_modified timestamp,
 
-    constraint published_pk primary key(id),
-    constraint publisher_fk foreign key(publisher) references users(id)
+    constraint 
+		published_pk primary key(id),
+    constraint 
+		publisher_fk foreign key(publisher_id) references users(id)
 );
 
-/*==========================================*/
+/*===========STARS===============================*/
 
-drop table if exists subscriptions;
-create table subscriptions
-(
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
 
-    constraint subscriptions_pk primary key(id),
-    constraint sub_user_fk foreign key(user_id) references users(id)
-    on delete cascade,
-    constraint sub_events_fk foreign key(published_id) references published(id)
-    on delete cascade
-);
 
 drop table if exists stars;
 create table stars
 (
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
+    id binary(16)  UNIQUE,
+    user_id binary(16) ,
+    published_id binary(16) ,
+	date_created timestamp,
 
-    constraint stars_pk primary key(id),
-    constraint stars_user_fk foreign key(user_id) references users(id)
+    constraint 
+		stars_pk primary key(id),
+        
+    constraint 
+		stars_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint stars_events_fk foreign key(published_id) references published(id)
+    
+    constraint 
+		stars_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
+
+-- =========PAYMENTS========================================================================
 
 drop table if exists payments;
 create table payments
 (
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
+    id  binary(16)  UNIQUE,
+    user_id binary(16) ,
+    published_id binary(16) ,
+	date_created timestamp,
 
-    constraint payments_pk primary key(id),
-    constraint pay_user_fk foreign key(user_id) references users(id)
+    constraint 
+		payments_pk primary key(id),
+        
+    constraint 
+		pay_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint pay_events_fk foreign key(published_id) references published(id)
+    
+    constraint
+		pay_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
+
+-- ==============FOLLOWERS=============================================================
 
 drop table if exists followers;
 create table followers
 (
     id int auto_increment UNIQUE,
-    user_id int,
-    follower_id int,
+    user_id binary(16) NOT NULL,
+    follower_id binary(16) NOT NULL,
 
-    constraint followers_pk primary key(id),
-    constraint follow_user_fk foreign key(user_id) references users(id)
+    constraint 
+		followers_pk primary key(id),
+        
+    constraint 
+		follow_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint follow_follower_fk foreign key(follower_id) references users(id)
+    
+    constraint 
+		follow_follower_fk foreign key(follower_id) references users(id)
     on delete cascade
 );
 
+-- =========SUBSCRIPTIONS==================================================================
 
+drop table if exists subscriptions;
+create table subscriptions
+(
+    id binary(16) UNIQUE,
+    user_id binary(16)  not null,
+    published_id binary(16) not null,
+    paid bool default false,
+
+    constraint 
+		subscriptions_pk primary key(id),
+        
+    constraint 
+		sub_user_fk foreign key(user_id) references users(id)
+    on delete cascade,
+    
+    constraint 
+		sub_events_fk foreign key(published_id) references published(id)
+    on delete cascade
+);
+
+-- ===========================================================================
+-- ===============procedures==================================================
+-- ===========================================================================
+
+delimiter #
+drop function if exists encrypt_password #
+create function encrypt_password ( in_password varchar(50), salt binary(16) ) returns blob
+deterministic
+begin
+	set block_encryption_mode = 'aes-256-cbc';
+    return aes_encrypt(in_password,sha2('key',512),salt);
+end #
+delimiter ;
+
+-- select cast(encrypt_password('hello') as char);
+
+-- select random_bytes(16);
+
+-- 0773753482
+
+-- select (aes_encrypt('yoh','key',random_bytes(16)))
+
+delimiter #
+drop function if exists decrypt_password #
+create function decrypt_password ( in_password blob, salt binary(16) ) returns varchar(50)
+deterministic
+begin
+	return( cast((aes_decrypt(in_password,'key',salt)) as char) );
+end #
+delimiter ;
+
+delimiter #
+drop procedure if exists validate_user #
+create procedure validate_user (
+	in_password varchar(50),
+    in_username varchar(50),
+    in_email varchar(50)
+)
+
+begin
+	select
+		if( isnull(email) , 'username' , 'email' )
+	from users
+    where password = encrypt_password(in_password);
+end #
+delimiter ;
+
+
+delimiter #
+drop trigger if exists add_users_timestamp_and_id #
+create trigger add_users_timestamp_and_id
+before insert on users
+for each row
+begin
+	declare p_salt binary(16) default random_bytes(16);
+	set new.id = uuid_to_bin(uuid());
+    set new.date_created = now();
+    set new.date_modified = now();
+    set new.password = encrypt_password(new.password,p_salt);
+    set new.salt = p_salt;
+end #
+delimiter ; 
+
+
+insert into users 
+(
+	name,username,email,password
+)
+values
+('vic','myuser2','myemail4@gmail.com','my passwrd');
+
+select * from users;
+
+
+select encrypt_password('hello');
 
 /*
 
@@ -249,12 +370,6 @@ values
 ===================================================================
 */
 
-create procedure select_users
-delimeter//
-begin//
-	select * from users//
-end//
-delimeter;
 
 
 
