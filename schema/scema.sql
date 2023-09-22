@@ -1,6 +1,9 @@
-/*Mysql only*/
+																			/*
+Mysql only
+																			*/
 
 -- == who wrote is vic ==--
+
 drop schema if exists events;
 create schema events;
 
@@ -271,7 +274,7 @@ begin
 end #
 delimiter ; 
 
-
+/*
 delimiter #
 drop trigger if exists add_payment_id #
 create trigger add_payment_id
@@ -280,7 +283,7 @@ for each row
 begin
     set new.id = uuid_to_bin(uuid());
 end #
-delimiter ; 
+delimiter ; */
 
 
 delimiter #
@@ -293,8 +296,7 @@ begin
 end #
 delimiter ; 
 
-
-select cast(bin_to_uuid(id) as char) into @muuid from users where username = 'my';
+-- select cast(bin_to_uuid(id) as char) into @muuid from users where username = 'my';
 
 -- ==========get one user by id=========== --
 
@@ -483,6 +485,26 @@ begin
 end #
 delimiter ;
 
+
+delimiter #
+drop procedure if exists search_publish #
+create procedure search_publish(
+	str varchar(50)
+)
+begin
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        title
+	from 
+		published
+	where
+		title like '%str%'
+	order by stars desc;
+    
+end #
+delimiter ;
+
+-- so you read code ???????????????????????? :D
 
 call get_many_published(@muuid,now(),now());
 
