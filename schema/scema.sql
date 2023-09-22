@@ -79,7 +79,8 @@ create table payments
     id  binary(16)  UNIQUE,
     user_id binary(16) ,
     published_id binary(16) ,
-	date_created timestamp,
+	date_created timestamp default now(),
+    
 
     constraint 
 		payments_pk primary key(id),
@@ -101,6 +102,7 @@ create table followers
     id binary(16) unique,
     user_id binary(16) NOT NULL,
     follower_id binary(16) NOT NULL,
+    date_created timestamp default now(),
 
     constraint 
 		followers_pk primary key(id),
@@ -123,6 +125,8 @@ create table subscriptions
     user_id binary(16)  not null,
     published_id binary(16) not null,
     paid bool default false,
+    date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
 
     constraint 
 		subscriptions_pk primary key(id),
@@ -349,14 +353,46 @@ begin
         title,
         description,
         venue,
-        cast(bin_to_uuid(publisher_id) as char) as id,
+        cast(bin_to_uuid(publisher_id) as char) as publisher_id,
         stars,
         date_created,
         (select count(*) from subscriptions where id = this_id) as subscriptions
-	from published;
+	from published where id = this_id;
 end #
 delimiter ;
 
+delimiter #
+drop procedure if exists get_many_published #
+create procedure get_many_published(
+    in_user_id varchar(256),
+    last_query_time timestamp,
+    last_query_last_time timestamp
+)
+begin
+	declare this_user_id binary(16) default uuid_to_bin(in_user_id);
+    select 
+		cast(bin_to_uuid(id) as char) as id,
+        title,
+        description,
+        venue,
+        cast(bin_to_uuid(publisher_id) as char) as publisher_id,
+        stars,
+        date_created,
+        (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
+        now() as time_queried
+	from published p
+    where publisher_id in (select follower_id from followers where user_id = in_user_id)
+    or p.publisher_id = in_user_id
+    or p.date_created >= last_query_time
+    or p.date_created <= last_query_last_time
+    or p.id in 
+    (select id from stars where user_id in (select follower_id from followers where user_id = in_user_id))
+    limit 20;
+end #
+delimiter ;
+
+
+call get_many_published(@muuid,now(),now());
 
 call get_user(@muuid);
 
@@ -376,11 +412,11 @@ insert into published
 	title,description,venue,publisher_id
 )
 values
-('title1','description1','venue1',uuid_to_bin(@muuid));
+('title12','description1','venue1',uuid_to_bin(@muuid));
 
-select cast(bin_to_uuid(id) as char) into @muuid2 from published where title = 'title1';
+select cast(bin_to_uuid(id) as char) into @muuid2 from published where title = 'title12';
 
-call get_one_published(uuid());
+call get_one_published(@muuid2);
 
 insert into stars
 (
