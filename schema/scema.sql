@@ -57,7 +57,7 @@ create table stars
     id binary(16)  UNIQUE,
     user_id binary(16) ,
     published_id binary(16) ,
-	date_created timestamp,
+	date_created timestamp default now(),
 
     constraint 
 		stars_pk primary key(id),
@@ -72,7 +72,7 @@ create table stars
 );
 
 -- =========PAYMENTS========================================================================
-
+/*
 drop table if exists payments;
 create table payments
 (
@@ -93,7 +93,7 @@ create table payments
 		pay_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
-
+*/
 -- ==============FOLLOWERS=============================================================
 
 drop table if exists followers;
@@ -283,6 +283,17 @@ end #
 delimiter ; 
 
 
+delimiter #
+drop trigger if exists add_sub_id #
+create trigger add_sub_id
+before insert on subscriptions
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
+
 select cast(bin_to_uuid(id) as char) into @muuid from users where username = 'my';
 
 -- ==========get one user by id=========== --
@@ -391,12 +402,103 @@ begin
 end #
 delimiter ;
 
+-- how much money you got -- a lot
+-- how many times you got shot -- a lot
+-- how many niggas you shot -- a lot
+-- how many times did you cheat -- a lot
+-- how many lawyers you got -- a lot
+--                            21 - Savage.
+
+delimiter #
+drop procedure if exists get_followers #
+create procedure get_followers(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		followers f
+    where
+		f.date_created < last_time
+	and f.follower_id = in_user_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_stars #
+create procedure get_stars(
+	in_publish_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_publish_id_bin binary(16) default uuid_to_bin(in_publish_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		stars f
+    where
+		f.date_created < last_time
+	and f.published_id = in_publish_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_subscribers #
+create procedure get_subscribers(
+	in_publish_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_publish_id_bin binary(16) default uuid_to_bin(in_publish_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		subscriptions f
+    where
+		f.date_created < last_time
+	and f.published_id = in_publish_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
 
 call get_many_published(@muuid,now(),now());
 
 call get_user(@muuid);
 
+call get_followers(@muuid,now());
+
+call get_stars(@muuid2,now());
+
+call get_subscribers(@muuid2,now());
+
+select * from stars;
+
 select * from published;
+
+select * from subscriptions;
 
 insert into users 
 (
@@ -418,7 +520,7 @@ select cast(bin_to_uuid(id) as char) into @muuid2 from published where title = '
 
 call get_one_published(@muuid2);
 
-insert into stars
+insert into subscriptions
 (
 	user_id,published_id
 )
