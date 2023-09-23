@@ -53,6 +53,8 @@ bool starts_with_word(char *word,
 char *
 string_create_copy(char *str);
 
+char *string_cover(char *str);
+
 //===========================================================file
 
 char *

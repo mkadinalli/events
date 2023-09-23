@@ -18,13 +18,21 @@ bool check_if_user_data_exists(const char *username, const char *email)
 
 bool check_if_user_exists(char *identity, char *password, bool by_email)
 {
-    char *queryfmt = "select * from users where %s = '%s' and password = '%s'";
+    char *queryfmt = "call validate_user( %s ,%s ,%s)";
+
+    char * identity_c = string_cover(identity);
+    char * password_c = string_cover(password);
 
     char query[100];
 
-    sprintf(query, queryfmt, by_email ? "email" : "username", identity, password);
+    sprintf(query, queryfmt,password_c, by_email ? identity_c : "null",by_email ? "null" : identity_c);
 
-    if (find_row_count(query) == 0)
+    free(identity_c);
+    free(password_c);
+
+    puts(query);
+
+    if (find_row_count(query) == -1)
         return false;
     return true;
 }
@@ -97,7 +105,7 @@ bool inser_into_users(const char *name, const char *username, const char *email,
         return false;
     }
 
-    char *query = "insert into users (name,username,email,password) values (?,?,?,?)";
+    char *query = "insert into users (name,username,email,pass_word) values (?,?,?,?)";
 
     unsigned long name_l = strlen(name),
                   username_l = strlen(username),
@@ -146,6 +154,108 @@ bool inser_into_users(const char *name, const char *username, const char *email,
 
     if (mysql_stmt_bind_param(stmt, bind))
     {
+        puts("An error occured");
+        goto exit_with_error;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return true;
+
+exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return false;
+}
+
+
+bool insert_into_pubished(const char *title,
+                          const char *description,
+                          const char *venue,
+                          const char *event_date,
+                          const char *deadline_date,
+                          const char *publisher_id)
+{
+    MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    char *query = "insert into published (title,description,venue,event_date,deadline_date,publisher_id) values (?,?,?,?,?,uuid_to_bin(?))";
+
+    unsigned long title_l = strlen(title),
+                  description_l = strlen(description),
+                  venue_l = strlen(venue),
+                  ev_d_l = strlen(event_date),
+                  de_d_l = strlen(deadline_date),
+                  p_id_l = strlen(publisher_id);
+
+    MYSQL_BIND bind[6];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &title_l;
+    bind[0].buffer_length = 100;
+    bind[0].buffer = title;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &description_l;
+    bind[1].buffer_length = 1000;
+    bind[1].buffer = description;
+
+    bind[2].buffer_type = MYSQL_TYPE_STRING;
+    bind[2].is_null = 0;
+    bind[2].length = &venue_l;
+    bind[2].buffer_length = 100;
+    bind[2].buffer = venue;
+
+    bind[3].buffer_type = MYSQL_TYPE_STRING;
+    bind[3].is_null = 0;
+    bind[3].length = &ev_d_l;
+    bind[3].buffer_length = 100;
+    bind[3].buffer = event_date;
+
+    bind[4].buffer_type = MYSQL_TYPE_STRING;
+    bind[4].is_null = 0;
+    bind[4].length = &de_d_l;
+    bind[4].buffer_length = 100;
+    bind[4].buffer = deadline_date;
+
+    bind[5].buffer_type = MYSQL_TYPE_STRING;
+    bind[5].is_null = 0;
+    bind[5].length = &p_id_l;
+    bind[5].buffer_length = 100;
+    bind[5].buffer = publisher_id;
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        puts("An error occured");
         goto exit_with_error;
     }
 

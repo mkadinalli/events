@@ -39,6 +39,8 @@ create table published(
     title varchar(200) NOT NULL,
     description varchar(1000) NOT NULL,
     venue varchar(50) NOT NULL,
+    event_date timestamp not null,
+    deadline_date timestamp not null,
     publisher_id binary(16)  NOT NULL,
     stars int unsigned default 0,
 	date_created timestamp default now(),
@@ -368,9 +370,11 @@ begin
         venue,
         cast(bin_to_uuid(publisher_id) as char) as publisher_id,
         stars,
+        event_date,
+        deadline_date,
         date_created,
         (select count(*) from subscriptions where id = this_id) as subscriptions
-	from published where id = this_id;
+	from published where id = this_id and deadline_date > now();
 end #
 delimiter ;
 
@@ -391,10 +395,14 @@ begin
         cast(bin_to_uuid(publisher_id) as char) as publisher_id,
         stars,
         date_created,
+        event_date,
+        deadline_date,
         (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
         now() as time_queried
 	from published p
-    where publisher_id in (select follower_id from followers where user_id = in_user_id)
+    where
+    deadline_date > now()
+    and publisher_id in (select follower_id from followers where user_id = in_user_id)
     or p.publisher_id = in_user_id
     or p.date_created >= last_query_time
     or p.date_created <= last_query_last_time
