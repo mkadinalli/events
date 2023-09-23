@@ -318,4 +318,9 @@ void receive_json(int sock,
         get_events(sock,json);
     }
 
+    if(starts_with_word("/api/one-event",url))
+    {
+        get_one_event(sock,json);
+    }
+
 }

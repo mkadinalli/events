@@ -376,5 +376,34 @@ void get_events(int sock, char *json_load)
                                 json_object_get_string(last_time),
                                 json_object_get_string(last_query_time));
 
-    if(res){ write_json(res,sock); } else { write_404(sock); };                            
+    if(res){
+         write_json(res,sock); 
+         json_object_put(res);
+    } else { write_404(sock); };
+
+    json_object_put(jobj);                           
+}
+
+
+void get_one_event(int sock,char *json_load)
+{
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *res = NULL;
+    json_object *id;
+
+    if (!json_object_object_get_ex(jobj, "id", &id))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
+
+    res = select_one_from_published(json_object_get_string(id));
+                                
+    if(res){
+         write_json(res,sock); 
+         json_object_put(res);
+    } else { write_404(sock); };
+
+    json_object_put(jobj); 
 }

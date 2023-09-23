@@ -30,4 +30,6 @@ json_object *select_from_published(const char *user_id,
                                    const char *last_time,
                                    const char *last_query_time);
 
+json_object *select_one_from_published(const char *id);
+
 MYSQL *start_db_connection();

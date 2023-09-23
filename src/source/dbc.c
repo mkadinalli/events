@@ -543,19 +543,151 @@ json_object *select_from_published(const char *user_id,
         goto exit;
     }
 
-    MYSQL_RES *prepare_meta;
+    // printf("%d\n",column_count);
 
-    prepare_meta = mysql_stmt_result_metadata(stmt);
+    MYSQL_BIND bind_results[11];
+    memset(bind_results, 0, sizeof bind_results);
 
-    if (!prepare_meta)
+    ////////
+    char id[100],
+        title[100],
+        description[10000],
+        venue[100],
+        publisher_id[100],
+        date_created[100],
+        event_date[100],
+        deadline_date[100],
+        time_queried[100];
+
+    long subscriptions, stars;
+
+    bool is_null[11];
+    bool error[11];
+    unsigned long length[11];
+    ///////
+
+    bind_results[9].buffer = &subscriptions;
+    bind_results[9].length = &length[9];
+    bind_results[9].error = &error[9];
+    bind_results[9].is_null = &is_null[9];
+    bind_results[9].buffer_type = MYSQL_TYPE_LONG;
+
+    bind_results[10].buffer = &stars;
+    bind_results[10].length = &length[9];
+    bind_results[10].error = &error[9];
+    bind_results[10].is_null = &is_null[9];
+    bind_results[10].buffer_type = MYSQL_TYPE_LONG;
+
+    bind_results[0].buffer = id;
+    bind_results[1].buffer = title;
+    bind_results[2].buffer = description;
+    bind_results[3].buffer = venue;
+    bind_results[4].buffer = publisher_id;
+    bind_results[5].buffer = date_created;
+    bind_results[6].buffer = event_date;
+    bind_results[7].buffer = deadline_date;
+    bind_results[8].buffer = time_queried;
+
+    for (int i = 0; i < 9; i++)
     {
-        puts("metadata not returned");
+        bind_results[i].length = &length[1];
+        bind_results[i].buffer_length = i == 2 ? 1000 : 100;
+        bind_results[i].error = &error[i];
+        bind_results[i].is_null = &is_null[i];
+        bind_results[i].buffer_type = MYSQL_TYPE_STRING;
+    }
+
+    if (mysql_stmt_bind_result(stmt, bind_results))
+    {
+        puts("bind failed");
         goto exit;
     }
 
-    int column_count;
+    json_object * res = json_object_new_array();
 
-    column_count = mysql_num_fields(prepare_meta);
+    while (!mysql_stmt_fetch(stmt))
+    {
+        json_object * this_row = json_object_new_object();
+
+        json_object_object_add(this_row,"id",json_object_new_string(id));
+        json_object_object_add(this_row,"title",json_object_new_string(title));
+        json_object_object_add(this_row,"description",json_object_new_string(description));
+        json_object_object_add(this_row,"venue",json_object_new_string(venue));
+        json_object_object_add(this_row,"event_date",json_object_new_string(event_date));
+        json_object_object_add(this_row,"deadline",json_object_new_string(deadline_date));
+        json_object_object_add(this_row,"publisher_id",json_object_new_string(publisher_id));
+        json_object_object_add(this_row,"stars",json_object_new_uint64(stars));
+        json_object_object_add(this_row,"subscriptions",json_object_new_uint64(subscriptions));
+        json_object_object_add(this_row,"time_queried",json_object_new_string(time_queried));
+
+        json_object_array_add(res,json_object_get(this_row));
+
+        json_object_put(this_row);
+    }
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+    return res;
+
+exit:
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+    return NULL;
+}
+
+
+json_object *select_one_from_published(const char *id_)
+{
+        MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        goto exit;
+    }
+
+    char *query = "call get_one_published(?)";
+
+    unsigned long id_l = strlen(id_);
+
+    MYSQL_BIND bind[1];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        puts("out of memory");
+        goto exit;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        puts(mysql_stmt_error(stmt));
+        goto exit;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &id_l;
+    bind[0].buffer = id_;
+    bind[0].buffer_length = 100;
+
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        puts(mysql_stmt_error(stmt));
+        goto exit;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        puts(mysql_stmt_error(stmt));
+        goto exit;
+    }
 
     // printf("%d\n",column_count);
 
@@ -617,17 +749,10 @@ json_object *select_from_published(const char *user_id,
         goto exit;
     }
 
-    puts("fetching..");
-
-    int row_count = 0;
-
     json_object * res = json_object_new_array();
 
     while (!mysql_stmt_fetch(stmt))
     {
-        printf("%d\n", row_count);
-
-
         json_object * this_row = json_object_new_object();
 
         json_object_object_add(this_row,"id",json_object_new_string(id));
@@ -639,24 +764,19 @@ json_object *select_from_published(const char *user_id,
         json_object_object_add(this_row,"publisher_id",json_object_new_string(publisher_id));
         json_object_object_add(this_row,"stars",json_object_new_uint64(stars));
         json_object_object_add(this_row,"subscriptions",json_object_new_uint64(subscriptions));
+        json_object_object_add(this_row,"time_queried",json_object_new_string(time_queried));
 
         json_object_array_add(res,json_object_get(this_row));
 
         json_object_put(this_row);
-
-        row_count++;
-        // if(!is_null[1]) printf("%s\n",str_data);
     }
 
-    if (mysql_stmt_close(stmt))
-    {
-        // error
-    }
-
+    mysql_stmt_close(stmt);
     mysql_close(conn);
     return res;
 
 exit:
+    mysql_stmt_close(stmt);
     mysql_close(conn);
     return NULL;
 }
