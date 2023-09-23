@@ -545,6 +545,7 @@ json_object *select_from_published(const char *user_id,
 
     // printf("%d\n",column_count);
 
+
     MYSQL_BIND bind_results[11];
     memset(bind_results, 0, sizeof bind_results);
 
@@ -573,9 +574,9 @@ json_object *select_from_published(const char *user_id,
     bind_results[9].buffer_type = MYSQL_TYPE_LONG;
 
     bind_results[10].buffer = &stars;
-    bind_results[10].length = &length[9];
-    bind_results[10].error = &error[9];
-    bind_results[10].is_null = &is_null[9];
+    bind_results[10].length = &length[10];
+    bind_results[10].error = &error[10];
+    bind_results[10].is_null = &is_null[10];
     bind_results[10].buffer_type = MYSQL_TYPE_LONG;
 
     bind_results[0].buffer = id;
@@ -590,7 +591,7 @@ json_object *select_from_published(const char *user_id,
 
     for (int i = 0; i < 9; i++)
     {
-        bind_results[i].length = &length[1];
+        bind_results[i].length = &length[i];
         bind_results[i].buffer_length = i == 2 ? 1000 : 100;
         bind_results[i].error = &error[i];
         bind_results[i].is_null = &is_null[i];
@@ -633,6 +634,7 @@ exit:
     mysql_stmt_close(stmt);
     mysql_close(conn);
     return NULL;
+
 }
 
 
@@ -719,9 +721,9 @@ json_object *select_one_from_published(const char *id_)
     bind_results[9].buffer_type = MYSQL_TYPE_LONG;
 
     bind_results[10].buffer = &stars;
-    bind_results[10].length = &length[9];
-    bind_results[10].error = &error[9];
-    bind_results[10].is_null = &is_null[9];
+    bind_results[10].length = &length[10];
+    bind_results[10].error = &error[10];
+    bind_results[10].is_null = &is_null[10];
     bind_results[10].buffer_type = MYSQL_TYPE_LONG;
 
     bind_results[0].buffer = id;
@@ -736,7 +738,7 @@ json_object *select_one_from_published(const char *id_)
 
     for (int i = 0; i < 9; i++)
     {
-        bind_results[i].length = &length[1];
+        bind_results[i].length = &length[i];
         bind_results[i].buffer_length = i == 2 ? 1000 : 100;
         bind_results[i].error = &error[i];
         bind_results[i].is_null = &is_null[i];

@@ -52,6 +52,7 @@ create table published(
 		publisher_fk foreign key(publisher_id) references users(id)
 );
 
+
 /*===========STARS===============================*/
 
 
@@ -217,17 +218,16 @@ begin
 		
     if nf = 0 then
 		if decrypt_password(pass,v_salt) = in_password then
-			select 1 ;
-		else
-			select 0 ;
+			select 1 as valid;
 		end if;
-	else 
-		select -1;
 	end if;
 end #
 delimiter ;
 
+
 -- =============== add user id ========== ---
+
+
 
 delimiter #
 drop trigger if exists add_users_id #
@@ -369,12 +369,13 @@ begin
         description,
         venue,
         cast(bin_to_uuid(publisher_id) as char) as publisher_id,
-        stars,
+        date_created,
         event_date,
         deadline_date,
-        date_created,
-        (select count(*) from subscriptions where id = this_id) as subscriptions
-	from published where id = this_id and deadline_date > now();
+        now() as time_queried,
+        (select count(*) from subscriptions where id = this_id) as subscriptions,
+        stars
+	from published where id = this_id ;
 end #
 delimiter ;
 
@@ -393,16 +394,16 @@ begin
         description,
         venue,
         cast(bin_to_uuid(publisher_id) as char) as publisher_id,
-        stars,
         date_created,
         event_date,
         deadline_date,
+		now() as time_queried,
         (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
-        now() as time_queried
+        stars
 	from published p
     where
     deadline_date > now()
-    and publisher_id in (select follower_id from followers where user_id = in_user_id)
+    -- and publisher_id in (select follower_id from followers where user_id = in_user_id)
     or p.publisher_id = in_user_id
     or p.date_created >= last_query_time
     or p.date_created <= last_query_last_time
@@ -530,6 +531,8 @@ select * from published;
 
 select * from subscriptions;
 
+select cast(bin_to_uuid(id) as char) as id from users;
+
 insert into users 
 (
 	name,username,email,pass_word
@@ -546,7 +549,7 @@ insert into published
 values
 ('title12','description1','venue1',uuid_to_bin(@muuid));
 
-select cast(bin_to_uuid(id) as char) into @muuid2 from published where title = 'title12';
+select cast(bin_to_uuid(id) as char) as id from published;
 
 call get_one_published(@muuid2);
 
