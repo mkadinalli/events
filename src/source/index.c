@@ -291,7 +291,7 @@ void add_subscriber(int sock,char *json_load)
     json_object *j_res = NULL;
 
 
-    if (!insert_into_subscriptions(json_object_get_string(user_id),
+    if (!insert_into_subscribers(json_object_get_string(user_id),
                           json_object_get_string(publish_id)
                           ))
     {
@@ -336,7 +336,7 @@ void add_follower(int sock,char *json_load)
 
 
     if (!insert_into_followers(json_object_get_string(user_id),
-                          json_object_get_string(publish_id)
+                          json_object_get_string(follower_id)
                           ))
     {
         map_add(res, "success", "false");

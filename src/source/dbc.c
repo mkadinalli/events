@@ -154,7 +154,6 @@ bool inser_into_users(const char *name, const char *username, const char *email,
 
     if (mysql_stmt_bind_param(stmt, bind))
     {
-        puts("An error occured");
         goto exit_with_error;
     }
 
@@ -252,6 +251,211 @@ bool insert_into_pubished(const char *title,
     bind[5].length = &p_id_l;
     bind[5].buffer_length = 100;
     bind[5].buffer = publisher_id;
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        puts("An error occured");
+        goto exit_with_error;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return true;
+
+exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return false;
+}
+
+
+bool insert_into_stars(const char *user_id,const char *publish_id)
+{
+    MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    char *query = "insert into stars (user_id,published_id) values (uuid_to_bin(?),uuid_to_bin(?))";
+
+    unsigned long user_l = strlen(user_id),
+                  pub_l = strlen(publish_id);
+
+    MYSQL_BIND bind[2];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &user_l;
+    bind[0].buffer_length = 100;
+    bind[0].buffer = user_id;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &pub_l;
+    bind[1].buffer_length = 100;
+    bind[1].buffer = publish_id;
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        puts("An error occured");
+        goto exit_with_error;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return true;
+
+exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return false;
+}
+
+
+bool insert_into_followers(const char *user_id,const char *follower_id)
+{
+        MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    char *query = "insert into followers (user_id,follower_id) values (uuid_to_bin(?),uuid_to_bin(?))";
+
+    unsigned long user_l = strlen(user_id),
+                  fol_l = strlen(follower_id);
+
+    MYSQL_BIND bind[2];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &user_l;
+    bind[0].buffer_length = 100;
+    bind[0].buffer = user_id;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &fol_l;
+    bind[1].buffer_length = 100;
+    bind[1].buffer = follower_id;
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        puts("An error occured");
+        goto exit_with_error;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return true;
+
+exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return false;
+}
+
+
+
+bool insert_into_subscribers(const char *user_id,const char *publish_id)
+{
+    MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    char *query = "insert into subscriptions (user_id,published_id) values (uuid_to_bin(?),uuid_to_bin(?))";
+
+    unsigned long user_l = strlen(user_id),
+                  pub_l = strlen(publish_id);
+
+    MYSQL_BIND bind[2];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &user_l;
+    bind[0].buffer_length = 100;
+    bind[0].buffer = user_id;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &pub_l;
+    bind[1].buffer_length = 100;
+    bind[1].buffer = publish_id;
 
     if (mysql_stmt_bind_param(stmt, bind))
     {
