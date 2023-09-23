@@ -104,8 +104,6 @@ bool map_destroy(map_t *map)
         free(tmp);
     }
 
-    puts("----------------map free");
-
     return true;
 }
 
@@ -127,7 +125,5 @@ map_get(map_t *map, char *key)
         }
         tmp = tmp->next;
     }
-
-    puts("key not found");
     return NULL;
 }

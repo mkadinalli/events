@@ -273,6 +273,7 @@ void serve_JSON(int sock, char *url)
     {
         login(url, sock);
     }
+
 }
 //==============================
 
@@ -289,7 +290,37 @@ void receive_json(int sock,
 
     if (starts_with_word("/api/signup", url))
     {
-        // strlen(url);
         sign_up(sock, json);
     }
+
+    if(starts_with_word("/api/events",url))
+    {
+        add_event(sock,json);
+    }
+
+    if(starts_with_word("/api/follow",url))
+    {
+        add_follower(sock,json);
+    }
+
+    if(starts_with_word("/api/subscribe",url))
+    {
+        add_subscriber(sock,json);
+    }
+
+    if(starts_with_word("/api/star",url))
+    {
+        add_star(sock,json);
+    }
+
+    if(starts_with_word("/api/gevents",url))
+    {
+        get_events(sock,json);
+    }
+
+    if(starts_with_word("/api/one-event",url))
+    {
+        get_one_event(sock,json);
+    }
+
 }

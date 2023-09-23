@@ -357,3 +357,20 @@ char *string_create_copy(char *str)
     strcpy(res, str);
     return res;
 }
+
+char *string_cover(char *str){
+    size_t len = strlen(str);
+    char *newstr = malloc(sizeof(char) * (len+3));
+
+    newstr[0] = '\'';
+
+    for(size_t i = 1; i < len+1;i++)
+    {
+        newstr[i] = str[i-1];
+    }
+
+    newstr[len+1] = '\'';
+    newstr[len+2] = '\0';
+
+    return newstr;
+}

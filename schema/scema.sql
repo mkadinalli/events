@@ -1,94 +1,561 @@
-/*Mysql only*/
+																			/*
+Mysql only
+																			*/
 
---== who wrote is vic ==--
+-- == who wrote is vic ==--
+
+drop schema if exists events;
+create schema events;
+
+use events;
+set block_encryption_mode = 'aes-256-cbc';
+
+-- =======USERS=================================================================
 
 drop table if exists users;
 create table users(
-    id int auto_increment UNIQUE,
+    id binary(16) UNIQUE,
     name varchar(100) NOT NULL,
     username varchar(100) NOT NULL UNIQUE,
-    password varchar(100) NOT NULL,
+    pass_word blob NOT NULL,
+    salt binary(16),
     email varchar(100) NOT NULL UNIQUE,
     avater varchar(100) NULL,
     bio varchar(1000) NULL,
     about varchar(50) NULL,
+    date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
+    
 
-    constraint users_pk primary key(id)
+    constraint
+		users_pk primary key(id)
 );
 
-/*=========================================*/
+/*=========PUBLISHED EVENTS================================*/
 
 drop table if exists published;
 create table published(
-    id int auto_increment UNIQUE,
+    id binary(16) UNIQUE,
     title varchar(200) NOT NULL,
     description varchar(1000) NOT NULL,
     venue varchar(50) NOT NULL,
-    publisher int NOT NULL,
+    event_date timestamp not null,
+    deadline_date timestamp not null,
+    publisher_id binary(16)  NOT NULL,
+    stars int unsigned default 0,
+	date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
 
-    constraint published_pk primary key(id),
-    constraint publisher_fk foreign key(publisher) references users(id)
+    constraint 
+		published_pk primary key(id),
+    constraint 
+		publisher_fk foreign key(publisher_id) references users(id)
 );
 
-/*==========================================*/
+/*===========STARS===============================*/
 
-drop table if exists subscriptions;
-create table subscriptions
-(
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
 
-    constraint subscriptions_pk primary key(id),
-    constraint sub_user_fk foreign key(user_id) references users(id)
-    on delete cascade,
-    constraint sub_events_fk foreign key(published_id) references published(id)
-    on delete cascade
-);
 
 drop table if exists stars;
 create table stars
 (
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
+    id binary(16)  UNIQUE,
+    user_id binary(16) ,
+    published_id binary(16) ,
+	date_created timestamp default now(),
 
-    constraint stars_pk primary key(id),
-    constraint stars_user_fk foreign key(user_id) references users(id)
+    constraint 
+		stars_pk primary key(id),
+        
+    constraint 
+		stars_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint stars_events_fk foreign key(published_id) references published(id)
+    
+    constraint 
+		stars_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
 
+-- =========PAYMENTS========================================================================
+/*
 drop table if exists payments;
 create table payments
 (
-    id int auto_increment UNIQUE,
-    user_id int,
-    published_id int,
+    id  binary(16)  UNIQUE,
+    user_id binary(16) ,
+    published_id binary(16) ,
+	date_created timestamp default now(),
+    
 
-    constraint payments_pk primary key(id),
-    constraint pay_user_fk foreign key(user_id) references users(id)
+    constraint 
+		payments_pk primary key(id),
+        
+    constraint 
+		pay_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint pay_events_fk foreign key(published_id) references published(id)
+    
+    constraint
+		pay_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
+*/
+-- ==============FOLLOWERS=============================================================
 
 drop table if exists followers;
 create table followers
 (
-    id int auto_increment UNIQUE,
-    user_id int,
-    follower_id int,
+    id binary(16) unique,
+    user_id binary(16) NOT NULL,
+    follower_id binary(16) NOT NULL,
+    date_created timestamp default now(),
 
-    constraint followers_pk primary key(id),
-    constraint follow_user_fk foreign key(user_id) references users(id)
+    constraint 
+		followers_pk primary key(id),
+        
+    constraint 
+		follow_user_fk foreign key(user_id) references users(id)
     on delete cascade,
-    constraint follow_follower_fk foreign key(follower_id) references users(id)
+    
+    constraint 
+		follow_follower_fk foreign key(follower_id) references users(id)
     on delete cascade
 );
 
+-- =========SUBSCRIPTIONS==================================================================
 
+drop table if exists subscriptions;
+create table subscriptions
+(
+    id binary(16) UNIQUE,
+    user_id binary(16)  not null,
+    published_id binary(16) not null,
+    paid bool default false,
+    date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
+
+    constraint 
+		subscriptions_pk primary key(id),
+        
+    constraint 
+		sub_user_fk foreign key(user_id) references users(id)
+    on delete cascade,
+    
+    constraint 
+		sub_events_fk foreign key(published_id) references published(id)
+    on delete cascade
+);
+
+-- ===========================================================================
+-- ===============procedures==================================================
+-- ===========================================================================
+
+
+-- ===========password enrypt ===========
+delimiter #
+drop function if exists encrypt_password #
+create function encrypt_password ( in_password varchar(50), salt binary(16) ) returns blob
+deterministic
+begin
+	set block_encryption_mode = 'aes-256-cbc';
+    return aes_encrypt(in_password,sha2('key',512),salt);
+end #
+delimiter ;
+
+-- select cast(encrypt_password('hello') as char);
+
+-- select random_bytes(16);
+
+-- 0773753482
+
+-- select (aes_encrypt('yoh','key',random_bytes(16)))
+
+-- =========password decrypt =========== ---
+
+delimiter #
+drop function if exists decrypt_password #
+create function decrypt_password ( in_password blob, salt binary(16) ) returns varchar(50)
+deterministic
+begin
+	set block_encryption_mode = 'aes-256-cbc';
+	return aes_decrypt(in_password,sha2('key',512),salt);
+end #
+delimiter ;
+
+-- ========== validate user ============ ---
+
+delimiter #
+drop procedure if exists validate_user #
+create procedure validate_user (
+	in_password varchar(50),
+    in_username varchar(50),
+    in_email varchar(50)
+)
+
+begin
+	declare pass blob;
+    declare v_salt binary(16);
+    declare nf int default 0;
+    
+   declare continue handler for not found
+		set nf = 1;
+    
+    if isnull(in_email) then
+			select
+				pass_word,salt
+			into pass,v_salt
+           -- email
+			from users
+			where username = in_username;
+	else
+			select
+				pass_word,salt
+			into pass,v_salt
+            from users
+            where email = in_email;
+	end if;
+	
+		
+    if nf = 0 then
+		if decrypt_password(pass,v_salt) = in_password then
+			select 1 ;
+		else
+			select 0 ;
+		end if;
+	else 
+		select -1;
+	end if;
+end #
+delimiter ;
+
+-- =============== add user id ========== ---
+
+delimiter #
+drop trigger if exists add_users_id #
+create trigger add_users_id
+before insert on users
+for each row
+begin
+	declare p_salt binary(16) default random_bytes(16);
+    set new.id = uuid_to_bin(uuid());
+    set new.pass_word = encrypt_password(new.pass_word,p_salt);
+    set new.salt = p_salt;
+end #
+delimiter ;
+
+-- ========= add published id ===== ---
+
+delimiter #
+drop trigger if exists add_published_id #
+create trigger add_published_id
+before insert on published
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ;
+
+
+delimiter #
+drop trigger if exists add_star_id #
+create trigger add_star_id
+before insert on stars
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
+
+delimiter #
+drop trigger if exists add_follower_id #
+create trigger add_follower_id
+before insert on followers
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
+/*
+delimiter #
+drop trigger if exists add_payment_id #
+create trigger add_payment_id
+before insert on payments
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; */
+
+
+delimiter #
+drop trigger if exists add_sub_id #
+create trigger add_sub_id
+before insert on subscriptions
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
+-- select cast(bin_to_uuid(id) as char) into @muuid from users where username = 'my';
+
+-- ==========get one user by id=========== --
+
+delimiter #
+drop procedure if exists get_user #
+create procedure get_user(
+	in_id varchar(256)
+)
+begin
+	declare this_id binary(16) default uuid_to_bin(in_id);
+	select
+    cast( bin_to_uuid(id) as char) as id,
+    name,
+    username,
+    email,
+    avater,
+    about,
+    bio,
+    date_created as join_date,
+    (select count(*) from published where publisher_id = this_id) as published,
+	(select count(*) from followers where  follower_id = this_id) as followers,
+    (select count(*) from followers where  user_id = this_id) as followed,
+    (select count(*) from stars where  user_id = this_id) as starred,
+    ifnull((select sum(stars) from published where  publisher_id = this_id),0) as stars_earned
+    from users
+    where id = this_id;
+end #
+delimiter ;
+
+
+
+delimiter #
+drop trigger if exists add_stars #
+create trigger add_stars
+before insert on stars
+for each row
+begin
+	update published p
+    set stars = p.stars + 1
+    where p.id = new.published_id;
+end #
+delimiter ;
+
+
+delimiter #
+drop trigger if exists sub_stars #
+create trigger sub_stars
+before delete on stars
+for each row
+begin
+	update published p
+    set stars = p.stars - 1
+    where p.id = old.published_id;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_one_published #
+create procedure get_one_published(
+	in_id varchar(256)
+)
+begin
+	declare this_id binary(16) default uuid_to_bin(in_id);
+    select 
+		cast(bin_to_uuid(id) as char) as id,
+        title,
+        description,
+        venue,
+        cast(bin_to_uuid(publisher_id) as char) as publisher_id,
+        stars,
+        event_date,
+        deadline_date,
+        date_created,
+        (select count(*) from subscriptions where id = this_id) as subscriptions
+	from published where id = this_id and deadline_date > now();
+end #
+delimiter ;
+
+delimiter #
+drop procedure if exists get_many_published #
+create procedure get_many_published(
+    in_user_id varchar(256),
+    last_query_time timestamp,
+    last_query_last_time timestamp
+)
+begin
+	declare this_user_id binary(16) default uuid_to_bin(in_user_id);
+    select 
+		cast(bin_to_uuid(id) as char) as id,
+        title,
+        description,
+        venue,
+        cast(bin_to_uuid(publisher_id) as char) as publisher_id,
+        stars,
+        date_created,
+        event_date,
+        deadline_date,
+        (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
+        now() as time_queried
+	from published p
+    where
+    deadline_date > now()
+    and publisher_id in (select follower_id from followers where user_id = in_user_id)
+    or p.publisher_id = in_user_id
+    or p.date_created >= last_query_time
+    or p.date_created <= last_query_last_time
+    or p.id in 
+    (select id from stars where user_id in (select follower_id from followers where user_id = in_user_id))
+    limit 20;
+end #
+delimiter ;
+
+-- how much money you got -- a lot
+-- how many times you got shot -- a lot
+-- how many niggas you shot -- a lot
+-- how many times did you cheat -- a lot
+-- how many lawyers you got -- a lot
+--                            21 - Savage.
+
+delimiter #
+drop procedure if exists get_followers #
+create procedure get_followers(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		followers f
+    where
+		f.date_created < last_time
+	and f.follower_id = in_user_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_stars #
+create procedure get_stars(
+	in_publish_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_publish_id_bin binary(16) default uuid_to_bin(in_publish_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		stars f
+    where
+		f.date_created < last_time
+	and f.published_id = in_publish_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_subscribers #
+create procedure get_subscribers(
+	in_publish_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_publish_id_bin binary(16) default uuid_to_bin(in_publish_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		subscriptions f
+    where
+		f.date_created < last_time
+	and f.published_id = in_publish_id_bin
+    order by date_created desc;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists search_publish #
+create procedure search_publish(
+	str varchar(50)
+)
+begin
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        title
+	from 
+		published
+	where
+		title like '%str%'
+	order by stars desc;
+    
+end #
+delimiter ;
+
+-- so you read code ???????????????????????? :D
+
+call get_many_published(@muuid,now(),now());
+
+call get_user(@muuid);
+
+call get_followers(@muuid,now());
+
+call get_stars(@muuid2,now());
+
+call get_subscribers(@muuid2,now());
+
+select * from stars;
+
+select * from published;
+
+select * from subscriptions;
+
+insert into users 
+(
+	name,username,email,pass_word
+)
+values
+(
+	'my','my','myemail2','my passwrd'
+);
+
+insert into published
+(
+	title,description,venue,publisher_id
+)
+values
+('title12','description1','venue1',uuid_to_bin(@muuid));
+
+select cast(bin_to_uuid(id) as char) into @muuid2 from published where title = 'title12';
+
+call get_one_published(@muuid2);
+
+insert into subscriptions
+(
+	user_id,published_id
+)
+values
+(uuid_to_bin(@muuid),uuid_to_bin(@muuid2));
 
 /*
 
@@ -249,12 +716,6 @@ values
 ===================================================================
 */
 
-create procedure select_users
-delimeter//
-begin//
-	select * from users//
-end//
-delimeter;
 
 
 
