@@ -297,4 +297,19 @@ void receive_json(int sock,
         add_event(sock,json);
     }
 
+    if(starts_with_word("/api/follow",url))
+    {
+        add_follower(sock,json);
+    }
+
+    if(starts_with_word("/api/subscribe",url))
+    {
+        add_subscriber(sock,json);
+    }
+
+    if(starts_with_word("/api/star",url))
+    {
+        add_star(sock,json);
+    }
+
 }
