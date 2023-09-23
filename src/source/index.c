@@ -142,14 +142,12 @@ clean_up:
     json_object_put(j_res);
 }
 
-
-void add_event(int sock,char *json_load)
+void add_event(int sock, char *json_load)
 {
 
-        // write_404(sock);
+    // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
-    json_object *title, *description, *venue, *event_date , *deadline_date, *publisher_id;
-
+    json_object *title, *description, *venue, *event_date, *deadline_date, *publisher_id;
 
     if (!json_object_object_get_ex(jobj, "title", &title))
     {
@@ -198,14 +196,12 @@ void add_event(int sock,char *json_load)
     map_t *res = map_create();
     json_object *j_res = NULL;
 
-
     if (!insert_into_pubished(json_object_get_string(title),
-                          json_object_get_string(description),
-                          json_object_get_string(venue),
-                          json_object_get_string(event_date),
-                          json_object_get_string(deadline_date),
-                          json_object_get_string(publisher_id)
-                          ))
+                              json_object_get_string(description),
+                              json_object_get_string(venue),
+                              json_object_get_string(event_date),
+                              json_object_get_string(deadline_date),
+                              json_object_get_string(publisher_id)))
     {
         map_add(res, "success", "false");
         j_res = create_json_object_from_map(res);
@@ -219,15 +215,13 @@ void add_event(int sock,char *json_load)
 
 clean_up:
     json_object_put(j_res);
-
 }
 
-void add_star(int sock,char *json_load)
+void add_star(int sock, char *json_load)
 {
-            // write_404(sock);
+    // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
     json_object *user_id, *publish_id;
-
 
     if (!json_object_object_get_ex(jobj, "user_id", &user_id))
     {
@@ -246,11 +240,9 @@ void add_star(int sock,char *json_load)
 
     map_t *res = map_create();
     json_object *j_res = NULL;
-
 
     if (!insert_into_stars(json_object_get_string(user_id),
-                          json_object_get_string(publish_id)
-                          ))
+                           json_object_get_string(publish_id)))
     {
         map_add(res, "success", "false");
         j_res = create_json_object_from_map(res);
@@ -265,12 +257,14 @@ void add_star(int sock,char *json_load)
 clean_up:
     json_object_put(j_res);
 }
-void add_subscriber(int sock,char *json_load)
+
+
+
+void add_subscriber(int sock, char *json_load)
 {
-                // write_404(sock);
+    // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
     json_object *user_id, *publish_id;
-
 
     if (!json_object_object_get_ex(jobj, "user_id", &user_id))
     {
@@ -290,10 +284,8 @@ void add_subscriber(int sock,char *json_load)
     map_t *res = map_create();
     json_object *j_res = NULL;
 
-
     if (!insert_into_subscribers(json_object_get_string(user_id),
-                          json_object_get_string(publish_id)
-                          ))
+                                 json_object_get_string(publish_id)))
     {
         map_add(res, "success", "false");
         j_res = create_json_object_from_map(res);
@@ -309,12 +301,11 @@ clean_up:
     json_object_put(j_res);
 }
 
-void add_follower(int sock,char *json_load)
+void add_follower(int sock, char *json_load)
 {
-                // write_404(sock);
+    // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
     json_object *user_id, *follower_id;
-
 
     if (!json_object_object_get_ex(jobj, "user_id", &user_id))
     {
@@ -334,10 +325,8 @@ void add_follower(int sock,char *json_load)
     map_t *res = map_create();
     json_object *j_res = NULL;
 
-
     if (!insert_into_followers(json_object_get_string(user_id),
-                          json_object_get_string(follower_id)
-                          ))
+                               json_object_get_string(follower_id)))
     {
         map_add(res, "success", "false");
         j_res = create_json_object_from_map(res);
@@ -351,4 +340,41 @@ void add_follower(int sock,char *json_load)
 
 clean_up:
     json_object_put(j_res);
+}
+
+
+
+void get_events(int sock, char *json_load)
+{
+    // write_404(sock);
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *res = NULL;
+    json_object *user_id, *last_time, *last_query_time;
+
+    if (!json_object_object_get_ex(jobj, "user_id", &user_id))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "last_time", &last_time))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "last_query_time", &last_query_time))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
+
+    res = select_from_published(json_object_get_string(user_id),
+                                json_object_get_string(last_time),
+                                json_object_get_string(last_query_time));
+
+    if(res){ write_json(res,sock); } else { write_404(sock); };                            
 }

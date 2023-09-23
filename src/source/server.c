@@ -174,20 +174,14 @@ void *handle_request(void *args)
         lopps++;
     }
 
-    puts("poceding ===========");
-
     if (!file_reached)
         error_code = BAD_REQ;
-
-    puts("file rached true ==========");
 
     if (error_code != OK && req_method == 0)
     {
         write_BAD(their_socket);
         goto clean_me;
     }
-
-    puts("no error code=========");
 
     char file_dir[] = "/home/vic/Desktop/ev2/events";
     char *f = strcat(file_dir, map_get(http_req, "url"));
@@ -205,13 +199,13 @@ void *handle_request(void *args)
         case GET:
             serve_JSON(their_socket, map_get(http_req, "url"));
             break;
-        case POST:
+        default:
             receive_json(their_socket,
                          map_get(http_req, "url"),
                          string_create_copy(json_b->chars));
             break;
-        default:
-            write_404(their_socket);
+        case 0:
+            write_BAD(their_socket);
             break;
         }
     }

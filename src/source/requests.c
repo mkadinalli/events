@@ -273,6 +273,7 @@ void serve_JSON(int sock, char *url)
     {
         login(url, sock);
     }
+
 }
 //==============================
 
@@ -310,6 +311,11 @@ void receive_json(int sock,
     if(starts_with_word("/api/star",url))
     {
         add_star(sock,json);
+    }
+
+    if(starts_with_word("/api/gevents",url))
+    {
+        get_events(sock,json);
     }
 
 }
