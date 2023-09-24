@@ -115,12 +115,8 @@ void *handle_request(void *args)
                 req_method = GET;
                 puts("method is get");
                 break;
-            }
+            }else{
 
-            else if (!strcmp(map_get(http_req, "method"), "POST"))
-            {
-                req_method = POST;
-                puts("method is post");
                 if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
                 {
                     file_type = IMAGE;
@@ -134,12 +130,18 @@ void *handle_request(void *args)
                     puts("file is image");
                     // break;
                 }
-                else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
-                {
+            else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
+            {
                     file_type = JSON;
                     puts("file is json");
                     // break;
-                }
+            }
+
+            if (!strcmp(map_get(http_req, "method"), "POST"))
+            {
+                req_method = POST;
+                puts("method is post");
+
             }
             else if (!strcmp(map_get(http_req, "method"), "PUT"))
             {
@@ -165,6 +167,7 @@ void *handle_request(void *args)
                 error_code = BAD_REQ;
                 puts("request is bad");
                 break;
+            }
             }
         }
 

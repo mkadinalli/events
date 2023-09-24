@@ -323,4 +323,10 @@ void receive_json(int sock,
         get_one_event(sock,json);
     }
 
+    if(starts_with_word("/api/ev-update",url))
+    {
+        update_event(sock,json);
+        puts("yeah man=================");
+    }
+
 }

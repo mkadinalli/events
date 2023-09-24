@@ -32,4 +32,12 @@ json_object *select_from_published(const char *user_id,
 
 json_object *select_one_from_published(const char *id);
 
+bool update_pubished(
+                            const char *title,
+                          const char *description,
+                          const char *venue,
+                          const char *event_date,
+                          const char *deadline_date,
+                          const char *publisher_id,    const char *id);
+
 MYSQL *start_db_connection();

@@ -13,3 +13,5 @@ void add_subscriber(int sock,char *json_load);
 void add_follower(int sock,char *json_load);
 void get_events(int sock,char *json_load);
 void get_one_event(int sock,char *json_load);
+void update_event(int sock,char *json_load);
+
