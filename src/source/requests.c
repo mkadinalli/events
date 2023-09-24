@@ -274,6 +274,11 @@ void serve_JSON(int sock, char *url)
         login(url, sock);
     }
 
+    if(starts_with_word("/api/user",url))
+    {
+        get_one_user(sock,url);
+    }
+
 }
 //==============================
 

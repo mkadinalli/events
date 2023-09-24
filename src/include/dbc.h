@@ -51,5 +51,8 @@ bool update_one_user(const char *name,
                       const char * about,
                       const char * id);
 
+json_object *get_user(char *id);
+
+
 
 MYSQL *start_db_connection();

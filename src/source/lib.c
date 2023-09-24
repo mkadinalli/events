@@ -281,10 +281,13 @@ bool starts_with_word(char *word, char *str)
 
 struct map_t *parse_url_query(char *query)
 {
+    puts("harrrrrrrrroooooooooo");
     list_t *param_parts = split_lim('&',
                                     query,
                                     strlen(query),
                                     2);
+
+    puts("helloooo word>?????????");
 
     if (list_len(param_parts) == 0)
         return NULL;

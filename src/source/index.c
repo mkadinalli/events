@@ -76,6 +76,51 @@ clean_up:
     map_destroy(res);
 }
 
+
+void get_one_user(int sock,char *url)
+{
+    map_t *url_m = parse_url(url);
+    if (url_m == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+
+    if (map_len(url_m) != 2)
+    {
+        write_BAD(sock);
+        map_destroy(url_m);
+        return;
+    }
+    puts(map_get(url_m, "query"));
+
+    map_t *params = parse_url_query(map_get(url_m, "query"));
+
+    puts("parsed");
+
+    if (params == NULL)
+    {
+
+        write_BAD(sock);
+        return;
+    }
+
+    char * id = map_get(params,"id");
+
+    if (map_len(params) != 1 || id == NULL)
+    {
+        write_BAD(sock);
+        map_destroy(url_m);
+        return;
+    }
+
+    json_object * jobj = get_user(id);
+
+    jobj == NULL ? write_404(sock) : write_json(jobj,sock);
+}
+
+
+
 void sign_up(int sock, char *json_load)
 {
     // write_404(sock);
@@ -591,3 +636,5 @@ void update_user(int sock,char *json_load)
 clean_up:
     json_object_put(j_res);
 }
+
+
