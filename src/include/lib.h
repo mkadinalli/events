@@ -69,6 +69,8 @@ parse_url(char *url);
 struct map_t *
 parse_url_query(char *query);
 
+char *get_param_from_url(char *url,char *key);
+
 //==========================================================json
 json_object *
 create_json_object_from_map(struct map_t *map);

@@ -27,7 +27,7 @@ void get_published_by_user(int sock,char *url);
 void get_stars_by_user(int sock,char *url);
 
 
-void get_subs_by_user(char *id,char *last_time);
+void get_subs_by_user(int sock,char *url);
 
 void get_stars_for_publish(int sock,char *url);//-------
 void get_subs_for_publish(int sock,char *url);

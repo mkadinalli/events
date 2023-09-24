@@ -281,18 +281,12 @@ bool starts_with_word(char *word, char *str)
 
 struct map_t *parse_url_query(char *query)
 {
-    puts("harrrrrrrrroooooooooo");
-    list_t *param_parts = split_lim('&',
+    list_t *param_parts = split('&',
                                     query,
-                                    strlen(query),
-                                    2);
-
-    puts("helloooo word>?????????");
+                                    strlen(query));
 
     if (list_len(param_parts) == 0)
         return NULL;
-
-    list_print(param_parts);
 
     list_t *tmp = param_parts;
 
@@ -300,7 +294,7 @@ struct map_t *parse_url_query(char *query)
 
     while (tmp != NULL)
     {
-        list_t *this_pair = split_lim('=', tmp->value, strlen(tmp->value), 2);
+        list_t *this_pair = split_lim('=', tmp->value, strlen(tmp->value),2);
 
         if (list_len(this_pair) != 2)
         {
@@ -376,4 +370,33 @@ char *string_cover(char *str){
     newstr[len+2] = '\0';
 
     return newstr;
+}
+
+char *get_param_from_url(char *url,char *key)
+{
+    map_t *url_m = parse_url(url);
+    if (url_m == NULL)
+    {
+        return NULL;
+    }
+
+    if (map_len(url_m) != 2)
+    {
+        map_destroy(url_m);
+        return NULL;
+    }
+
+    map_t *params = parse_url_query(map_get(url_m, "query"));
+
+    if (params == NULL)
+    {
+        return NULL;
+    }
+
+    char * value = map_get(params,key);
+
+    map_destroy(url_m);
+    map_destroy(params);
+
+    return value;
 }

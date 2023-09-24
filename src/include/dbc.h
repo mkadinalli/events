@@ -54,6 +54,8 @@ bool update_one_user(const char *name,
 json_object *get_user(char *id);
 
 json_object *get_followers_by_id(char *id,char *last_time);
+
+
 json_object *get_published_by_id(char *id,char *last_time);
 json_object *get_stars_by_user_id(char *id,char *last_time);
 json_object *get_stars_by_pub_id(char *id,char *last_time);

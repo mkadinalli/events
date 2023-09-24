@@ -79,38 +79,11 @@ clean_up:
 
 void get_one_user(int sock,char *url)
 {
-    map_t *url_m = parse_url(url);
-    if (url_m == NULL)
+    char * id = get_param_from_url(url,"id");
+
+    if (id == NULL)
     {
         write_BAD(sock);
-        return;
-    }
-
-    if (map_len(url_m) != 2)
-    {
-        write_BAD(sock);
-        map_destroy(url_m);
-        return;
-    }
-    puts(map_get(url_m, "query"));
-
-    map_t *params = parse_url_query(map_get(url_m, "query"));
-
-    puts("parsed");
-
-    if (params == NULL)
-    {
-
-        write_BAD(sock);
-        return;
-    }
-
-    char * id = map_get(params,"id");
-
-    if (map_len(params) != 1 || id == NULL)
-    {
-        write_BAD(sock);
-        map_destroy(url_m);
         return;
     }
 
@@ -635,6 +608,149 @@ void update_user(int sock,char *json_load)
 
 clean_up:
     json_object_put(j_res);
+}
+
+
+
+void get_followers_for_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+
+    json_object * jobj =  get_followers_by_id(id,last_time);
+
+    jobj == NULL ? write_404(sock) :  write_json(jobj,sock) ;
+
+    if(!jobj) json_object_put(jobj);
+    free(id);
+    free(last_time);
+}
+
+void get_followed_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_published_by_user(int sock,char *url)
+{
+        char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_stars_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+
+void get_subs_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_stars_for_publish(int sock,char *url)
+{
+        char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}//-------
+void get_subs_for_publish(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
 }
 
 
