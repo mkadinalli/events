@@ -18,13 +18,18 @@ void update_event(int sock,char *json_load);
 void update_user(int sock,char *json_load);
 void get_one_user(int sock,char *url);
 
-void get_followers_for_user(char *id,char *last_time);
-void get_followed_by_user(char *id,char *last_time);
-void get_published_by_user(char *id,char *last_time);
-void get_stars_by_user(char *id,char *last_time);
+void get_followers_for_user(int sock,char *url);
+
+void get_followed_by_user(int sock,char *url);
+
+void get_published_by_user(int sock,char *url);
+
+void get_stars_by_user(int sock,char *url);
+
+
 void get_subs_by_user(char *id,char *last_time);
 
-void get_stars_for_publish(char *id,char *last_time);//-------
-void get_subs_for_publish(char *id,char *last_time);
+void get_stars_for_publish(int sock,char *url);//-------
+void get_subs_for_publish(int sock,char *url);
 
 
