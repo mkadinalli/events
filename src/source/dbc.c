@@ -1289,7 +1289,7 @@ json_object *get_followers_by_id(char *id_,char *last_time)
         json_object_object_add(this_row,"user_id",json_object_new_string(user_id));
         json_object_object_add(this_row,"name",json_object_new_string(name));
         json_object_object_add(this_row,"username",json_object_new_string(username));
-        json_object_object_add(this_row,"last_time",json_object_new_string(last_time));
+        json_object_object_add(this_row,"last_time",json_object_new_string(date_created));
 
         json_object_array_add(res,json_object_get(this_row));
 

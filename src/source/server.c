@@ -186,7 +186,7 @@ void *handle_request(void *args)
         goto clean_me;
     }
 
-    char file_dir[] = "/home/vic/Desktop/ev2/events";
+    char file_dir[200] = "/home/vic/Desktop/ev2/events";
     char *f = strcat(file_dir, map_get(http_req, "url"));
     puts(f);
 

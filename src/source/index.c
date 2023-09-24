@@ -615,7 +615,9 @@ clean_up:
 void get_followers_for_user(int sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
-    char * last_time = get_param_from_url(url,"last_time");
+    char * last_time_ = get_param_from_url(url,"last_time");
+    char *last_time = string_replacechar('@',' ',last_time_,strlen(last_time_));
+    free(last_time_);
 
     if(id == NULL)
     {

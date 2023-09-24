@@ -38,8 +38,8 @@ char *string_replacechar(char previous, char current, char *buffer, size_t len)
         string_append(temp, buffer[i]);
     }
     string_append(temp, '\0');
-    char *chars = temp->chars;
-    free(temp);
+    char *chars =string_create_copy(temp->chars);
+    string_destroy(temp);
     return chars;
 }
 
