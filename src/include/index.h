@@ -4,7 +4,8 @@
 #include "./lib.h"
 #include "./map.h"
 #include "./dbc.h"
-//10 freaky girls
+
+
 void login(char *url, int sock);
 void sign_up(int sock, char *json_load);
 void add_event(int sock,char *json_load);
@@ -14,4 +15,5 @@ void add_follower(int sock,char *json_load);
 void get_events(int sock,char *json_load);
 void get_one_event(int sock,char *json_load);
 void update_event(int sock,char *json_load);
+void update_user(int sock,char *json_load);
 

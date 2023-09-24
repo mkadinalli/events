@@ -329,4 +329,9 @@ void receive_json(int sock,
         puts("yeah man=================");
     }
 
+    if(starts_with_word("/api/u-update",url))
+    {
+        update_user(sock,json);
+    }
+
 }

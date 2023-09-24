@@ -895,6 +895,116 @@ exit_with_error:
     return false;
 }
 
+
+bool update_one_user(const char *name,
+                      const char *username,
+                      const char *email,
+                      const char * avater,
+                      const char * bio,
+                      const char * about,
+                      const char * id)
+{
+        MYSQL *conn = NULL;
+    conn = mysql_init(conn);
+    conn = create_connection_from_a_file(conn,
+                                         "/home/vic/Desktop/ev2/events/config/config.json");
+
+    if (conn == NULL)
+    {
+        puts("failed to connect to db");
+        return false;
+    }
+
+    char *query = "update users set name = ?,username = ?,email = ? ,avater = ?, bio = ? ,about = ? where id = uuid_to_bin(?)";
+
+    unsigned long name_l = strlen(name),
+                  username_l = strlen(username),
+                  email_l = strlen(email),
+                  av_l = strlen(avater),
+                  bio_l = strlen(bio),
+                  abt_l = strlen(about),
+                  id_l = strlen(id);
+
+    MYSQL_BIND bind[7];
+    MYSQL_STMT *stmt;
+
+    stmt = mysql_stmt_init(conn);
+
+    if (!stmt)
+    {
+        mysql_close(conn);
+        return false;
+    }
+
+    if (mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        goto exit_with_error;
+    }
+
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].is_null = 0;
+    bind[0].length = &name_l;
+    bind[0].buffer_length = 50;
+    bind[0].buffer = name;
+
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].is_null = 0;
+    bind[1].length = &username_l;
+    bind[1].buffer_length = 50;
+    bind[1].buffer = username;
+
+    bind[2].buffer_type = MYSQL_TYPE_STRING;
+    bind[2].is_null = 0;
+    bind[2].length = &email_l;
+    bind[2].buffer_length = 50;
+    bind[2].buffer = email;
+
+
+    bind[3].buffer_type = MYSQL_TYPE_STRING;
+    bind[3].is_null = 0;
+    bind[3].length = &av_l;
+    bind[3].buffer_length = 50;
+    bind[3].buffer = avater;
+
+    bind[4].buffer_type = MYSQL_TYPE_STRING;
+    bind[4].is_null = 0;
+    bind[4].length = &bio_l;
+    bind[4].buffer_length = 500;
+    bind[4].buffer = bio;
+
+    bind[5].buffer_type = MYSQL_TYPE_STRING;
+    bind[5].is_null = 0;
+    bind[5].length = &abt_l;
+    bind[5].buffer_length = 10000;
+    bind[5].buffer = about;
+
+    bind[6].buffer_type = MYSQL_TYPE_STRING;
+    bind[6].is_null = 0;
+    bind[6].length = &id_l;
+    bind[6].buffer_length = 50;
+    bind[6].buffer = id;
+
+
+    if (mysql_stmt_bind_param(stmt, bind))
+    {
+        goto exit_with_error;
+    }
+
+    if (mysql_stmt_execute(stmt))
+    {
+        goto exit_with_error;
+    }
+
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return true;
+
+exit_with_error:
+    puts(mysql_stmt_error(stmt));
+    mysql_stmt_close(stmt);
+    return false;
+}
+
 void empty()
 {
     /*MYSQL *conn = NULL;
