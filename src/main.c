@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <json-c/json.h>
+#include <assert.h>
 #include "./include/server.h"
 #include "./include/map.h"
 #include "./include/lib.h"

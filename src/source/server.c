@@ -115,12 +115,8 @@ void *handle_request(void *args)
                 req_method = GET;
                 puts("method is get");
                 break;
-            }
+            }else{
 
-            else if (!strcmp(map_get(http_req, "method"), "POST"))
-            {
-                req_method = POST;
-                puts("method is post");
                 if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
                 {
                     file_type = IMAGE;
@@ -134,12 +130,18 @@ void *handle_request(void *args)
                     puts("file is image");
                     // break;
                 }
-                else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
-                {
+            else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
+            {
                     file_type = JSON;
                     puts("file is json");
                     // break;
-                }
+            }
+
+            if (!strcmp(map_get(http_req, "method"), "POST"))
+            {
+                req_method = POST;
+                puts("method is post");
+
             }
             else if (!strcmp(map_get(http_req, "method"), "PUT"))
             {
@@ -166,6 +168,7 @@ void *handle_request(void *args)
                 puts("request is bad");
                 break;
             }
+            }
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -183,7 +186,7 @@ void *handle_request(void *args)
         goto clean_me;
     }
 
-    char file_dir[] = "/home/vic/Desktop/ev2/events";
+    char file_dir[200] = "/home/vic/Desktop/ev2/events";
     char *f = strcat(file_dir, map_get(http_req, "url"));
     puts(f);
 

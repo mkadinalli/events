@@ -274,6 +274,46 @@ void serve_JSON(int sock, char *url)
         login(url, sock);
     }
 
+    if(starts_with_word("/api/user",url))
+    {
+        get_one_user(sock,url);
+    }
+
+    if(starts_with_word("/api/followers",url))
+    {
+        get_followers_for_user(sock,url);
+    }
+
+    if(starts_with_word("/api/u-followers",url))
+    {
+        get_followed_by_user(sock,url);
+    }
+
+    if(starts_with_word("/api/published",url))
+    {
+        get_published_by_user(sock,url);
+    }
+
+    if(starts_with_word("/api/stars",url))
+    {
+        get_stars_by_user(sock,url);
+    }
+
+    if(starts_with_word("/api/p-stars",url))
+    {
+        get_stars_for_publish(sock,url);
+    }
+
+    if(starts_with_word("/api/p-subscriptions",url))
+    {
+        get_subs_for_publish(sock,url);
+    }
+
+    if(starts_with_word("/api/subscriptions",url))
+    {
+        get_subs_by_user(sock,url);
+    }
+
 }
 //==============================
 
@@ -321,6 +361,17 @@ void receive_json(int sock,
     if(starts_with_word("/api/one-event",url))
     {
         get_one_event(sock,json);
+    }
+
+    if(starts_with_word("/api/ev-update",url))
+    {
+        update_event(sock,json);
+        puts("yeah man=================");
+    }
+
+    if(starts_with_word("/api/u-update",url))
+    {
+        update_user(sock,json);
     }
 
 }

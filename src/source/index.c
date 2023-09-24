@@ -76,6 +76,24 @@ clean_up:
     map_destroy(res);
 }
 
+
+void get_one_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+
+    if (id == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+
+    json_object * jobj = get_user(id);
+
+    jobj == NULL ? write_404(sock) : write_json(jobj,sock);
+}
+
+
+
 void sign_up(int sock, char *json_load)
 {
     // write_404(sock);
@@ -258,8 +276,6 @@ clean_up:
     json_object_put(j_res);
 }
 
-
-
 void add_subscriber(int sock, char *json_load)
 {
     // write_404(sock);
@@ -342,8 +358,6 @@ clean_up:
     json_object_put(j_res);
 }
 
-
-
 void get_events(int sock, char *json_load)
 {
     // write_404(sock);
@@ -376,16 +390,20 @@ void get_events(int sock, char *json_load)
                                 json_object_get_string(last_time),
                                 json_object_get_string(last_query_time));
 
-    if(res){
-         write_json(res,sock); 
-         json_object_put(res);
-    } else { write_404(sock); };
+    if (res)
+    {
+        write_json(res, sock);
+        json_object_put(res);
+    }
+    else
+    {
+        write_404(sock);
+    };
 
-    json_object_put(jobj);                           
+    json_object_put(jobj);
 }
 
-
-void get_one_event(int sock,char *json_load)
+void get_one_event(int sock, char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
     json_object *res = NULL;
@@ -399,11 +417,342 @@ void get_one_event(int sock,char *json_load)
     }
 
     res = select_one_from_published(json_object_get_string(id));
-                                
-    if(res){
-         write_json(res,sock); 
-         json_object_put(res);
-    } else { write_404(sock); };
 
-    json_object_put(jobj); 
+    if (res)
+    {
+        write_json(res, sock);
+        json_object_put(res);
+    }
+    else
+    {
+        write_404(sock);
+    };
+
+    json_object_put(jobj);
 }
+
+
+void update_event(int sock,char *json_load)
+{
+
+    // write_404(sock);
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *title, *description, *venue, *event_date, *deadline_date, *publisher_id,*id;
+
+    if (!json_object_object_get_ex(jobj, "title", &title))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising title");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "description", &description))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising desc");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "venue", &venue))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising venue");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "event_date", &event_date))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising event date");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "deadline_date", &deadline_date))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising deadline");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "publisher_id", &publisher_id))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising pulisher");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "id", &id))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising id");
+        return;
+    }
+
+    // write_404(sock);
+
+    map_t *res = map_create();
+    json_object *j_res = NULL;
+
+    if (!update_pubished(json_object_get_string(title),
+                              json_object_get_string(description),
+                              json_object_get_string(venue),
+                              json_object_get_string(event_date),
+                              json_object_get_string(deadline_date),
+                              json_object_get_string(publisher_id), json_object_get_string(id)))
+    {
+        map_add(res, "success", "false");
+        j_res = create_json_object_from_map(res);
+        write_json(j_res, sock);
+        goto clean_up;
+    }
+
+    map_add(res, "success", "true");
+    j_res = create_json_object_from_map(res);
+    write_json(j_res, sock);
+
+clean_up:
+    json_object_put(j_res);
+}
+
+
+void update_user(int sock,char *json_load)
+{
+        // write_404(sock);
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *name, *username, *avater, *bio, *about, *email,*id;
+
+    if (!json_object_object_get_ex(jobj, "name", &name))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising title");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "username", &username))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising desc");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "avater", &avater))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising venue");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "bio", &bio))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising event date");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "about", &about))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising deadline");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "email", &email))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising pulisher");
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "id", &id))
+    {
+        write_BAD(sock);
+        // todo
+        puts("mising id");
+        return;
+    }
+
+    // write_404(sock);
+
+    map_t *res = map_create();
+    json_object *j_res = NULL;
+
+    if (!update_one_user(json_object_get_string(name),
+                              json_object_get_string(username),
+                              json_object_get_string(email),
+                              json_object_get_string(avater),
+                              json_object_get_string(bio),
+                              json_object_get_string(about), json_object_get_string(id)))
+    {
+        map_add(res, "success", "false");
+        j_res = create_json_object_from_map(res);
+        write_json(j_res, sock);
+        goto clean_up;
+    }
+
+    map_add(res, "success", "true");
+    j_res = create_json_object_from_map(res);
+    write_json(j_res, sock);
+
+clean_up:
+    json_object_put(j_res);
+}
+
+
+
+void get_followers_for_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time_ = get_param_from_url(url,"last_time");
+    char *last_time = string_replacechar('@',' ',last_time_,strlen(last_time_));
+    free(last_time_);
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+
+    json_object * jobj =  get_followers_by_id(id,last_time);
+
+    jobj == NULL ? write_404(sock) :  write_json(jobj,sock) ;
+
+    if(!jobj) json_object_put(jobj);
+    free(id);
+    free(last_time);
+}
+
+void get_followed_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_published_by_user(int sock,char *url)
+{
+        char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_stars_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+
+void get_subs_by_user(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+void get_stars_for_publish(int sock,char *url)
+{
+        char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}//-------
+void get_subs_for_publish(int sock,char *url)
+{
+    char * id = get_param_from_url(url,"id");
+    char * last_time = get_param_from_url(url,"last_time");
+
+    if(id == NULL)
+    {
+        write_BAD(sock);
+        if(last_time) free(last_time);
+        return;
+    }
+
+    if(last_time == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+}
+
+
