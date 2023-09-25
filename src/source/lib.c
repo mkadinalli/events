@@ -26,6 +26,8 @@ char *string_removechar(char c, char *buffer, size_t len)
 
 char *string_replacechar(char previous, char current, char *buffer, size_t len)
 {
+    if(buffer == NULL) return NULL;
+    
     string_t *temp = string_create();
     for (size_t i = 0; i < len; i++)
     {

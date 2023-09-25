@@ -1,6 +1,8 @@
 																			/*
 Mysql only
-																			*/
+	--> add cost
+    --> add capacity
+    */
 
 -- == who wrote is vic ==--
 
@@ -322,6 +324,7 @@ begin
 	(select count(*) from followers where  follower_id = this_id) as followers,
     (select count(*) from followers where  user_id = this_id) as followed,
     (select count(*) from stars where  user_id = this_id) as starred,
+    (select count(*) from subscriptions where user_id = this_id) as subscribed,
     ifnull((select sum(stars) from published where  publisher_id = this_id),0) as stars_earned
     from users
     where id = this_id;
@@ -391,12 +394,12 @@ begin
     select 
 		cast(bin_to_uuid(id) as char) as id,
         title,
-        description,
-        venue,
-        cast(bin_to_uuid(publisher_id) as char) as publisher_id,
-        date_created,
+        -- description,
+        -- venue,
+        -- cast(bin_to_uuid(publisher_id) as char) as publisher_id,
+        -- date_created,
         event_date,
-        deadline_date,
+        -- deadline_date,
 		now() as time_queried,
         (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
         stars
@@ -440,14 +443,69 @@ begin
     where
 		f.date_created < last_time
 	and f.follower_id = in_user_id_bin
-    order by date_created desc;
+    order by date_created desc
+    limit 20;
 end #
 delimiter ;
 
 
 delimiter #
-drop procedure if exists get_stars #
-create procedure get_stars(
+drop procedure if exists get_following #
+create procedure get_following(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from users s where f.user_id = s.id)) as char) as user_id,
+        (select name from users s where f.user_id = s.id) as name,
+        (select username from users s where f.user_id = s.id) as username,
+        date_created
+    from
+		followers f
+    where
+		f.date_created < last_time
+	and f.user_id = in_user_id_bin
+    order by date_created desc
+    limit 20;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_pub_for_user #
+create procedure get_pub_for_user(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        title,
+        event_date,
+        (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
+        stars,
+        date_created
+    from
+		published p
+    where
+		p.date_created < last_time
+	and p.deadline_date > now()
+	and p.publisher_id = in_user_id_bin
+    order by date_created desc
+    limit 20;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists get_stars_for_pub #
+create procedure get_stars_for_pup(
 	in_publish_id varchar(256),
     last_time timestamp
 )
@@ -465,14 +523,71 @@ begin
     where
 		f.date_created < last_time
 	and f.published_id = in_publish_id_bin
-    order by date_created desc;
+    order by date_created desc
+    limit 20;
 end #
 delimiter ;
 
 
+
+
+
 delimiter #
-drop procedure if exists get_subscribers #
-create procedure get_subscribers(
+drop procedure if exists get_stars_for_user #
+create procedure get_stars_for_user(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from published s where f.published_id = s.id)) as char) as event_id,
+        (select title from published s where f.published_id = s.id) as title,
+        date_created
+    from
+		stars f
+    where
+		f.date_created < last_time
+	and f.user_id = in_user_id_bin
+    order by date_created desc
+    limit 20;
+end #
+delimiter ;
+
+
+
+delimiter #
+drop procedure if exists get_subs_for_user #
+create procedure get_subs_for_user(
+	in_user_id varchar(256),
+    last_time timestamp
+)
+begin
+	declare in_user_id_bin binary(16) default uuid_to_bin(in_user_id);
+    
+	select
+		cast(bin_to_uuid(id) as char) as id,
+        cast(bin_to_uuid((select id from published s where f.published_id = s.id)) as char) as event_id,
+        (select title from published s where f.published_id = s.id) as title,
+        date_created
+    from
+		subscriptions f
+    where
+		f.date_created < last_time
+	and f.user_id = in_user_id_bin
+    and f.paid = true
+    order by date_created desc
+    limit 20;
+end #
+delimiter ;
+
+
+
+delimiter #
+drop procedure if exists get_subscribers_for_pub #
+create procedure get_subscribers_for_pub(
 	in_publish_id varchar(256),
     last_time timestamp
 )
@@ -490,7 +605,8 @@ begin
     where
 		f.date_created < last_time
 	and f.published_id = in_publish_id_bin
-    order by date_created desc;
+    order by date_created desc
+    limit 20;
 end #
 delimiter ;
 
@@ -517,15 +633,21 @@ delimiter ;
 
 call get_many_published(@muuid,now(),now());
 
-call get_user(@muuid);
+call get_user('2272f2a3-5a0e-11ee-b6f2-1f05bb9bd55d');
 
-call get_followers(@muuid,now());
+call get_following('2272f2a3-5a0e-11ee-b6f2-1f05bb9bd55d','1990-2-2 00:00:00');
+
+call get_followers('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d',now());
+
+rollback;
 
 call get_stars(@muuid2,now());
 
 call get_subscribers(@muuid2,now());
 
 select * from stars;
+
+select * from users;
 
 select * from published;
 
@@ -539,7 +661,7 @@ insert into users
 )
 values
 (
-	'my','my','myemail2','my passwrd'
+	'my2','my2','myemail22','my passwrd'
 );
 
 insert into published
@@ -551,7 +673,9 @@ values
 
 select cast(bin_to_uuid(id) as char) as id from published;
 
-call get_one_published(@muuid2);
+call get_one_published('3df7354d-5a1b-11ee-b6f2-1f05bb9bd55d');
+
+call get_stars_by_user('3df7354d-5a1b-11ee-b6f2-1f05bb9bd55d','1990-2-2 00:00:00');
 
 insert into subscriptions
 (
@@ -559,6 +683,13 @@ insert into subscriptions
 )
 values
 (uuid_to_bin(@muuid),uuid_to_bin(@muuid2));
+
+insert into followers
+(
+	user_id,follower_id
+)
+values
+(uuid_to_bin('71554a6a-5aef-11ee-b6f2-1f05bb9bd55d'),uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'));
 
 /*
 

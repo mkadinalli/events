@@ -276,17 +276,17 @@ void serve_JSON(int sock, char *url)
 
     if(starts_with_word("/api/user",url))
     {
-        get_one_user(sock,url);
+        get_one_user(sock,url); //done
     }
 
     if(starts_with_word("/api/followers",url))
     {
-        get_followers_for_user(sock,url);
+        get_followers_for_user(sock,url); //done
     }
 
     if(starts_with_word("/api/u-followers",url))
     {
-        get_followed_by_user(sock,url);
+        get_followed_by_user(sock,url); 
     }
 
     if(starts_with_word("/api/published",url))
