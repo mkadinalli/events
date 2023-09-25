@@ -306,12 +306,12 @@ void serve_JSON(int sock, char *url)
 
     if(starts_with_word("/api/p-subscriptions",url))
     {
-        get_subs_for_publish(sock,url);
+        get_subs_for_publish(sock,url);//done
     }
 
     if(starts_with_word("/api/subscriptions",url))
     {
-        get_subs_by_user(sock,url);
+        get_subs_by_user(sock,url);//done
     }
 
 }
