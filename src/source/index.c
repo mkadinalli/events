@@ -693,7 +693,7 @@ void get_published_by_user(int sock,char *url)
         return;
     }
 
-    json_object * jobj =  get_following_by_id(id,last_time);
+    json_object * jobj =  get_published_by_id(id,last_time);
 
     jobj == NULL ? write_404(sock) :  write_json(jobj,sock) ;
 
