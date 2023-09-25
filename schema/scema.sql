@@ -505,7 +505,7 @@ delimiter ;
 
 delimiter #
 drop procedure if exists get_stars_for_pub #
-create procedure get_stars_for_pup(
+create procedure get_stars_for_pub(
 	in_publish_id varchar(256),
     last_time timestamp
 )
@@ -571,13 +571,14 @@ begin
 		cast(bin_to_uuid(id) as char) as id,
         cast(bin_to_uuid((select id from published s where f.published_id = s.id)) as char) as event_id,
         (select title from published s where f.published_id = s.id) as title,
+        paid,
         date_created
     from
 		subscriptions f
     where
 		f.date_created < last_time
 	and f.user_id = in_user_id_bin
-    and f.paid = true
+    -- and f.paid = true
     order by date_created desc
     limit 20;
 end #
@@ -604,6 +605,7 @@ begin
 		subscriptions f
     where
 		f.date_created < last_time
+	and f.paid = true
 	and f.published_id = in_publish_id_bin
     order by date_created desc
     limit 20;
@@ -639,6 +641,8 @@ call get_following('2272f2a3-5a0e-11ee-b6f2-1f05bb9bd55d','1990-2-2 00:00:00');
 
 call get_followers('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d',now());
 
+call get_pub_for_user('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d','2030-1-1');
+
 rollback;
 
 call get_stars(@muuid2,now());
@@ -666,16 +670,16 @@ values
 
 insert into published
 (
-	title,description,venue,publisher_id
+	title,description,venue,publisher_id,event_date,deadline_date
 )
 values
-('title12','description1','venue1',uuid_to_bin(@muuid));
+('title12','description1','venue1',uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'),'2024-1-1','2024-1-1');
 
 select cast(bin_to_uuid(id) as char) as id from published;
 
 call get_one_published('3df7354d-5a1b-11ee-b6f2-1f05bb9bd55d');
 
-call get_stars_by_user('3df7354d-5a1b-11ee-b6f2-1f05bb9bd55d','1990-2-2 00:00:00');
+call get_subs_for_user('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d','2030-2-2 00:00:00');
 
 insert into subscriptions
 (
@@ -684,12 +688,21 @@ insert into subscriptions
 values
 (uuid_to_bin(@muuid),uuid_to_bin(@muuid2));
 
+insert into subscriptions
+(
+	user_id,published_id
+)
+values
+(
+	uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'),uuid_to_bin('4cb1a2e9-5b77-11ee-b6f2-1f05bb9bd55d')
+);
+
 insert into followers
 (
 	user_id,follower_id
 )
 values
-(uuid_to_bin('71554a6a-5aef-11ee-b6f2-1f05bb9bd55d'),uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'));
+(uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'),uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'));
 
 /*
 
