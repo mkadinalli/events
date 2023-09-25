@@ -736,7 +736,10 @@ void get_stars_by_user(int sock,char *url)
 void get_subs_by_user(int sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
-    char * last_time = get_param_from_url(url,"last_time");
+    char * last_time_ = get_param_from_url(url,"last_time");
+
+    char *last_time = string_replacechar('@',' ',last_time_,strlen(last_time_));
+    free(last_time_);
 
     if(id == NULL)
     {
@@ -750,6 +753,14 @@ void get_subs_by_user(int sock,char *url)
         write_BAD(sock);
         return;
     }
+
+    json_object * jobj =  get_subs_by_user_id(id,last_time);
+
+    jobj == NULL ? write_404(sock) :  write_json(jobj,sock) ;
+
+    if(!jobj) json_object_put(jobj);
+    free(id);
+    free(last_time);
 }
 
 void get_stars_for_publish(int sock,char *url)
