@@ -301,7 +301,7 @@ void serve_JSON(int sock, char *url)
 
     if(starts_with_word("/api/p-stars",url))
     {
-        get_stars_for_publish(sock,url);
+        get_stars_for_publish(sock,url); //done
     }
 
     if(starts_with_word("/api/p-subscriptions",url))
