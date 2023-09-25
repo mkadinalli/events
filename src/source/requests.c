@@ -291,12 +291,12 @@ void serve_JSON(int sock, char *url)
 
     if(starts_with_word("/api/published",url))
     {
-        get_published_by_user(sock,url);
+        get_published_by_user(sock,url);// done
     }
 
     if(starts_with_word("/api/stars",url))
     {
-        get_stars_by_user(sock,url);
+        get_stars_by_user(sock,url); //done
     }
 
     if(starts_with_word("/api/p-stars",url))

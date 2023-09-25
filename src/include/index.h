@@ -24,7 +24,7 @@ void get_followed_by_user(int sock,char *url);//done
 
 void get_published_by_user(int sock,char *url);//done
 
-void get_stars_by_user(int sock,char *url);
+void get_stars_by_user(int sock,char *url); //done
 
 
 void get_subs_by_user(int sock,char *url);
