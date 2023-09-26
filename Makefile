@@ -1,38 +1,37 @@
-# Compiler settings
-CC = gcc
-CFLAGS = -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
-# Directories
-SRCDIR = src/source
-INCDIR = src/include
-BINDIR = bin/source
-DOCDIR = doc
+TARGET_EXEC := json
 
-# Source files
-SOURCES = $(wildcard $(SRCDIR)/*.c)
+BUILD_DIR := ./build
+SRC_DIRS := ./src
 
-# Object files
-OBJECTS = $(patsubst $(SRCDIR)/%.c,$(BINDIR)/%.o,$(SOURCES))
+SRCS := $(shell find $(SRC_DIRS) -name '*.c' -or -name '*.s' -or -name '*.cpp')
 
-# Executable
-EXECUTABLE = bin/json
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 
-# Targets
-all: $(EXECUTABLE)
+DEPS := $(OBJS:.o=.d)
 
-$(EXECUTABLE): $(OBJECTS) src/main.c
-	$(CC) $(OBJECTS) src/main.c -o $(EXECUTABLE) $(CFLAGS) 
+INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 
-$(BINDIR)/%.o: $(SRCDIR)/%.c $(INCDIR)/*.h | $(BINDIR)
-	$(CC)  -c $< -o $@ $(CFLAGS)
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-$(BINDIR):
-	mkdir -p $(BINDIR)
+CPPFLAGS := $(INC_FLAGS) -MMD -MP
 
-doc:
-	doxygen Doxyfile
+CC := gcc
+
+CFLAGS := -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
+
+$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
+
+$(BUILD_DIR)/%.c.o: %.c
+	mkdir -p $(dir $@)
+	$(CC) $(CPPFLAGS) -c $< -o $@ $(CFLAGS)
+
+$(BUILD_DIR)/%.cpp.o: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: clean
 
 clean:
-	rm -rf bin/*
-	rm -rf doc/doxygen
+	rm -r $(BUILD_DIR)
 
-.PHONY: all doc clean
+-include $(DEPS)

@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <json-c/json.h>
 #include <assert.h>
-#include "./include/server.h"
-#include "./include/map.h"
-#include "./include/lib.h"
-#include "./include/requests.h"
+#include "./include/http/server.h"
+
 
 
 int main()

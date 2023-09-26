@@ -28,6 +28,9 @@
         "streambuf": "c",
         "tuple": "c",
         "typeinfo": "c",
-        "utility": "c"
+        "utility": "c",
+        "update-event.h": "c",
+        "get-users.h": "c",
+        "in-users.h": "c"
     }
 }
