@@ -29,8 +29,11 @@ char *read_file_to_string(char *path)
     return NULL;
 }
 
-MYSQL *create_connection_from_a_file(MYSQL *sql_struct, char *path_to_config)
+
+MYSQL *create_connection_from_a_file(char *path_to_config)
 {
+    MYSQL *sql_struct = mysql_init(NULL);
+
     char *str = read_file_to_string(path_to_config);
     struct json_object *jobj, *host, *password, *username, *db;
 

@@ -19,6 +19,7 @@
 #include "../../include/data-structures/map.h"
 #include "../../include/data-structures/ev_string.h"
 #include "../../include/http/requests.h"
+#include "../da/db.h"
 
 
 #define IPV_4 0

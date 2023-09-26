@@ -4,6 +4,7 @@ int socketfd = 0;
 
 tpool_t *thread_pool = NULL;
 
+
 void signal_handler(int sig)
 {
     if (sig == 20 || sig == 2)
@@ -340,6 +341,7 @@ bool set_up_server(char *PORT)
     }
 
     thread_pool = tpool_create(2);
+    cpool = create_conn_pool(5);
 
     accept_connections(socketfd);
 

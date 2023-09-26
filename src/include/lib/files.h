@@ -11,5 +11,4 @@
 char *
 read_file_to_string(char *path);
 MYSQL *
-create_connection_from_a_file(MYSQL *sql_struct,
-                              char *path_to_config);
+create_connection_from_a_file(char *path_to_config);

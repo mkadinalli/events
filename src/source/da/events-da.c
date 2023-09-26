@@ -1,5 +1,6 @@
 #include "../../include/da/events-da.h"
 #include "../../include/lib/files.h"
+#include "../../include/da/db.h"
 
 bool insert_into_published(const char *title,
                           const char *description,
@@ -8,10 +9,7 @@ bool insert_into_published(const char *title,
                           const char *deadline_date,
                           const char *publisher_id)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -106,10 +104,7 @@ json_object *select_from_published(const char *user_id,
                                    const char *last_time,
                                    const char *last_query_time)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -269,10 +264,7 @@ exit:
 
 json_object *select_one_from_published(const char *id_)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -403,12 +395,12 @@ json_object *select_one_from_published(const char *id_)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
@@ -421,10 +413,7 @@ bool update_published(
                           const char *deadline_date,
                           const char *publisher_id,     const char *id)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -512,11 +501,12 @@ bool update_published(
         goto exit_with_error;
     }
 
-    puts(mysql_stmt_error(stmt));
+    cpool_drop_connection(conn,cpool);
     mysql_stmt_close(stmt);
     return true;
 
 exit_with_error:
+    cpool_drop_connection(conn,cpool);
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
     return false;
@@ -525,10 +515,7 @@ exit_with_error:
 
 json_object *get_published_by_user_id(char *id_,char *last_time)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -653,12 +640,12 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
