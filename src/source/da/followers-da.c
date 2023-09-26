@@ -1,12 +1,10 @@
 #include "../../include/da/followers-da.h"
 #include "../../include/lib/files.h"
+#include "../../include/da/db.h"
 
 json_object *get_followers_by_user_id(char *id_,char *last_time)
 {
-        MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -26,7 +24,8 @@ json_object *get_followers_by_user_id(char *id_,char *last_time)
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -115,22 +114,19 @@ json_object *get_followers_by_user_id(char *id_,char *last_time)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
 
 json_object *get_following_by_user_id(char *id_,char *last_time)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -223,6 +219,7 @@ json_object *get_following_by_user_id(char *id_,char *last_time)
 
     json_object * res = json_object_new_array();
 
+
     while (!mysql_stmt_fetch(stmt))
     {
         json_object * this_row = json_object_new_object();
@@ -239,22 +236,19 @@ json_object *get_following_by_user_id(char *id_,char *last_time)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
 
 bool insert_into_followers(const char *user_id, const char *follower_id)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -274,7 +268,7 @@ bool insert_into_followers(const char *user_id, const char *follower_id)
 
     if (!stmt)
     {
-        mysql_close(conn);
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -306,13 +300,15 @@ bool insert_into_followers(const char *user_id, const char *follower_id)
         goto exit_with_error;
     }
 
-    puts(mysql_stmt_error(stmt));
+
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return true;
 
 exit_with_error:
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return false;
 }
 

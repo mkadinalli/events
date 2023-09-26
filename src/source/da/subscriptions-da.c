@@ -1,12 +1,10 @@
 #include "../../include/da/subscriptions-da.h"
 #include "../../include/lib/files.h"
+#include "../../include/da/db.h"
 
 json_object *get_subs_by_user_id(char *id_,char *last_time)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -124,12 +122,12 @@ json_object *get_subs_by_user_id(char *id_,char *last_time)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
@@ -137,10 +135,7 @@ exit:
 
 json_object *get_subs_by_pub_id(char *id_,char *last_time)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -249,12 +244,12 @@ json_object *get_subs_by_pub_id(char *id_,char *last_time)
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 }
 
@@ -262,10 +257,7 @@ exit:
 
 bool insert_into_subscribers(const char *user_id, const char *publish_id)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file(conn,
-                                         "/home/vic/Desktop/ev2/events/config/config.json");
+MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
@@ -285,7 +277,7 @@ bool insert_into_subscribers(const char *user_id, const char *publish_id)
 
     if (!stmt)
     {
-        mysql_close(conn);
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -317,12 +309,14 @@ bool insert_into_subscribers(const char *user_id, const char *publish_id)
         goto exit_with_error;
     }
 
-    puts(mysql_stmt_error(stmt));
+    
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return true;
 
 exit_with_error:
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return false;
 }

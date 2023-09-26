@@ -33,7 +33,7 @@ bool insert_into_published(const char *title,
 
     if (!stmt)
     {
-        mysql_close(conn);
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -89,13 +89,14 @@ bool insert_into_published(const char *title,
         goto exit_with_error;
     }
 
-    puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return true;
 
 exit_with_error:
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return false;
 }
 
@@ -251,12 +252,12 @@ json_object *select_from_published(const char *user_id,
     }
 
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return res;
 
 exit:
     mysql_stmt_close(stmt);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
     return NULL;
 
 }
@@ -283,8 +284,8 @@ json_object *select_one_from_published(const char *id_)
 
     if (!stmt)
     {
-        puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -438,7 +439,7 @@ bool update_published(
 
     if (!stmt)
     {
-        mysql_close(conn);
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -501,14 +502,15 @@ bool update_published(
         goto exit_with_error;
     }
 
-    cpool_drop_connection(conn,cpool);
+    
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return true;
 
 exit_with_error:
-    cpool_drop_connection(conn,cpool);
     puts(mysql_stmt_error(stmt));
     mysql_stmt_close(stmt);
+    cpool_drop_connection(conn,cpool);
     return false;
 }
 
@@ -534,8 +536,8 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
 
     if (!stmt)
     {
-        puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))

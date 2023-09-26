@@ -3,7 +3,7 @@
 int socketfd = 0;
 
 tpool_t *thread_pool = NULL;
-
+conn_pool *cpool = NULL;
 
 void signal_handler(int sig)
 {

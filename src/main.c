@@ -5,6 +5,7 @@
 #include <mysql/mysql.h>
 #include "lib/files.h"
 #include <stdbool.h>
+#include "da/db.h"
 
 
 
@@ -14,5 +15,5 @@
 
 int main()
 {
-    
+    set_up_server("2000");
 }

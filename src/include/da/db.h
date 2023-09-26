@@ -47,6 +47,7 @@ struct db_conn{
     MYSQL * connection;
     db_conn * next;
     unsigned long t_id;
+    mtx_t dbmtx;
 };
 
 typedef struct conn_pool conn_pool;
