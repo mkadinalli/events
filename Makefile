@@ -1,3 +1,9 @@
+ifeq ($(V), 1)
+V_AT =
+else
+V_AT = @
+endif
+
 TARGET_EXEC := json
 
 BUILD_DIR := ./build
@@ -20,14 +26,17 @@ CC := gcc
 CFLAGS := -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
+	$(V_AT)$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
 
 $(BUILD_DIR)/%.c.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) $(CPPFLAGS) -c $< -o $@ $(CFLAGS)
+	@echo "compiling $<"
+	$(V_AT)mkdir -p $(dir $@)
+	$(V_AT)$(CC) $(CPPFLAGS) -c $< -o $@ $(CFLAGS)
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	@echo "compiling $<"
+	$(V_AT)mkdir -p $(dir $@)
+	$(V_AT)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 .PHONY: clean
 
