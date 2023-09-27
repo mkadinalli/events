@@ -1,8 +1,8 @@
 #include "../../include/da/db.h"
 #include "../../include/lib/files.h"
+#include "result_bind.h"
 
 #include <string.h>
-
 
 bool check_if_user_data_exists(const char *username, const char *email)
 {
@@ -71,19 +71,15 @@ int find_row_count(char *query)
     return rows;
 }
 
-void execute_query(char *query,MYSQL *conn)
+void execute_prepared_statement(MYSQL_STMT *stmt)
 {
-    MYSQL_STMT *stmt = mysql_stmt_init(conn);
+    // MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
     assert(stmt != NULL);
 
-    //assert(!mysql_stmt_close(stmt));
+    // assert(!mysql_stmt_close(stmt));
 
     int status;
-
-    status = mysql_stmt_prepare(stmt,query,strlen(query));
-
-    assert(status == 0);
 
     status = mysql_stmt_execute(stmt);
 
@@ -94,16 +90,15 @@ void execute_query(char *query,MYSQL *conn)
     assert(result_meta_data != NULL);
 
     unsigned int col_count = mysql_num_fields(result_meta_data);
-    unsigned int row_count= mysql_num_rows(result_meta_data);
+    unsigned int row_count = mysql_num_rows(result_meta_data);
     MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
 
     assert(columns != NULL);
 
-    for(unsigned int i = 0; i < col_count;i++)
+    for (unsigned int i = 0; i < col_count; i++)
     {
         puts(columns[i].name);
     }
-
 
     MYSQL_BIND result_outputs[col_count];
     memset(result_outputs, 0, sizeof result_outputs);
@@ -111,20 +106,20 @@ void execute_query(char *query,MYSQL *conn)
     bool is_null[col_count];
     bool error[col_count];
 
-    //result_bind * bnd = result_bind_create(col_count);
+    result_bind *bnd = result_bind_create(col_count);
 
-    for(unsigned int i = 0; i < col_count; i++)
+    for (unsigned int i = 0; i < col_count; i++)
     {
         result_outputs[i].buffer_type = MYSQL_TYPE_STRING;
         result_outputs[i].is_null = &(is_null[i]);
         result_outputs[i].length = &(lengths[i]);
         result_outputs[i].error = &(error[i]);
 
-        //result_bind_realloc(i,columns[i].length,columns[i].type,bnd);
+        result_bind_realloc(i, columns[i].length, columns[i].type, bnd);
 
-        //result_outputs[i].buffer = result_bind_get_at(i,bnd)->value;
+        result_outputs[i].buffer = result_bind_get_at(i, bnd)->value;
         result_outputs[i].buffer_length = 1000;
-        //strlen(result_bind_get_at(i,bnd)->value);
+        strlen(result_bind_get_at(i, bnd)->value);
     }
 
     if (mysql_stmt_bind_result(stmt, result_outputs))
@@ -133,87 +128,90 @@ void execute_query(char *query,MYSQL *conn)
         exit(1);
     }
 
-    while(!mysql_stmt_fetch(stmt))
+    json_object *res = json_object_new_array();
+
+    while (!mysql_stmt_fetch(stmt))
     {
-        puts("===========================");
-        //result_bind_print(bnd);
-        //puts(result_bind_get_string(0,bnd));
-        //puts(result_bind_get_string(1,bnd));
-        //puts(result_bind_get_string(2,bnd));
-        //puts(result_bind_get_string(3,bnd));
-        
-        puts("===========================");
+        json_object *this_row = json_object_new_object();
+
+        for (size_t i = 0; i < col_count; i++)
+        {
+            json_object_object_add(this_row, columns[i].name,
+                                   json_object_new_string(result_bind_get_at(i, bnd)->value));
+        }
+
+        json_object_array_add(res, json_object_get(this_row));
+
+        json_object_put(this_row);
     }
 
-    printf("fetched -> %d rows.\n",row_count);
+    printf("%s\n", json_object_to_json_string_ext(res, JSON_C_TO_STRING_PRETTY));
 
-    //result_bind_destroy(bnd);
+    // result_bind_destroy(bnd);
     mysql_free_result(result_meta_data);
-    assert(!mysql_stmt_close(stmt));
+    // assert(!mysql_stmt_close(stmt));
 }
 
-
-conn_pool * create_conn_pool(size_t size)
+conn_pool *create_conn_pool(size_t size)
 {
     size_t checked_size = 2;
 
-    if(size > 2)
+    if (size > 2)
     {
         checked_size = size;
     }
 
-    if(checked_size > 10)
+    if (checked_size > 10)
     {
         puts("too large");
         exit(1);
     }
 
-    db_conn * conns = malloc(sizeof(db_conn));
+    db_conn *conns = malloc(sizeof(db_conn));
     conns->connection = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
     conns->busy = false;
     conns->next = NULL;
     conns->t_id = conns->connection->thread_id;
 
-    for(size_t i = 1; i < checked_size; i++)
+    for (size_t i = 1; i < checked_size; i++)
     {
         db_conn *temp = malloc(sizeof(db_conn));
         temp->connection = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
         temp->next = conns;
         temp->busy = false;
         temp->t_id = temp->connection->thread_id;
-        mtx_init(&(temp->dbmtx),0);
+        mtx_init(&(temp->dbmtx), 0);
 
         conns = temp;
     }
 
-    conn_pool * cpool = malloc(sizeof(conn_pool));
+    conn_pool *cpool = malloc(sizeof(conn_pool));
 
     cpool->connections = conns;
     cpool->busy_conns = 0;
     cnd_init(&(cpool->conn_condition));
-    mtx_init(&(cpool->conn_mtx),0);
+    mtx_init(&(cpool->conn_mtx), 0);
     cpool->pool_size = checked_size;
 
     return cpool;
 }
 
-
-
 MYSQL *cpool_get_connection(conn_pool *cpool)
 {
-    if(cpool == NULL) return NULL;
+    if (cpool == NULL)
+        return NULL;
 
-    MYSQL * conn = NULL;
+    MYSQL *conn = NULL;
 
-    db_conn * d = cpool->connections;
+    db_conn *d = cpool->connections;
 
     mtx_lock(&(cpool->conn_mtx));
-    while(cpool->busy_conns >= cpool->pool_size)
-        cnd_wait(&(cpool->conn_condition),&(cpool->conn_mtx));
+    while (cpool->busy_conns >= cpool->pool_size)
+        cnd_wait(&(cpool->conn_condition), &(cpool->conn_mtx));
 
-    while(d)
+    while (d)
     {
-        if(!d->busy)
+        if (!d->busy)
         {
             conn = d->connection;
             d->busy = true;
@@ -221,49 +219,48 @@ MYSQL *cpool_get_connection(conn_pool *cpool)
             mtx_unlock(&(cpool->conn_mtx));
             break;
         }
-        d=d->next;
+        d = d->next;
     }
 
-    if(conn == NULL){
+    if (conn == NULL)
+    {
 
-     mtx_unlock(&(cpool->conn_mtx));
+        mtx_unlock(&(cpool->conn_mtx));
 
-     puts("----returning a null connection-----");
+        puts("----returning a null connection-----");
 
-     printf("Busy connections -> %ld\n",cpool->busy_conns);
-
+        printf("Busy connections -> %ld\n", cpool->busy_conns);
     }
 
     return conn;
 }
 
-
-bool cpool_drop_connection(MYSQL *con ,conn_pool *cpool)
+bool cpool_drop_connection(MYSQL *con, conn_pool *cpool)
 {
-    if(cpool == NULL) return false;
+    if (cpool == NULL)
+        return false;
 
-    db_conn * d = cpool->connections;
+    db_conn *d = cpool->connections;
 
     bool out = false;
 
-    while(d)
+    while (d)
     {
-        if(d->t_id == con->thread_id)
+        if (d->t_id == con->thread_id)
         {
             out = true;
             mtx_lock(&(cpool->conn_mtx));
             cpool->busy_conns--;
-            //d->t_id = con->thread_id;
+            // d->t_id = con->thread_id;
             mtx_unlock(&(cpool->conn_mtx));
-            //con = mysql_init(con);
-            
+            // con = mysql_init(con);
+
             d->busy = false;
             cnd_signal(&(cpool->conn_condition));
             break;
-
         }
 
-        d=d->next;
+        d = d->next;
     }
 
     return out;
@@ -271,24 +268,23 @@ bool cpool_drop_connection(MYSQL *con ,conn_pool *cpool)
 
 void cpool_destroy(conn_pool *cpool)
 {
-    if(cpool == NULL) return;
+    if (cpool == NULL)
+        return;
 
+    db_conn *d = cpool->connections;
 
-    db_conn * d = cpool->connections;
-
-    while(d)
+    while (d)
     {
-        db_conn * f = d;
-        d=d->next;
+        db_conn *f = d;
+        d = d->next;
         mysql_close(f->connection);
         free(f);
     }
-    
+
     cnd_destroy(&(cpool->conn_condition));
     mtx_destroy(&(cpool->conn_mtx));
     free(cpool);
 }
-
 
 /*
 
@@ -654,7 +650,7 @@ void result_bind_destroy(result_bind *rb)
         tmp = tmp->next;
         if(r->value != NULL)
             free(r->value);
-        
+
         free(r);
     }
 }

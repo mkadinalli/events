@@ -241,7 +241,7 @@ void result_bind_print(result_bind *rb)
     if(rb == NULL) return;
     result_bind *tmp = rb;
     size_t pos = 0;
-    while (tmp->value != NULL)
+    while (true)
     {
         switch (tmp->type_name)
         {
@@ -279,6 +279,145 @@ void result_bind_print(result_bind *rb)
         }
 
         pos++;
+
+        if((int)pos == result_bind_get_size(rb))
+            break;
         tmp = tmp->next;
     }
+}
+
+void result_bind_set_int(size_t pos, result_bind *rb,int value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(int));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_SHORT,rb);
+
+    char tmp[20];
+
+    sprintf(tmp,"%d",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_double(size_t pos, result_bind *rb,double value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(double));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_DOUBLE,rb);
+
+    char tmp[30];
+
+    sprintf(tmp,"%f",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_float(size_t pos, result_bind *rb,float value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(float));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_FLOAT,rb);
+
+    char tmp[30];
+
+    sprintf(tmp,"%f",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_string(size_t pos, result_bind *rb,char *value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(double));
+
+    result_bind_realloc(pos,strlen(value)+1,MYSQL_TYPE_STRING,rb);
+
+    char tmp[strlen(value)+1];
+
+    sprintf(tmp,"%s",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void  result_bind_set_bool(size_t pos, result_bind *rb,bool value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(value == true || value == false);
+    assert(sizeof(value) == sizeof(bool));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_BOOL,rb);
+
+    char tmp[2];
+
+    sprintf(tmp,"%d",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_i32(size_t pos, result_bind *rb,long value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(long));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_LONG,rb);
+
+    char tmp[40];
+
+    sprintf(tmp,"%ld",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_i64(size_t pos, result_bind *rb,long long value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(long long));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_LONGLONG,rb);
+
+    char tmp[40];
+
+    sprintf(tmp,"%lld",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_u32(size_t pos, result_bind *rb,unsigned long value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(long));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_LONG,rb);
+
+    char tmp[40];
+
+    sprintf(tmp,"%ld",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
+}
+
+void result_bind_set_u64(size_t pos, result_bind *rb,unsigned long long value)
+{
+    assert(rb != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+    assert(sizeof(value) == sizeof(long long));
+
+    result_bind_realloc(pos,0,MYSQL_TYPE_LONGLONG,rb);
+
+    char tmp[40];
+
+    sprintf(tmp,"%lld",value);
+
+    strcpy(result_bind_get_at(pos,rb)->value,tmp);
 }

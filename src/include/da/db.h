@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <threads.h>
 #include "../lib/ev_strings.h"
+#include <assert.h>
 
 /**
  * @brief check if username or password already exists in the DB
@@ -31,7 +32,7 @@ int find_row_count(char *query);
  * @brief execute a query
  * @param query - SQL query
 */
-bool execute_query(char *query,MYSQL *conn);
+void execute_prepared_statement(MYSQL_STMT *stmt);
 
 
 /**

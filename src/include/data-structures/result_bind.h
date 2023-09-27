@@ -41,6 +41,26 @@ unsigned long result_bind_get_u32(size_t pos, result_bind *rb);
 
 unsigned long long result_bind_get_u64(size_t pos, result_bind *rb);
 
+//sets
+
+void result_bind_set_int(size_t pos, result_bind *rb,int value);
+
+void result_bind_set_double(size_t pos, result_bind *rb,double value);
+
+void result_bind_set_float(size_t pos, result_bind *rb,float value);
+
+void result_bind_set_string(size_t pos, result_bind *rb,char *value);
+
+void  result_bind_set_bool(size_t pos, result_bind *rb,bool value);
+
+void result_bind_set_i32(size_t pos, result_bind *rb,long value);
+
+void result_bind_set_i64(size_t pos, result_bind *rb,long long value);
+
+void result_bind_set_u32(size_t pos, result_bind *rb,unsigned long value);
+
+void result_bind_set_u64(size_t pos, result_bind *rb,unsigned long long value);
+
 void result_bind_print(result_bind *rb);
 
 void result_bind_destroy(result_bind *rb);
