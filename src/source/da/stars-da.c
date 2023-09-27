@@ -8,7 +8,7 @@ MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -75,8 +75,8 @@ MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_stars_for_user(?,?)";
@@ -91,7 +91,8 @@ MYSQL *conn = cpool_get_connection(cpool);
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -195,8 +196,8 @@ json_object *get_stars_by_pub_id(char *id_,char *last_time)
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_stars_for_pub(?,?)";
@@ -211,7 +212,8 @@ json_object *get_stars_by_pub_id(char *id_,char *last_time)
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))

@@ -131,7 +131,8 @@ json_object *get_following_by_user_id(char *id_,char *last_time)
     if (conn == NULL)
     {
         puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_following(?,?)";
@@ -146,7 +147,8 @@ json_object *get_following_by_user_id(char *id_,char *last_time)
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -253,6 +255,7 @@ bool insert_into_followers(const char *user_id, const char *follower_id)
     if (conn == NULL)
     {
         puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 

@@ -27,12 +27,12 @@ CFLAGS := -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking $@"
-	$(V_AT)$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
+	$(V_AT)$(CXX) -g $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
 
 $(BUILD_DIR)/%.c.o: %.c
 	@echo "Compiling $<"
 	$(V_AT)mkdir -p $(dir $@)
-	$(V_AT)$(CC) $(CPPFLAGS) -c $< -o $@ $(CFLAGS)
+	$(V_AT)$(CC) -g $(CPPFLAGS) -c $< -o $@ $(CFLAGS)
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	@echo "Compiling $<"

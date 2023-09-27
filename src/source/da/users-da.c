@@ -93,7 +93,7 @@ MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -198,7 +198,8 @@ json_object *get_user(char *id_)
     if (conn == NULL)
     {
         puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_user(?)";
@@ -212,8 +213,8 @@ json_object *get_user(char *id_)
 
     if (!stmt)
     {
-        puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))

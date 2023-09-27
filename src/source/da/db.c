@@ -165,9 +165,15 @@ MYSQL *cpool_get_connection(conn_pool *cpool)
         d=d->next;
     }
 
-    if(conn == NULL) mtx_unlock(&(cpool->conn_mtx));
+    if(conn == NULL){
 
-    printf("Conn %ld has been picked, busy cons = %ld\n",conn->thread_id,cpool->busy_conns);
+     mtx_unlock(&(cpool->conn_mtx));
+
+     puts("----returning a null connection-----");
+
+     printf("Busy connections -> %ld\n",cpool->busy_conns);
+
+    }
 
     return conn;
 }
@@ -188,17 +194,14 @@ bool cpool_drop_connection(MYSQL *con ,conn_pool *cpool)
             out = true;
             mtx_lock(&(cpool->conn_mtx));
             cpool->busy_conns--;
-
-            printf("Conn %ld has been released, busy cons = %ld\n",con->thread_id,cpool->busy_conns);
-            //mysql_close(con);
-
-            con = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
-            d->t_id = con->thread_id;
+            //d->t_id = con->thread_id;
             mtx_unlock(&(cpool->conn_mtx));
-
+            //con = mysql_init(con);
+            
             d->busy = false;
             cnd_signal(&(cpool->conn_condition));
             break;
+
         }
 
         d=d->next;

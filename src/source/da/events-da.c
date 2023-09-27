@@ -14,6 +14,7 @@ bool insert_into_published(const char *title,
     if (conn == NULL)
     {
         puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -110,7 +111,8 @@ json_object *select_from_published(const char *user_id,
     if (conn == NULL)
     {
         puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_many_published(? ,? ,?)";
@@ -127,7 +129,8 @@ json_object *select_from_published(const char *user_id,
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -269,8 +272,8 @@ json_object *select_one_from_published(const char *id_)
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_one_published(?)";
@@ -418,7 +421,7 @@ bool update_published(
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
@@ -521,8 +524,8 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_pub_for_user(?,?)";

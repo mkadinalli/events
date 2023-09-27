@@ -4,12 +4,12 @@
 
 json_object *get_subs_by_user_id(char *id_,char *last_time)
 {
-MYSQL *conn = cpool_get_connection(cpool);
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_subs_for_user(?,?)";
@@ -24,7 +24,8 @@ MYSQL *conn = cpool_get_connection(cpool);
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -139,8 +140,8 @@ MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     char *query = "call get_subscribers_for_pub(?,?)";
@@ -155,7 +156,8 @@ MYSQL *conn = cpool_get_connection(cpool);
     if (!stmt)
     {
         puts("out of memory");
-        goto exit;
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     if (mysql_stmt_prepare(stmt, query, strlen(query)))
@@ -257,11 +259,11 @@ exit:
 
 bool insert_into_subscribers(const char *user_id, const char *publish_id)
 {
-MYSQL *conn = cpool_get_connection(cpool);
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
+        cpool_drop_connection(conn,cpool);
         return false;
     }
 
