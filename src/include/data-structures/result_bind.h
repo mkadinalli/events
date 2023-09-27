@@ -5,7 +5,9 @@
 #include <assert.h>
 #include <mysql/mysql.h>
 #include <stdbool.h>
-#include "da/db.h"
+//#include "da/db.h"
+#include <string.h>
+#include "ev_string.h"
 
 typedef struct result_bind result_bind;
 struct result_bind

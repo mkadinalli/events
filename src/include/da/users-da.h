@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <threads.h>
 #include "../lib/ev_strings.h"
+#include "result_bind.h"
 
 /**
  * @brief insert a new user 

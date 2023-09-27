@@ -335,15 +335,23 @@ void result_bind_set_string(size_t pos, result_bind *rb,char *value)
 {
     assert(rb != NULL);
     assert((int)pos < result_bind_get_size(rb));
-    assert(sizeof(value) == sizeof(double));
+    //assert(sizeof(value) == sizeof(double));
 
-    result_bind_realloc(pos,strlen(value)+1,MYSQL_TYPE_STRING,rb);
+    result_bind_realloc(pos,100,MYSQL_TYPE_STRING,rb);
 
-    char tmp[strlen(value)+1];
+    char tmp[100];
+
+    //puts("=============================");
+    //puts(value);
+    //puts("=============================");
 
     sprintf(tmp,"%s",value);
 
     strcpy(result_bind_get_at(pos,rb)->value,tmp);
+
+    puts("===============**==============");
+    puts(result_bind_get_at(pos,rb)->value);
+    puts("================**=============");
 }
 
 void  result_bind_set_bool(size_t pos, result_bind *rb,bool value)

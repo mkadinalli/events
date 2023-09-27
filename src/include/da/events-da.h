@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <threads.h>
 #include "../lib/ev_strings.h"
+#include "result_bind.h"
 
 /**
  * @brief Insert a new event

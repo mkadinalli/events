@@ -6,6 +6,7 @@
 #include <threads.h>
 #include "../lib/ev_strings.h"
 #include <assert.h>
+#include "../data-structures/result_bind.h"
 
 /**
  * @brief check if username or password already exists in the DB
@@ -32,7 +33,7 @@ int find_row_count(char *query);
  * @brief execute a query
  * @param query - SQL query
 */
-void execute_prepared_statement(MYSQL_STMT *stmt);
+json_object * execute_prepared_statement(MYSQL_STMT *stmt);
 
 
 /**
@@ -64,5 +65,7 @@ conn_pool * create_conn_pool(size_t size);
 MYSQL *cpool_get_connection(conn_pool *cpool);
 bool cpool_drop_connection(MYSQL *con ,conn_pool *cpool);
 void cpool_destroy(conn_pool *cpool);
+
+json_object *execute_prepared_query(char *query, result_bind *params);
 
 extern conn_pool *cpool;
