@@ -31,7 +31,7 @@ int find_row_count(char *query);
  * @brief execute a query
  * @param query - SQL query
 */
-bool execute_query(char *query);
+bool execute_query(char *query,MYSQL *conn);
 
 
 /**

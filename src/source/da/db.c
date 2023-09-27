@@ -71,26 +71,85 @@ int find_row_count(char *query)
     return rows;
 }
 
-bool execute_query(char *query)
+void execute_query(char *query,MYSQL *conn)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
+    MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
-    if (conn == NULL)
+    assert(stmt != NULL);
+
+    //assert(!mysql_stmt_close(stmt));
+
+    int status;
+
+    status = mysql_stmt_prepare(stmt,query,strlen(query));
+
+    assert(status == 0);
+
+    status = mysql_stmt_execute(stmt);
+
+    assert(status == 0);
+
+    MYSQL_RES *result_meta_data = mysql_stmt_result_metadata(stmt);
+
+    assert(result_meta_data != NULL);
+
+    unsigned int col_count = mysql_num_fields(result_meta_data);
+    unsigned int row_count= mysql_num_rows(result_meta_data);
+    MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
+
+    assert(columns != NULL);
+
+    for(unsigned int i = 0; i < col_count;i++)
     {
-        puts("failed to connect to db");
-        return false;
+        puts(columns[i].name);
     }
 
-    if (mysql_query(conn, query))
+
+    MYSQL_BIND result_outputs[col_count];
+    memset(result_outputs, 0, sizeof result_outputs);
+    unsigned long lengths[col_count];
+    bool is_null[col_count];
+    bool error[col_count];
+
+    //result_bind * bnd = result_bind_create(col_count);
+
+    for(unsigned int i = 0; i < col_count; i++)
     {
-        return false;
+        result_outputs[i].buffer_type = MYSQL_TYPE_STRING;
+        result_outputs[i].is_null = &(is_null[i]);
+        result_outputs[i].length = &(lengths[i]);
+        result_outputs[i].error = &(error[i]);
+
+        //result_bind_realloc(i,columns[i].length,columns[i].type,bnd);
+
+        //result_outputs[i].buffer = result_bind_get_at(i,bnd)->value;
+        result_outputs[i].buffer_length = 1000;
+        //strlen(result_bind_get_at(i,bnd)->value);
     }
 
-    mysql_close(conn);
+    if (mysql_stmt_bind_result(stmt, result_outputs))
+    {
+        puts("================bind failed===================");
+        exit(1);
+    }
 
-    return true;
+    while(!mysql_stmt_fetch(stmt))
+    {
+        puts("===========================");
+        //result_bind_print(bnd);
+        //puts(result_bind_get_string(0,bnd));
+        //puts(result_bind_get_string(1,bnd));
+        //puts(result_bind_get_string(2,bnd));
+        //puts(result_bind_get_string(3,bnd));
+        
+        puts("===========================");
+    }
+
+    printf("fetched -> %d rows.\n",row_count);
+
+    //result_bind_destroy(bnd);
+    mysql_free_result(result_meta_data);
+    assert(!mysql_stmt_close(stmt));
 }
 
 
