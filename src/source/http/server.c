@@ -92,9 +92,6 @@ void *handle_request(void *args)
 
         if (marker == 4)
         {
-
-            // recv_buf
-
             file_reached = true;
             lopps = 0;
 
@@ -113,56 +110,40 @@ void *handle_request(void *args)
                 {
                     file_type = IMAGE;
                     sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
-
-                    if ((ptr = fopen(filename, "a")) == NULL)
-                    {
-                        puts("failed to open file");
-                    }
-
-                    puts("file is image");
+                    ptr = fopen(filename, "a");
                 }
                 else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
                 {
                     file_type = JSON;
-
-                    puts("file is json");
                 }
             }
 
             if (!strcmp(map_get(http_req, "method"), "GET"))
             {
                 req_method = GET;
-                puts("method is get");
                 break;
             }
             else if (!strcmp(map_get(http_req, "method"), "POST"))
             {
                 req_method = POST;
-                puts("method is post");
             }
             else if (!strcmp(map_get(http_req, "method"), "PUT"))
             {
                 req_method = PUT;
-                puts("method is put");
-                // break;
             }
 
             else if (!strcmp(map_get(http_req, "method"), "PATCH"))
             {
                 req_method = PATCH;
-                puts("method is patch");
-                // break;
             }
             else if (!strcmp(map_get(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
-                puts("method is delete");
-                // break;
+                break;
             }
             else
             {
                 error_code = BAD_REQ;
-                puts("request is bad");
                 break;
             }
         }
@@ -224,13 +205,11 @@ void *handle_request(void *args)
         if (req_method == POST)
         {
             receive_file(their_socket, map_get(http_req, "url"), filename);
-            puts("Uplooding ===================");
         }
     }
     else
     {
         write_404(their_socket);
-        puts("404 not found");
     }
 
 clean_me:
