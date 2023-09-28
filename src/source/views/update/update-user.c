@@ -63,28 +63,13 @@ void update_user(int sock,char *json_load)
         return;
     }
 
-    // write_404(sock);
-
-    map_t *res = map_create();
-    json_object *j_res = NULL;
-
-    if (!update_one_user(json_object_get_string(name),
+    json_object *j_res = update_one_user(json_object_get_string(name),
                               json_object_get_string(username),
                               json_object_get_string(email),
                               json_object_get_string(avater),
                               json_object_get_string(bio),
-                              json_object_get_string(about), json_object_get_string(id)))
-    {
-        map_add(res, "success", "false");
-        j_res = create_json_object_from_map(res);
-        write_json(j_res, sock);
-        goto clean_up;
-    }
-
-    map_add(res, "success", "true");
-    j_res = create_json_object_from_map(res);
+                              json_object_get_string(about), 
+                              json_object_get_string(id));
     write_json(j_res, sock);
-
-clean_up:
     json_object_put(j_res);
 }

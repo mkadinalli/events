@@ -34,7 +34,7 @@ json_object *get_following_by_user_id(char *id_,char *last_time)
 }
 
 
-bool insert_into_followers(const char *user_id, const char *follower_id)
+json_object * insert_into_followers(const char *user_id, const char *follower_id)
 {
 
 
@@ -48,12 +48,6 @@ bool insert_into_followers(const char *user_id, const char *follower_id)
 
     result_bind_destroy(rb);
 
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 }
 

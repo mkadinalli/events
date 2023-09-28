@@ -2,7 +2,7 @@
 #include "../../include/lib/files.h"
 #include "../../include/da/db.h"
 
-bool insert_into_stars(const char *user_id, const char *publish_id)
+json_object * insert_into_stars(const char *user_id, const char *publish_id)
 {
     char *query = "insert into stars (user_id,published_id) values (uuid_to_bin(?),uuid_to_bin(?))";
 
@@ -13,14 +13,7 @@ bool insert_into_stars(const char *user_id, const char *publish_id)
     json_object *res =  execute_prepared_query(query,rb);
 
     result_bind_destroy(rb);
-
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 }
 
 

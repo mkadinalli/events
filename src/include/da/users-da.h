@@ -10,7 +10,7 @@
 /**
  * @brief insert a new user 
 */
-bool insert_into_users(const char *name,
+json_object * insert_into_users(const char *name,
                       const char *username,
                       const char *email,
                       const char *password);
@@ -19,7 +19,7 @@ bool insert_into_users(const char *name,
 /**
  * @brief update one user 
 */
-bool update_one_user(const char *name,
+json_object * update_one_user(const char *name,
                       const char *username,
                       const char *email,
                       const char * avater,

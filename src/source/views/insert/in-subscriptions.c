@@ -24,22 +24,8 @@ void add_subscriber(int sock, char *json_load)
     }
     // write_404(sock);
 
-    map_t *res = map_create();
-    json_object *j_res = NULL;
-
-    if (!insert_into_subscribers(json_object_get_string(user_id),
-                                 json_object_get_string(publish_id)))
-    {
-        map_add(res, "success", "false");
-        j_res = create_json_object_from_map(res);
-        write_json(j_res, sock);
-        goto clean_up;
-    }
-
-    map_add(res, "success", "true");
-    j_res = create_json_object_from_map(res);
+    json_object *j_res = insert_into_subscribers(json_object_get_string(user_id),
+                                 json_object_get_string(publish_id));
     write_json(j_res, sock);
-
-clean_up:
     json_object_put(j_res);
 }

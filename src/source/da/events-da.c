@@ -2,7 +2,7 @@
 #include "../../include/lib/files.h"
 #include "../../include/da/db.h"
 
-bool insert_into_published(const char *title,
+json_object * insert_into_published(const char *title,
                           const char *description,
                           const char *venue,
                           const char *event_date,
@@ -24,13 +24,7 @@ bool insert_into_published(const char *title,
 
     result_bind_destroy(rb);
 
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 }
 
 
@@ -70,7 +64,7 @@ json_object *select_one_from_published(const char *id_)
 }
 
 
-bool update_published(
+json_object * update_published(
                             const char *title,
                           const char *description,
                           const char *venue,
@@ -91,14 +85,8 @@ bool update_published(
     json_object *res =  execute_prepared_query(query,rb);
 
     result_bind_destroy(rb);
-    
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
 
-    return false;
+    return res;
 }
 
 

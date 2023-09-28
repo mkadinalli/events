@@ -184,7 +184,7 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
         result_bind_print(params);
 
-        unsigned long len[param_count];
+        unsigned long len[15];
 
         for (int i = 0; i < param_count; i++)
         {       
@@ -228,7 +228,8 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
     json_object *res = json_object_new_object();
 
-    json_object_object_add(res,"Affected rows",json_object_new_uint64(mysql_stmt_affected_rows(stmt)));
+    json_object_object_add(res,"affected_rows",json_object_new_uint64(mysql_stmt_affected_rows(stmt)));
+    json_object_object_add(res,"success",json_object_new_boolean(true));
     
     mysql_stmt_close(stmt);
 
@@ -276,9 +277,9 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
 
-        result_bind_print(params);
+        //result_bind_print(params);
 
-        unsigned long len[param_count];
+        unsigned long len[15];
 
         for (int i = 0; i < param_count; i++)
         {       
@@ -289,6 +290,9 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
             p_bind[i].length = &(len[i]);
             p_bind[i].buffer = result_bind_get_string(i, params);
             p_bind[i].buffer_length = 100;
+
+            printf("len is %ld\n",len[i]);
+            puts(result_bind_get_string(i, params));
 
         }
 

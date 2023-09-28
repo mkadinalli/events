@@ -174,12 +174,25 @@ double result_bind_get_float(size_t pos, result_bind *rb)
 
 char *result_bind_get_string(size_t pos, result_bind *rb)
 {
+
     result_bind *tmp = result_bind_get_at(pos, rb);
 
     assert(tmp != NULL);
     assert((int)pos < result_bind_get_size(rb));
 
     return tmp->value;
+}
+
+
+void result_bind_get_string_ex(size_t pos, result_bind *rb,char *str)
+{
+    
+    result_bind *tmp = result_bind_get_at(pos, rb);
+
+    assert(tmp != NULL);
+    assert((int)pos < result_bind_get_size(rb));
+
+    strcpy(str,tmp->value);
 }
 
 bool result_bind_get_bool(size_t pos, result_bind *rb)

@@ -2,7 +2,7 @@
 #include "../../include/lib/files.h"
 #include "../../include/da/db.h"
 
-bool insert_into_users(const char *name, const char *username, const char *email, const char *password)
+json_object * insert_into_users(const char *name, const char *username, const char *email, const char *password)
 {
     char *query = "insert into users (name,username,email,pass_word) values (?,?,?,?)";
 
@@ -25,7 +25,7 @@ bool insert_into_users(const char *name, const char *username, const char *email
 }
 
 
-bool update_one_user(const char *name,
+json_object * update_one_user(const char *name,
                       const char *username,
                         const char *email,
                             const char * avater,
@@ -48,13 +48,7 @@ bool update_one_user(const char *name,
 
     result_bind_destroy(rb);
     
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 }
 
 

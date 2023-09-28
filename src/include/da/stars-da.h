@@ -10,7 +10,7 @@
 /**
  * @brief Insert a Star
 */
-bool insert_into_stars(const char *user_id, const char *publish_id);
+json_object * insert_into_stars(const char *user_id, const char *publish_id);
 
 
 /**

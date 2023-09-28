@@ -66,3 +66,5 @@ void result_bind_set_u64(size_t pos, result_bind *rb,unsigned long long value);
 void result_bind_print(result_bind *rb);
 
 void result_bind_destroy(result_bind *rb);
+
+void result_bind_get_string_ex(size_t pos, result_bind *rb,char *str);

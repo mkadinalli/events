@@ -20,4 +20,4 @@ json_object *get_subs_by_pub_id(char *id,char *last_time);
 /**
  * @brief insert a new subscriber 
 */
-bool insert_into_subscribers(const char *user_id, const char *publish_id);
+json_object * insert_into_subscribers(const char *user_id, const char *publish_id);

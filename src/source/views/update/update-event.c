@@ -63,28 +63,13 @@ void update_event(int sock,char *json_load)
         return;
     }
 
-    // write_404(sock);
-
-    map_t *res = map_create();
-    json_object *j_res = NULL;
-
-    if (!update_published(json_object_get_string(title),
+    json_object *j_res = update_published(json_object_get_string(title),
                               json_object_get_string(description),
                               json_object_get_string(venue),
                               json_object_get_string(event_date),
                               json_object_get_string(deadline_date),
-                              json_object_get_string(publisher_id), json_object_get_string(id)))
-    {
-        map_add(res, "success", "false");
-        j_res = create_json_object_from_map(res);
-        write_json(j_res, sock);
-        goto clean_up;
-    }
+                              json_object_get_string(publisher_id), json_object_get_string(id));
 
-    map_add(res, "success", "true");
-    j_res = create_json_object_from_map(res);
     write_json(j_res, sock);
-
-clean_up:
     json_object_put(j_res);
 }

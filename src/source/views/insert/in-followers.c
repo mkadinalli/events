@@ -21,22 +21,9 @@ void add_follower(int sock, char *json_load)
     }
     // write_404(sock);
 
-    map_t *res = map_create();
-    json_object *j_res = NULL;
+    json_object *j_res = insert_into_followers(json_object_get_string(user_id),
+                               json_object_get_string(follower_id));
 
-    if (!insert_into_followers(json_object_get_string(user_id),
-                               json_object_get_string(follower_id)))
-    {
-        map_add(res, "success", "false");
-        j_res = create_json_object_from_map(res);
-        write_json(j_res, sock);
-        goto clean_up;
-    }
-
-    map_add(res, "success", "true");
-    j_res = create_json_object_from_map(res);
     write_json(j_res, sock);
-
-clean_up:
     json_object_put(j_res);
 }

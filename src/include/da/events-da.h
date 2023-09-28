@@ -11,7 +11,7 @@
 /**
  * @brief Insert a new event
 */
-bool insert_into_published(const char *title,
+json_object * insert_into_published(const char *title,
                           const char *description,
                           const char *venue,
                           const char *event_date,
@@ -38,7 +38,7 @@ json_object *select_one_from_published(const char *id);
 /**
  * @brief Update an event
 */
-bool update_published(
+json_object * update_published(
                             const char *title,
                           const char *description,
                           const char *venue,

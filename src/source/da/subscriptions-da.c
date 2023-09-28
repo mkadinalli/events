@@ -36,7 +36,7 @@ json_object *get_subs_by_pub_id(char *id_,char *last_time)
 
 
 
-bool insert_into_subscribers(const char *user_id, const char *publish_id)
+json_object * insert_into_subscribers(const char *user_id, const char *publish_id)
 {
     char *query = "insert into subscriptions (user_id,published_id) values (uuid_to_bin(?),uuid_to_bin(?))";
 
@@ -48,12 +48,6 @@ bool insert_into_subscribers(const char *user_id, const char *publish_id)
 
     result_bind_destroy(rb);
 
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 
 }
