@@ -39,7 +39,7 @@ json_object *select_from_published(const char *user_id,
     result_bind_set_string(1,rb,last_time);
     result_bind_set_string(2,rb,last_query_time);
 
-    json_object *res =  execute_prepared_query(query,rb);
+    json_object *res =  execute_prepared_call_query(query,rb);
 
     result_bind_destroy(rb);
     
@@ -56,7 +56,7 @@ json_object *select_one_from_published(const char *id_)
     result_bind * rb = result_bind_create(1);
     result_bind_set_string(0,rb,id_);
 
-    json_object *res =  execute_prepared_query(query,rb);
+    json_object *res =  execute_prepared_call_query(query,rb);
 
     result_bind_destroy(rb);
     
@@ -98,7 +98,7 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
 
     char *query = "call get_pub_for_user(?,?)";
 
-    json_object *res =  execute_prepared_query(query,rb);
+    json_object *res =  execute_prepared_call_query(query,rb);
 
     result_bind_destroy(rb);
     

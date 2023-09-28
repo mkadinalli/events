@@ -68,4 +68,6 @@ void cpool_destroy(conn_pool *cpool);
 
 json_object *execute_prepared_query(char *query, result_bind *params);
 
+json_object *execute_prepared_call_query(char *query, result_bind *params);
+
 extern conn_pool *cpool;
