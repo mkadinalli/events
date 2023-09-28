@@ -377,4 +377,7 @@ void receive_file(int sock,char *url,char *filename)
 {
     if(starts_with_word("/upload/u-image",url))
         insert_user_image(sock,url,filename);
+
+    if(starts_with_word("/upload/p-image",url))
+        insert_pub_image(sock,url,filename);
 }

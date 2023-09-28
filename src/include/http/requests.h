@@ -68,3 +68,5 @@ void serve_JSON(int sock, char *url);
 void receive_json(int sock,
                   char *url,
                   char *json);
+
+void receive_file(int sock,char *url,char *filename);

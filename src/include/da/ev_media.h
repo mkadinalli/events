@@ -9,3 +9,4 @@
 #include "db.h"
 
 json_object * insert_user_image_filename(char *user_id,char *file_name);
+json_object * insert_pub_image_filename(char *pub_id,char *file_name);

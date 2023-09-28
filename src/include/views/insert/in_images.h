@@ -8,3 +8,4 @@
 #include <string.h>
 
 void insert_user_image(int sock,char *url,char *filename);
+void insert_pub_image(int sock,char *url,char *filename);

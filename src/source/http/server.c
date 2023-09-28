@@ -49,7 +49,7 @@ void *handle_request(void *args)
 
     int lopps = 0;
 
-    char filename[100];
+    char filename[200] = {0};
 
     while (true)
     {
@@ -105,13 +105,10 @@ void *handle_request(void *args)
                 return NULL;
             }
 
-            if (!strcmp(map_get(http_req, "method"), "GET"))
-            {
-                req_method = GET;
-                puts("method is get");
-                break;
-            }else{
+            map_print(http_req);
 
+            if (map_get(http_req, "Content-Type") != NULL)
+            {
                 if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
                 {
                     file_type = IMAGE;
@@ -121,17 +118,27 @@ void *handle_request(void *args)
                     {
                         puts("failed to open file");
                     }
+
+                    puts("file is image");
                 }
-            else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
-            {
+                else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
+                {
                     file_type = JSON;
+
+                    puts("file is json");
+                }
             }
 
-            if (!strcmp(map_get(http_req, "method"), "POST"))
+            if (!strcmp(map_get(http_req, "method"), "GET"))
+            {
+                req_method = GET;
+                puts("method is get");
+                break;
+            }
+            else if (!strcmp(map_get(http_req, "method"), "POST"))
             {
                 req_method = POST;
                 puts("method is post");
-
             }
             else if (!strcmp(map_get(http_req, "method"), "PUT"))
             {
@@ -157,7 +164,6 @@ void *handle_request(void *args)
                 error_code = BAD_REQ;
                 puts("request is bad");
                 break;
-            }
             }
         }
 
@@ -215,9 +221,10 @@ void *handle_request(void *args)
     }
     else if (starts_with_word("/upload", map_get(http_req, "url")))
     {
-        if(req_method == POST)
+        if (req_method == POST)
         {
-            receive_file(their_socket, map_get(http_req, "url"),filename);
+            receive_file(their_socket, map_get(http_req, "url"), filename);
+            puts("Uplooding ===================");
         }
     }
     else
