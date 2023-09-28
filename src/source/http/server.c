@@ -49,6 +49,8 @@ void *handle_request(void *args)
 
     int lopps = 0;
 
+    char filename[100];
+
     while (true)
     {
         bytes_received = recv(their_socket, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1, 0);
@@ -113,7 +115,6 @@ void *handle_request(void *args)
                 if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
                 {
                     file_type = IMAGE;
-                    char filename[100];
                     sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
 
                     if ((ptr = fopen(filename, "a")) == NULL)
@@ -211,6 +212,13 @@ void *handle_request(void *args)
     else if (starts_with_word("/pages", map_get(http_req, "url")))
     {
         upload_file(f, "text/html", their_socket);
+    }
+    else if (starts_with_word("/upload", map_get(http_req, "url")))
+    {
+        if(req_method == POST)
+        {
+            receive_file(their_socket, map_get(http_req, "url"),filename);
+        }
     }
     else
     {

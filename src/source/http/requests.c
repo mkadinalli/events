@@ -1,6 +1,7 @@
 #include "../../include/http/requests.h"
 #include <string.h>
 #include <stdlib.h>
+#include "in_images.h"
 
 
 
@@ -325,13 +326,6 @@ void receive_json(int sock,
                   char *url,
                   char *json)
 {
-    // {
-    //      "name" : "blablabla",
-    //      "username" : "......",
-    //      "email" : ".......",
-    //      "password": "......."
-    //  }
-
     if (starts_with_word("/api/signup", url))
     {
         sign_up(sock, json);
@@ -370,7 +364,6 @@ void receive_json(int sock,
     if(starts_with_word("/api/ev-update",url))
     {
         update_event(sock,json);
-        puts("yeah man=================");
     }
 
     if(starts_with_word("/api/u-update",url))
@@ -378,4 +371,10 @@ void receive_json(int sock,
         update_user(sock,json);
     }
 
+}
+
+void receive_file(int sock,char *url,char *filename)
+{
+    if(starts_with_word("/upload/u-image",url))
+        insert_user_image(sock,url,filename);
 }
