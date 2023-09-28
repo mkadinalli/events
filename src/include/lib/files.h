@@ -10,5 +10,8 @@
 
 char *
 read_file_to_string(char *path);
+
 MYSQL *
 create_connection_from_a_file(char *path_to_config);
+
+bool open_file_to_append(char *filename,char *value);

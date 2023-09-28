@@ -7,6 +7,7 @@
 #include "../lib/ev_strings.h"
 #include <assert.h>
 #include "../data-structures/result_bind.h"
+#include "db_log.h"
 
 /**
  * @brief check if username or password already exists in the DB

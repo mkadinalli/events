@@ -51,6 +51,7 @@ int find_row_count(char *query)
 
     if (mysql_query(conn, query))
     {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
         return -1;
     }
 
@@ -58,7 +59,10 @@ int find_row_count(char *query)
     result = mysql_store_result(conn);
 
     if (!result)
+    {
+        cpool_drop_connection(conn,cpool);
         return -1;
+    }
 
     int rows = mysql_num_rows(result);
 
@@ -115,6 +119,7 @@ json_object * execute_prepared_statement(MYSQL_STMT *stmt)
         abort();
     }
 
+
     json_object *res = json_object_new_array();
 
     while (!mysql_stmt_fetch(stmt))
@@ -137,6 +142,8 @@ json_object * execute_prepared_statement(MYSQL_STMT *stmt)
     return res;
 }
 
+
+
 json_object *execute_prepared_query(char *query, result_bind *params)
 {
     assert(query != NULL);
@@ -146,13 +153,18 @@ json_object *execute_prepared_query(char *query, result_bind *params)
     MYSQL_STMT *stmt = NULL;
     stmt = mysql_stmt_init(conn);
 
-    assert(stmt != NULL);
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     if(mysql_stmt_prepare(stmt, query, strlen(query)))
     {
-       //log
-
-        abort();
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
 
@@ -160,7 +172,12 @@ json_object *execute_prepared_query(char *query, result_bind *params)
     {
         int param_count = mysql_stmt_param_count(stmt);
 
-        assert(param_count == result_bind_get_size(params));
+        if(param_count != result_bind_get_size(params))
+        {   
+            write_mysql_error_to_file("User ERR","Params not equal to slots",__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
 
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
@@ -183,10 +200,20 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
         bool status = mysql_stmt_bind_param(stmt, p_bind);
 
-        assert(!status);
+        if(status)
+        {
+            write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
     }
 
-    assert(stmt != NULL);
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     int status;
 
@@ -194,67 +221,16 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
     if(status != 0)
     {
-        puts(mysql_stmt_error(stmt));
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
-    assert(status == 0);
+    json_object *res = json_object_new_object();
 
-    MYSQL_RES *result_meta_data = mysql_stmt_result_metadata(stmt);
-
-    assert(result_meta_data != NULL);
-
-    unsigned int col_count = mysql_num_fields(result_meta_data);
-    MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
-
-    assert(columns != NULL);
-
-    MYSQL_BIND result_outputs[col_count];
-    memset(result_outputs, 0, sizeof result_outputs);
-    unsigned long lengths[col_count];
-    bool is_null[col_count];
-    bool error[col_count];
-
-    result_bind *bnd = result_bind_create(col_count);
-
-    for (unsigned int i = 0; i < col_count; i++)
-    {
-        result_outputs[i].buffer_type = MYSQL_TYPE_STRING;
-        result_outputs[i].is_null = &(is_null[i]);
-        result_outputs[i].length = &(lengths[i]);
-        result_outputs[i].error = &(error[i]);
-
-        result_bind_realloc(i, columns[i].length, columns[i].type, bnd);
-
-        result_outputs[i].buffer = result_bind_get_at(i, bnd)->value;
-        result_outputs[i].buffer_length = 1000;
-        strlen(result_bind_get_at(i, bnd)->value);
-    }
-
-    if (mysql_stmt_bind_result(stmt, result_outputs))
-    {
-        //log
-        abort();
-    }
-
-    json_object *res = json_object_new_array();
-
-    while (!mysql_stmt_fetch(stmt))
-    {
-        json_object *this_row = json_object_new_object();
-
-        for (size_t i = 0; i < col_count; i++)
-        {
-            json_object_object_add(this_row, columns[i].name,
-                                   json_object_new_string(result_bind_get_at(i, bnd)->value));
-        }
-
-        json_object_array_add(res, json_object_get(this_row));
-
-        json_object_put(this_row);
-    }
-
-    result_bind_destroy(bnd);
-    mysql_free_result(result_meta_data);
+    json_object_object_add(res,"Affected rows",json_object_new_uint64(mysql_stmt_affected_rows(stmt)));
+    
+    mysql_stmt_close(stmt);
 
     cpool_drop_connection(conn,cpool);
 
@@ -271,13 +247,18 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
     MYSQL_STMT *stmt = NULL;
     stmt = mysql_stmt_init(conn);
 
-    assert(stmt != NULL);
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     if(mysql_stmt_prepare(stmt, query, strlen(query)))
     {
-        //log
-
-        abort();
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
 
@@ -285,10 +266,17 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
     {
         int param_count = mysql_stmt_param_count(stmt);
 
-        assert(param_count == result_bind_get_size(params));
+        if(param_count != result_bind_get_size(params))
+        {   
+            write_mysql_error_to_file("User ERR","Params not equal to slots",__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
 
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
+
+        result_bind_print(params);
 
         unsigned long len[param_count];
 
@@ -301,14 +289,25 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
             p_bind[i].length = &(len[i]);
             p_bind[i].buffer = result_bind_get_string(i, params);
             p_bind[i].buffer_length = 100;
+
         }
 
         bool status = mysql_stmt_bind_param(stmt, p_bind);
 
-        assert(!status);
+        if(status)
+        {
+            write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
     }
 
-    assert(stmt != NULL);
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     int status;
 
@@ -316,20 +315,29 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     if(status != 0)
     {
-        puts(mysql_stmt_error(stmt));
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
-
-    assert(status == 0);
 
     MYSQL_RES *result_meta_data = mysql_stmt_result_metadata(stmt);
 
-    assert(result_meta_data != NULL);
+    if(result_meta_data == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     unsigned int col_count = mysql_num_fields(result_meta_data);
     MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
 
-    assert(columns != NULL);
-
+    if(columns == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
 
     MYSQL_BIND result_outputs[col_count];
     memset(result_outputs, 0, sizeof result_outputs);
@@ -355,7 +363,9 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     if (mysql_stmt_bind_result(stmt, result_outputs))
     {
-        abort();
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
     }
 
     json_object *res = json_object_new_array();
@@ -379,7 +389,12 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     result_bind_destroy(bnd);
     mysql_free_result(result_meta_data);
-    assert(!mysql_stmt_close(stmt));
+    
+    if(mysql_stmt_close(stmt))
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+    }
 
     cpool_drop_connection(conn,cpool);
 

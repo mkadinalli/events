@@ -77,3 +77,23 @@ MYSQL *create_connection_from_a_file(char *path_to_config)
 
     return sql_struct;
 }
+
+bool open_file_to_append(char *path,char *value)
+{
+    FILE *ptr = NULL;
+    if ((ptr = fopen(path, "a")))
+    {
+        fprintf(ptr,"%s\n",value);
+        fclose(ptr);
+        return true;
+    }
+
+    if ((ptr = fopen(path, "w")))
+    {
+        fprintf(ptr,"%s\n",value);
+        fclose(ptr);
+        return true;
+    }
+
+    return false;
+}

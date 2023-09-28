@@ -6,7 +6,7 @@ bool insert_into_users(const char *name, const char *username, const char *email
 {
     char *query = "insert into users (name,username,email,pass_word) values (?,?,?,?)";
 
-    result_bind * rb = result_bind_create(6);
+    result_bind * rb = result_bind_create(4);
     result_bind_set_string(0,rb,name);
     result_bind_set_string(1,rb,username);
     result_bind_set_string(2,rb,email);
