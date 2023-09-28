@@ -51,7 +51,7 @@ void result_bind_set_double(size_t pos, result_bind *rb,double value);
 
 void result_bind_set_float(size_t pos, result_bind *rb,float value);
 
-void result_bind_set_string(size_t pos, result_bind *rb,char *value);
+void result_bind_set_string(size_t pos, result_bind *rb,const char *value);
 
 void  result_bind_set_bool(size_t pos, result_bind *rb,bool value);
 

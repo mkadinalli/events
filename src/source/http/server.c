@@ -62,7 +62,6 @@ void *handle_request(void *args)
         if (!file_reached)
         {
             string_append(b, recv_buf[0]);
-            // puts("appending to header------->>>");
         }
         else
         {
@@ -72,7 +71,6 @@ void *handle_request(void *args)
             if (file_type == JSON)
             {
                 string_concat(json_b, recv_buff_f, bytes_received);
-                // printf("Concat to json ==== %s\n",recv_buff_f);
             }
         }
 
@@ -87,7 +85,6 @@ void *handle_request(void *args)
 
         if (bytes_received < 99 && file_reached)
         {
-            printf("Breaking after %d\n loops", lopps);
             break;
         }
 
@@ -123,14 +120,10 @@ void *handle_request(void *args)
                     {
                         puts("failed to open file");
                     }
-                    puts("file is image");
-                    // break;
                 }
             else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
             {
                     file_type = JSON;
-                    puts("file is json");
-                    // break;
             }
 
             if (!strcmp(map_get(http_req, "method"), "POST"))
@@ -192,7 +185,6 @@ void *handle_request(void *args)
     }
     else if (starts_with_word("/api", map_get(http_req, "url")))
     {
-        // serve_api
         switch (req_method)
         {
         case GET:
@@ -226,18 +218,11 @@ void *handle_request(void *args)
         puts("404 not found");
     }
 
-    if (file_type == JSON)
-    {
-        puts(json_b->chars);
-        // puts("json printed");
-    }
-
 clean_me:
 
     b = NULL;
     map_destroy(http_req);
     close(their_socket);
-    puts("closed socket");
     return NULL;
 }
 

@@ -33,8 +33,6 @@ bool check_if_user_exists(char *identity, char *password, bool by_email)
     free(identity_c);
     free(password_c);
 
-    puts(query);
-
     if (find_row_count(query) == -1)
         return false;
     return true;
@@ -42,14 +40,13 @@ bool check_if_user_exists(char *identity, char *password, bool by_email)
 
 int find_row_count(char *query)
 {
-    MYSQL *conn = NULL;
-    conn = mysql_init(conn);
-    conn = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
+
+    MYSQL *conn = cpool_get_connection(cpool);
 
     if (conn == NULL)
     {
-        puts("failed to connect to db");
-        return -1;
+        //log
+        abort();
     }
 
     if (mysql_query(conn, query))
@@ -66,27 +63,18 @@ int find_row_count(char *query)
     int rows = mysql_num_rows(result);
 
     mysql_free_result(result);
-    mysql_close(conn);
+    cpool_drop_connection(conn,cpool);
 
     return rows;
 }
 
 json_object * execute_prepared_statement(MYSQL_STMT *stmt)
 {
-    // MYSQL_STMT *stmt = mysql_stmt_init(conn);
-
     assert(stmt != NULL);
-
-    // assert(!mysql_stmt_close(stmt));
 
     int status;
 
     status = mysql_stmt_execute(stmt);
-
-    if(status != 0)
-    {
-        puts(mysql_stmt_error(stmt));
-    }
 
     assert(status == 0);
 
@@ -95,15 +83,9 @@ json_object * execute_prepared_statement(MYSQL_STMT *stmt)
     assert(result_meta_data != NULL);
 
     unsigned int col_count = mysql_num_fields(result_meta_data);
-    unsigned int row_count = mysql_num_rows(result_meta_data);
     MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
 
     assert(columns != NULL);
-
-    for (unsigned int i = 0; i < col_count; i++)
-    {
-        puts(columns[i].name);
-    }
 
     MYSQL_BIND result_outputs[col_count];
     memset(result_outputs, 0, sizeof result_outputs);
@@ -129,8 +111,8 @@ json_object * execute_prepared_statement(MYSQL_STMT *stmt)
 
     if (mysql_stmt_bind_result(stmt, result_outputs))
     {
-        puts("================bind failed===================");
-        exit(1);
+        //log
+        abort();
     }
 
     json_object *res = json_object_new_array();
@@ -150,13 +132,7 @@ json_object * execute_prepared_statement(MYSQL_STMT *stmt)
         json_object_put(this_row);
     }
 
-    //printf("%s\n", json_object_to_json_string_ext(res, JSON_C_TO_STRING_PRETTY));
-
-    // result_bind_destroy(bnd);
     mysql_free_result(result_meta_data);
-    // assert(!mysql_stmt_close(stmt));
-
-    
 
     return res;
 }
@@ -174,27 +150,17 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
     if(mysql_stmt_prepare(stmt, query, strlen(query)))
     {
-        puts(mysql_stmt_error(stmt));
+       //log
 
         abort();
     }
 
-    // assert(result_bind_get_size(params) > 0);
 
     if (params != NULL)
     {
         int param_count = mysql_stmt_param_count(stmt);
 
-        if(param_count != result_bind_get_size(params))
-        {
-            puts("0000000000000000000000000000000000000000");
-            puts(query);
-            printf("%d [ %d ]\n",param_count ,result_bind_get_size(params));
-            result_bind_print(params);
-            puts("0000000000000000000000000000000000000000");
-        }
-
-        //assert(param_count == result_bind_get_size(params));
+        assert(param_count == result_bind_get_size(params));
 
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
@@ -207,25 +173,12 @@ json_object *execute_prepared_query(char *query, result_bind *params)
         {       
             len[i] = strlen(result_bind_get_string(i, params));
 
-                puts("===============,.,.,.==============");
-                puts(result_bind_get_string(i, params));
-                printf("%ld\n",len[i]);
-                printf("%d - %d -> %d\n",result_bind_get_at(i,params)->type_name,MYSQL_TYPE_STRING,i);
-                puts("==================,.,.,===========");
-
-            p_bind[i].buffer_type = MYSQL_TYPE_STRING;//result_bind_get_at(i, params)->type_name;
+            p_bind[i].buffer_type = result_bind_get_at(i, params)->type_name;
             p_bind[i].is_null = 0;
             p_bind[i].length = &(len[i]);
             p_bind[i].buffer = result_bind_get_string(i, params);
             p_bind[i].buffer_length = 100;
 
-
-
-                puts("=============================");
-                puts(result_bind_get_at(i,params)->value);
-                printf("%ld\n",len[i]);
-                printf("%d - %d -> %d\n",result_bind_get_at(i,params)->type_name,MYSQL_TYPE_STRING,i);
-                puts("=============================");
         }
 
         bool status = mysql_stmt_bind_param(stmt, p_bind);
@@ -233,15 +186,7 @@ json_object *execute_prepared_query(char *query, result_bind *params)
         assert(!status);
     }
 
-    //json_object * jobj = execute_prepared_statement(stmt);
-
-
-    //===================================================================
-        // MYSQL_STMT *stmt = mysql_stmt_init(conn);
-
     assert(stmt != NULL);
-
-    // assert(!mysql_stmt_close(stmt));
 
     int status;
 
@@ -259,15 +204,9 @@ json_object *execute_prepared_query(char *query, result_bind *params)
     assert(result_meta_data != NULL);
 
     unsigned int col_count = mysql_num_fields(result_meta_data);
-    unsigned int row_count = mysql_num_rows(result_meta_data);
     MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
 
     assert(columns != NULL);
-
-    for (unsigned int i = 0; i < col_count; i++)
-    {
-        puts(columns[i].name);
-    }
 
     MYSQL_BIND result_outputs[col_count];
     memset(result_outputs, 0, sizeof result_outputs);
@@ -293,8 +232,8 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
     if (mysql_stmt_bind_result(stmt, result_outputs))
     {
-        puts("================bind failed===================");
-        exit(1);
+        //log
+        abort();
     }
 
     json_object *res = json_object_new_array();
@@ -314,14 +253,8 @@ json_object *execute_prepared_query(char *query, result_bind *params)
         json_object_put(this_row);
     }
 
-    //printf("%s\n", json_object_to_json_string_ext(res, JSON_C_TO_STRING_PRETTY));
-
     result_bind_destroy(bnd);
     mysql_free_result(result_meta_data);
-    // assert(!mysql_stmt_close(stmt));
-
-    //return res;
-    //===================================================================
 
     cpool_drop_connection(conn,cpool);
 
@@ -342,32 +275,20 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     if(mysql_stmt_prepare(stmt, query, strlen(query)))
     {
-        puts(mysql_stmt_error(stmt));
+        //log
 
         abort();
     }
 
-    // assert(result_bind_get_size(params) > 0);
 
     if (params != NULL)
     {
         int param_count = mysql_stmt_param_count(stmt);
 
-        if(param_count != result_bind_get_size(params))
-        {
-            puts("0000000000000000000000000000000000000000");
-            puts(query);
-            printf("%d [ %d ]\n",param_count ,result_bind_get_size(params));
-            result_bind_print(params);
-            puts("0000000000000000000000000000000000000000");
-        }
-
-        //assert(param_count == result_bind_get_size(params));
+        assert(param_count == result_bind_get_size(params));
 
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
-
-        result_bind_print(params);
 
         unsigned long len[param_count];
 
@@ -375,25 +296,11 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
         {       
             len[i] = strlen(result_bind_get_string(i, params));
 
-                puts("===============,.,.,.==============");
-                puts(result_bind_get_string(i, params));
-                printf("%ld\n",len[i]);
-                printf("%d - %d -> %d\n",result_bind_get_at(i,params)->type_name,MYSQL_TYPE_STRING,i);
-                puts("==================,.,.,===========");
-
-            p_bind[i].buffer_type = MYSQL_TYPE_STRING;//result_bind_get_at(i, params)->type_name;
+            p_bind[i].buffer_type = result_bind_get_at(i, params)->type_name;
             p_bind[i].is_null = 0;
             p_bind[i].length = &(len[i]);
             p_bind[i].buffer = result_bind_get_string(i, params);
             p_bind[i].buffer_length = 100;
-
-
-
-                puts("=============================");
-                puts(result_bind_get_at(i,params)->value);
-                printf("%ld\n",len[i]);
-                printf("%d - %d -> %d\n",result_bind_get_at(i,params)->type_name,MYSQL_TYPE_STRING,i);
-                puts("=============================");
         }
 
         bool status = mysql_stmt_bind_param(stmt, p_bind);
@@ -401,15 +308,7 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
         assert(!status);
     }
 
-    //json_object * jobj = execute_prepared_statement(stmt);
-
-
-    //===================================================================
-        // MYSQL_STMT *stmt = mysql_stmt_init(conn);
-
     assert(stmt != NULL);
-
-    // assert(!mysql_stmt_close(stmt));
 
     int status;
 
@@ -427,15 +326,10 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
     assert(result_meta_data != NULL);
 
     unsigned int col_count = mysql_num_fields(result_meta_data);
-    unsigned int row_count = mysql_num_rows(result_meta_data);
     MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
 
     assert(columns != NULL);
 
-    for (unsigned int i = 0; i < col_count; i++)
-    {
-        puts(columns[i].name);
-    }
 
     MYSQL_BIND result_outputs[col_count];
     memset(result_outputs, 0, sizeof result_outputs);
@@ -461,8 +355,7 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     if (mysql_stmt_bind_result(stmt, result_outputs))
     {
-        puts("================bind failed===================");
-        exit(1);
+        abort();
     }
 
     json_object *res = json_object_new_array();
