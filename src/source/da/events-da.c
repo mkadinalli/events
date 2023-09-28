@@ -24,7 +24,13 @@ bool insert_into_published(const char *title,
 
     result_bind_destroy(rb);
 
-    return res;
+    if(res)
+    {
+        json_object_put(res);
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -86,7 +92,13 @@ bool update_published(
 
     result_bind_destroy(rb);
     
-    return res;
+    if(res)
+    {
+        json_object_put(res);
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -94,14 +106,13 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
 {
     result_bind * rb = result_bind_create(2);
     result_bind_set_string(0,rb,id_);
-    result_bind_set_string(1,rb,id_);
+    result_bind_set_string(1,rb,last_time);
 
     char *query = "call get_pub_for_user(?,?)";
 
     json_object *res =  execute_prepared_call_query(query,rb);
 
     result_bind_destroy(rb);
-    
     return res;
 }
 
