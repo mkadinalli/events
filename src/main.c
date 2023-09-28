@@ -12,9 +12,7 @@
 
 
 
-
 int main()
 {
-    set_up_server("2000");
 }
 

@@ -11,6 +11,11 @@ create schema events;
 
 use events;
 set block_encryption_mode = 'aes-256-cbc';
+select @@max_allowed_packet;
+select @@net_buffer_length;
+set global max_allowed_packet = @@max_allowed_packet * 10;
+commit;
+set global net_buffer_length = @@net_buffer_length *10;
 
 -- =======USERS=================================================================
 
@@ -148,6 +153,46 @@ create table subscriptions
     on delete cascade
 );
 
+-- ========================================================================
+
+drop table if exists user_images;
+create table user_images
+(
+	id binary(16) not null,
+    user_id binary(16),
+    file_path varchar(256),
+    purpose enum('avater') default 'avater',
+	date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
+    
+    
+	constraint 
+		user_img_pk primary key(id),
+	constraint 
+		img_user_fk foreign key(user_id) references users(id)
+    on delete cascade
+);
+
+-- ===========================================================================
+
+drop table if exists pub_images;
+create table pub_images
+(
+	id binary(16) not null,
+    pub_id binary(16) not null,
+    file_path varchar(256) not null,
+    purpose enum('banner') default 'banner',
+	date_created timestamp default now(),
+    date_modified timestamp default now() on update now(),
+    
+    
+	constraint 
+		pub_img_pk primary key(id),
+	constraint 
+		img_pub_fk foreign key(pub_id) references published(id)
+    on delete cascade
+);
+
 -- ===========================================================================
 -- ===============procedures==================================================
 -- ===========================================================================
@@ -278,6 +323,28 @@ begin
 end #
 delimiter ; 
 
+
+delimiter #
+drop trigger if exists add_u_img_id #
+create trigger add_u_img_id
+before insert on user_images
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
+
+delimiter #
+drop trigger if exists add_p_img_id #
+create trigger add_p_img_id
+before insert on pub_images
+for each row
+begin
+    set new.id = uuid_to_bin(uuid());
+end #
+delimiter ; 
+
 /*
 delimiter #
 drop trigger if exists add_payment_id #
@@ -316,7 +383,7 @@ begin
     name,
     username,
     email,
-    avater,
+    (select file_path from user_images where user_id = this_id and purpose = 'avater' limit 1) as avater,
     about,
     bio,
     date_created as join_date,
@@ -371,12 +438,13 @@ begin
         title,
         description,
         venue,
+        (select file_path from pub_images where pub_id = this_id and purpose = 'banner' limit 1) as avater,
         cast(bin_to_uuid(publisher_id) as char) as publisher_id,
         date_created,
         event_date,
         deadline_date,
         now() as time_queried,
-        (select count(*) from subscriptions where id = this_id) as subscriptions,
+        (select count(*) from subscriptions where published_id = this_id) as subscriptions,
         stars
 	from published where id = this_id ;
 end #
@@ -401,7 +469,7 @@ begin
         event_date,
         -- deadline_date,
 		now() as time_queried,
-        (select count(*) from subscriptions s where s.id = p.id) as subscriptions,
+        (select count(*) from subscriptions s where s.published_id = p.id) as subscriptions,
         stars
 	from published p
     where
@@ -641,7 +709,7 @@ call get_following('2272f2a3-5a0e-11ee-b6f2-1f05bb9bd55d','1990-2-2 00:00:00');
 
 call get_followers('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d',now());
 
-call get_pub_for_user('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d','2030-1-1');
+call get_pub_for_user('58a7e1d2-5df5-11ee-8af4-ce9687e2d584','2030-1-1');
 
 rollback;
 
@@ -652,6 +720,8 @@ call get_subscribers(@muuid2,now());
 select * from stars;
 
 select * from users;
+
+
 
 select * from published;
 
@@ -665,7 +735,7 @@ insert into users
 )
 values
 (
-	'my2','my2','myemail22','my passwrd'
+	'my27','my27','myemail272','my passwrd'
 );
 
 insert into published
@@ -673,7 +743,7 @@ insert into published
 	title,description,venue,publisher_id,event_date,deadline_date
 )
 values
-('title12','description1','venue1',uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'),'2024-1-1','2024-1-1');
+('title12','description1','venue1',uuid_to_bin('58a7e1d2-5df5-11ee-8af4-ce9687e2d584'),'2024-1-1','2024-1-1');
 
 select cast(bin_to_uuid(id) as char) as id from published;
 
