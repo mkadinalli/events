@@ -15,13 +15,7 @@ json_object * insert_into_users(const char *name, const char *username, const ch
 
     result_bind_destroy(rb);
 
-    if(res)
-    {
-        json_object_put(res);
-        return true;
-    }
-
-    return false;
+    return res;
 }
 
 
