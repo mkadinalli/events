@@ -361,6 +361,8 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
         result_bind_realloc(i, columns[i].length, columns[i].type, bnd);
 
         result_outputs[i].buffer = result_bind_get_at(i, bnd)->value;
+
+        //Todo changes here
         result_outputs[i].buffer_length = 1000;
         strlen(result_bind_get_at(i, bnd)->value);
     }
@@ -433,7 +435,6 @@ conn_pool *create_conn_pool(size_t size)
         temp->next = conns;
         temp->busy = false;
         temp->t_id = temp->connection->thread_id;
-        mtx_init(&(temp->dbmtx), 0);
 
         conns = temp;
     }
