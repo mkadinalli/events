@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/home/vic/Desktop/ev2"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

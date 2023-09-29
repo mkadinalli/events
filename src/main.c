@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <json-c/json.h>
 #include <assert.h>
-#include "./include/server.h"
-#include "./include/map.h"
-#include "./include/lib.h"
-#include "./include/requests.h"
+#include "./include/http/server.h"
+#include <mysql/mysql.h>
+#include "lib/files.h"
+#include <stdbool.h>
+#include "da/db.h"
+#include "result_bind.h"
+#include <time.h>
+#include "events-da.h"
+
 
 
 int main()
 {
     set_up_server("2000");
 }
+
