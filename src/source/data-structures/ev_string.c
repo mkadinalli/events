@@ -1,5 +1,11 @@
 #include "../../include/data-structures/ev_string.h"
 
+char *base64_encode(char *str)
+{
+    
+}
+
+
 string_t *string_create()
 {
     string_t *t = malloc(sizeof(string_t));
