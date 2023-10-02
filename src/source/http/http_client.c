@@ -49,5 +49,92 @@ bool http_client_connect()
         fprintf(stderr,"failed to create socket\n");
     }
 
+    char rec_buff[1024] = {0};
+
+    status = recv(sock,rec_buff,1024,0);
+
+    if(status < 1)
+    {
+      puts("an error");
+    }
+
+    puts(rec_buff);
+
     freeaddrinfo(res);
+}
+
+http_client *http_client_create()
+{
+  http_client * client = malloc(sizeof(http_client));
+
+  client->headers = map_create();
+
+  client->url = NULL;
+
+  client->file_size = 0;
+
+  return client;
+
+}
+
+bool http_client_set_url(char *url,http_client *client)
+{
+  if(!url || !client) return false;
+
+  int len = strlen(url);
+
+  client->url = malloc(len+1);
+  if(!client->url) return false;
+
+  strcpy(client->url,url);
+
+  return true;
+}
+
+bool http_client_set_header(char *key,char *value,http_client *client)
+{
+  if(!key || !value || !client) return false;
+
+  return map_add(client->headers,key,value);
+}
+
+bool http_client_append_file(char *path,http_client *client)
+{
+  if(!client) return false;
+  if(client->body) return false;
+
+  FILE *fptr;
+  size_t file_size;
+
+  if(!(fptr = fopen(path,"rb")))
+    return false;
+  
+  fseek(fptr,0,SEEK_END);
+
+  file_size = ftell(fptr);
+  client->file_size = file_size;
+  
+  client->body = malloc(file_size+1);
+  bzero(client->body,file_size+1);
+
+  rewind(fptr);
+  size_t read_bytes = 0;
+  bool out = true;
+  size_t offset = 0;
+
+  while((read_bytes = fread(client->body+offset,1,100,fptr)))
+  {
+    if(read_bytes != 100)
+    {
+      if(ferror(fptr))
+      {
+        free(client->body);
+        out = false;
+        break;
+      }
+    }
+    offset += 100;
+  }
+
+  return out;
 }

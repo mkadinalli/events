@@ -1,96 +1,74 @@
 #include "../../include/data-structures/ev_string.h"
 
-char *base64_encode(char *str)
+char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+char *base64_encode(const char *str,size_t len)
 {
-    char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    char *res_string = malloc(1000 * sizeof(char));
+    char *out,*pos;
+    const char *end,*in;
 
-    int index,no_of_bits = 0,padding = 0,val = 0,count = 0,temp;
+    size_t olen;
+    int line_len;
 
-    int i,j,k = 0;
+    olen = len * 4 / 3 + 4;
 
-    int len_str = strlen(str);
+    olen += 72;
+    olen++;
 
-    for(i = 0; i < len_str; i+=3)
+    if(olen < len)
+        return NULL;
+    
+    out = malloc(olen);
+
+    if(out == NULL)
+        return NULL;
+
+    end = str+len;
+    in = str;
+    pos = out;
+
+    line_len = 0;
+
+    while(end - in >= 3)
     {
-        val = 0; count = 0; no_of_bits = 0;
+        *pos++ = charset[in[0] >> 2];
+        *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+        *pos++ = charset[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+        *pos++ = charset[in[2] & 0x3f];
+        in += 3;
 
-        for(j = i; j < len_str && j <= i +2; j++)
+        line_len += 4;
+
+        if(line_len >= 72)
         {
-            val = val << 8;// 0000000
+            *pos++ = '\n';
+            line_len = 0;
+        }   
+    }
 
-            val = val | str[j];
+    if(end - in)
+    {
+        *pos++ = charset[in[0] >> 2];
 
-            count++;
+        if(end - in == 1)
+        {
+            *pos++ = charset[(in[0] & 0x03) << 4];
+            *pos++ = '=';
+        }else{
+            *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+            *pos++ = charset[(in[1] & 0x0f) << 2];
         }
 
-        no_of_bits = count * 8;
-
-        padding = no_of_bits % 3;
-
-        while(no_of_bits != 0)
-        {
-            //101 010 110 010 010 0
-            if(no_of_bits >= 6)
-            {
-                //16
-                temp = no_of_bits - 6;
-                //10
-                //1010 ->after shift
-                index = (val >> temp) & 63;
-
-                //111111
-                //001010
-                //------
-                //001010
-
-                no_of_bits -= 6;
-            }
-            else
-            {
-                temp = 6 - no_of_bits;
-
-                index = (val << temp) & 63;
-
-                //63 == 111111
-
-                no_of_bits = 0;
-            }
-
-            res_string[k++] = charset[index];
-        }
+        *pos++ = '=';
+        line_len += 4;
     }
 
-    for(i = 1; i <= padding; i++)
-    {
-        res_string[k++] = '=';
-    }
+    *pos = '\0';
 
-    res_string[k] = '\0';
-
-    return res_string;
+    return out;
 }
 
-
-char *base64_decode(char *str)
-{
-    int len = strlen(str);
-    int val = 0;
-
-    int i;
-
-    for(i = 0; i < len;i++)
-    {
-        val << 6;
-
-        val = val | str[i] & 64;
-    }
-
-    int no_of_bits = i * 6;
-
-    printf("bits = > %d\n",no_of_bits);
-}
 
 
 string_t *string_create()

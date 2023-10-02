@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/vic/Desktop/ev2"
+                "/home/vic/Desktop/ev2/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
