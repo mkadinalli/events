@@ -100,8 +100,7 @@ bool http_client_set_header(char *key,char *value,http_client *client)
 
 bool http_client_append_file(char *path,http_client *client)
 {
-  if(!client) return false;
-  if(client->body) return false;
+  if(!client || client->body) return false;
 
   FILE *fptr;
   size_t file_size;
@@ -137,4 +136,20 @@ bool http_client_append_file(char *path,http_client *client)
   }
 
   return out;
+}
+
+
+bool http_client_append_string(char *str,http_client *client)
+{
+  if(!str || !client || client->body) return false;
+
+  int len = strlen(str);
+
+  client->body = malloc(len+1);
+
+  if(!client->body) return false;
+
+  strcpy(client->body,str);
+
+  return true;
 }

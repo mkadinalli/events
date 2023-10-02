@@ -15,11 +15,7 @@ int main()
 {
     http_client *ct = http_client_create();
 
-    http_client_append_file("/home/vic/Downloads/cpp study.pdf",ct);
+    http_client_append_string("{\"hello\" : \"world\"}",ct);
 
-    FILE *file = fopen("/home/vic/Desktop/cpp study.pdf","a");
-    size_t b;
-    b = fwrite(ct->body,1,ct->file_size,file);
-
-    printf("writen %ld\n",b);
+    puts(ct->body);
 }
