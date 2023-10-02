@@ -1,4 +1,5 @@
 #include "http_client.h"
+#include <stdarg.h>
 
 char * get_ip_as_string(struct sockaddr *address)
 {
@@ -13,22 +14,28 @@ char * get_ip_as_string(struct sockaddr *address)
   return ip_string;
 }
 
-bool http_client_connect()
+int http_client_create_socket(char *address_,...)
 {
     int status,sock;
     struct addrinfo hints;
     struct addrinfo * res,*p;
+
+    va_list args;
+
+    va_start(args,address_);
 
     memset(&hints,0,sizeof hints);
 
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    status = getaddrinfo(NULL,"2000",&hints,&res);
+    status = getaddrinfo(va_arg(args,char *),va_arg(args,char *),&hints,&res);
+
+    va_end(args);
 
     if(status != 0){
       fprintf(stderr,"%s\n",gai_strerror(status));
-      exit(1);
+      return -1;
     }
 
     for(p = res; p ; p = p->ai_next)
@@ -39,37 +46,34 @@ bool http_client_connect()
 
       if(sock < 0) break;
 
-       if(connect(sock,p->ai_addr,p->ai_addrlen))
-       {
-        fprintf(stderr,"failed to connect\n");
-       }else{ break; }
+       if(!connect(sock,p->ai_addr,p->ai_addrlen))
+       { break; }
     }
 
     if(p == NULL){
-        fprintf(stderr,"failed to create socket\n");
+        return -1;
     }
-
-    char rec_buff[1024] = {0};
-
-    status = recv(sock,rec_buff,1024,0);
-
-    if(status < 1)
-    {
-      puts("an error");
-    }
-
-    puts(rec_buff);
 
     freeaddrinfo(res);
+
+    return sock;
 }
 
 http_client *http_client_create()
 {
   http_client * client = malloc(sizeof(http_client));
 
-  client->headers = map_create();
+  client->headers = NULL;
 
   client->url = NULL;
+
+  client->http_version = malloc(10 * sizeof(char));
+
+  client->port = NULL;
+
+  client->address = NULL;
+
+  strcpy(client->http_version,"HTTP/1.1");
 
   client->file_size = 0;
 
@@ -88,6 +92,50 @@ bool http_client_set_url(char *url,http_client *client)
 
   strcpy(client->url,url);
 
+  return true;
+}
+
+bool http_client_set_method(methods m,http_client *client)
+{
+  switch(m)
+  {
+    case GET:
+      return http_client_set_method_str("GET",client);
+    break;
+    case POST:
+      return http_client_set_method_str("POST",client);
+    break;
+    default:
+      return http_client_set_method_str("GET",client);
+  }
+
+  return false;
+}
+
+bool http_client_set_method_str(char *m,http_client *client)
+{
+  if(!client || !m) return false;
+  int l = strlen(m);
+  client->method = malloc(l+1);
+  strcpy(client->method,m);
+  return true;
+}
+
+bool http_client_set_address(char *address,http_client *client)
+{
+  if(!client || !address) return false;
+  int l = strlen(address);
+  client->address = malloc(l+1);
+  strcpy(client->address,address);
+  return true;
+}
+
+bool http_client_set_port(char *port,http_client *client)
+{
+  if(!client || !port) return false;
+  int l = strlen(port);
+  client->port = malloc(l+1);
+  strcpy(client->port,port);
   return true;
 }
 
@@ -152,4 +200,27 @@ bool http_client_append_string(char *str,http_client *client)
   strcpy(client->body,str);
 
   return true;
+}
+
+bool http_client_connect(http_client * client)
+{
+  if(!client->url || !client->method || !client || !client->address)
+   { puts("missing members"); return false;}
+
+  int sock;
+  
+  if((sock = http_client_create_socket(client->address,client->port)) == -1)
+   {
+    puts("failed to create socket"); return false;}
+
+  return true;
+}
+
+void dbg_client(http_client *ct)
+{
+  puts(ct->address);
+  puts(ct->body);
+  puts(ct->http_version);
+  puts(ct->method);
+  puts(ct->port);
 }

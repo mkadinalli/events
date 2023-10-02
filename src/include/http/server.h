@@ -33,6 +33,8 @@ enum codes
     BAD_REQ = 400
 };
 
+
+typedef enum methods methods;
 enum methods
 {
     POST = 100,

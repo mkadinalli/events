@@ -16,6 +16,10 @@ int main()
     http_client *ct = http_client_create();
 
     http_client_append_string("{\"hello\" : \"world\"}",ct);
+    http_client_set_method(GET,ct);
+    http_client_set_address("localhost",ct);
+    http_client_set_port("2000",ct);
+    http_client_set_url("/",ct);
 
-    puts(ct->body);
+    dbg_client(ct);
 }
