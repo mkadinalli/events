@@ -15,7 +15,7 @@ char * get_ip_as_string(struct sockaddr *address)
 
 bool http_client_connect()
 {
-        int status,sock;
+    int status,sock;
     struct addrinfo hints;
     struct addrinfo * res,*p;
 

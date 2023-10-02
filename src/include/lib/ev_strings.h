@@ -57,3 +57,4 @@ string_create_copy(char *str);
 char *string_cover(char *str);
 
 char *base64_encode(char *str);
+char *base64_dencode(char *str);
