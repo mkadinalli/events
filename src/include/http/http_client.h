@@ -24,6 +24,7 @@ struct http_client
     char * method;
     char * address;
     char * port;
+    char * response;
 };
 
 
@@ -52,6 +53,8 @@ bool http_client_append_string(char *str,http_client *client);
 bool http_client_connect(http_client * client);
 
 void dbg_client(http_client *ct);
+
+bool http_client_receive_response(int sock,http_client *client);
 
 char *http_client_write_header(http_client *ct);
 
