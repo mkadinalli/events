@@ -29,7 +29,10 @@ int http_client_create_socket(char *address_,...)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    status = getaddrinfo(va_arg(args,char *),va_arg(args,char *),&hints,&res);
+    puts(address_);
+    puts(va_arg(args,char *));
+
+    status = getaddrinfo(address_,va_arg(args,char *),&hints,&res);
 
     va_end(args);
 
@@ -143,6 +146,9 @@ bool http_client_set_header(char *key,char *value,http_client *client)
 {
   if(!key || !value || !client) return false;
 
+  if(client->headers == NULL)
+    client->headers = map_create();
+
   return map_add(client->headers,key,value);
 }
 
@@ -208,10 +214,19 @@ bool http_client_connect(http_client * client)
    { puts("missing members"); return false;}
 
   int sock;
+
+  char * header = http_client_write_header(client);
   
-  if((sock = http_client_create_socket(client->address,client->port)) == -1)
+  if((sock = http_client_create_socket("www.internet.org",client->port)) == -1)
    {
     puts("failed to create socket"); return false;}
+
+  if((send(sock,header,strlen(header),0)) == -1)
+  {
+    puts("Error sending");
+    return false;
+  }
+  
 
   return true;
 }
@@ -223,4 +238,41 @@ void dbg_client(http_client *ct)
   puts(ct->http_version);
   puts(ct->method);
   puts(ct->port);
+}
+
+char *http_client_write_header(http_client *ct)
+{
+  string_t * head = string_create();
+  char onst[500];
+
+  sprintf(onst,"%s %s %s\r\n",ct->method,ct->url,ct->http_version);
+
+  string_concat(head,onst,strlen(onst));
+
+  if(ct->headers == NULL)
+   {
+    char *chd =  head->chars;
+    puts("No headers");
+    free(head);
+    return chd;
+   }
+
+  map_t * tmp = ct->headers;
+
+  while(tmp)
+  {
+    string_concat(head,tmp->key,strlen(tmp->key));
+    string_append(head,':');
+    string_append(head,' ');
+    string_concat(head,tmp->value,strlen(tmp->value));
+    string_concat(head,"\r\n",2);
+
+    tmp = tmp->next;
+  }
+
+  string_concat(head,"\r\n",2);
+
+  char *chd =  head->chars;
+  free(head);
+  return chd;
 }

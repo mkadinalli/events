@@ -21,5 +21,8 @@ int main()
     http_client_set_port("2000",ct);
     http_client_set_url("/",ct);
 
-    dbg_client(ct);
+    http_client_set_header("Content-Type","image/jpeg",ct);
+    http_client_set_header("Connection","keep-alive",ct);
+
+    http_client_connect(ct);
 }
