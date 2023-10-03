@@ -202,8 +202,13 @@ map_t * parse_http_response(char *req)
         char *ss = remove_leading_and_trailing_spaces(list_get(vc, 1));
         char *sk = remove_leading_and_trailing_spaces(list_get(vc, 0));
 
-        map_add(map, sk, ss);
+        char *sslow = string_to_lower(ss);
+        char *sklow = string_to_lower(sk);
 
+        map_add(map, sklow, sslow);
+
+        free(sslow);
+        free(sklow);
         free(ss);
         free(sk);
 

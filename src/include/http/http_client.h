@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include "../data-structures/map.h"
 #include "server.h"
+#include <openssl/ssl.h>
 
 typedef struct http_client http_client;
 struct http_client
@@ -57,4 +58,6 @@ void dbg_client(http_client *ct);
 bool http_client_receive_response(int sock,http_client *client);
 
 char *http_client_write_header(http_client *ct);
+
+SSL * http_client_create_bios(char *address_, ...);
 

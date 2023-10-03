@@ -1,6 +1,7 @@
 #include "http_client.h"
 #include <stdarg.h>
 
+
 char *get_ip_as_string(struct sockaddr *address)
 {
   char *ip_string = malloc(INET6_ADDRSTRLEN);
@@ -61,7 +62,132 @@ int http_client_create_socket(char *address_, ...)
 
   freeaddrinfo(res);
 
+
   return sock;
+}
+
+BIO * http_client_create_bios()
+{
+  SSL_CTX *ctx = NULL;
+  BIO *web = NULL,* out = NULL;
+  SSL *ssl = NULL;
+  
+  (void)SSL_library_init();
+  SSL_load_error_strings();
+  //OPENSSL_config(NULL);
+
+  #if defined (OPENSSL_THREADS)
+  // to do
+  #endif
+
+  const SSL_METHOD *method = SSLv23_method();
+
+  if(method == NULL)
+  {
+    // handle error
+    puts("Method failed");
+    exit(1);
+  }
+
+  ctx = SSL_CTX_new(method);
+
+  if(ctx == NULL)
+  {
+    puts("failed to start context");
+    exit(1);
+  }
+
+  const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
+  SSL_CTX_set_options(ctx,flags);
+
+  int res;
+
+  res = SSL_CTX_load_verify_locations(ctx,"/home/vic/Desktop/ssl_cookbook/fd.crt",NULL);
+
+  if(res != 1)
+  {
+    puts("failed to load certificate");
+    exit(1);
+  }
+
+  web = BIO_new_ssl_connect(ctx);
+  if(web == NULL)
+  {
+    puts("Failed to start web bio");
+    exit(1);
+  }
+
+  res = BIO_set_conn_hostname(web,"localhost:2000");
+
+  if(res != 1)
+  {
+    puts("failed to set hostname on web bio");
+    exit(1);
+  }
+
+  BIO_get_ssl(web,&ssl);
+
+  if(ssl == NULL)
+  {
+    puts("web bio failed to get ssl");
+    exit(1);
+  }
+
+  const char * preffered_ciphers = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
+
+  res = SSL_set_cipher_list(ssl,preffered_ciphers);
+
+  if(res != 1)
+  {
+    puts("Failed to set cipher list");
+    exit(1);
+  }
+
+  res = SSL_set_tlsext_host_name(ssl,"localhost");
+  if(res != 1)
+  {
+    puts("Failed to set host name");
+    exit(1);
+  }
+
+  out = BIO_new_fp(stdout,BIO_NOCLOSE);
+
+  if(out == NULL)
+  {
+    puts("failed to create out");
+    exit(1);
+  }
+
+  res = BIO_do_connect(web);
+
+  if(res != 1)
+  {
+    puts("Failed to connect");
+    exit(1);
+  }
+
+  res = BIO_do_handshake(web);
+
+  if(res != 1)
+  {
+    puts("Handshake failed");
+    exit(1);
+  }
+
+  BIO_puts(web,"GET / HTTP/1.1\r\n\r\n");
+
+  int len = 0;
+  do
+  {
+    char buff[1024] = {0};
+    len = BIO_read(web,buff,sizeof buff);
+
+    if(len > 0)
+      BIO_write(out,buff,len);
+      
+  } while (len > 0 || BIO_should_retry(web));
+  
+
 }
 
 http_client *http_client_create()
@@ -229,7 +355,7 @@ bool http_client_connect(http_client *client)
 
   char *header = http_client_write_header(client);
 
-  if ((sock = http_client_create_socket("localhost", NULL)) == -1)
+  if ((sock = http_client_create_socket("localhost", "2000")) == -1)
   {
     puts("failed to create socket");
     return false;
@@ -301,10 +427,12 @@ bool http_client_receive_response(int sock, http_client *client)
       if ((http_req = parse_http_response(b->chars)) == NULL)
         return false;
 
-      if(!map_get(http_req,"Content-Type"))
+      map_print(http_req);
+
+      if(!map_get(http_req,"content-type"))
         return false; 
 
-      if(!strcmp(map_get(http_req,"Content-Type"),"application/json"))
+      if(!strcmp(map_get(http_req,"content-type"),"text/html"))
         file_type = JSON;
     }
 
@@ -316,8 +444,8 @@ bool http_client_receive_response(int sock, http_client *client)
 
   if(file_type == JSON)
   {
-    json_object * obj = json_tokener_parse(json_b->chars);
-    puts(json_object_to_json_string_ext(obj,JSON_C_TO_STRING_PRETTY));
+      client->body = json_b->chars;
+      puts(client->body);
   }
 
   return false;

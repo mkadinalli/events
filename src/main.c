@@ -19,14 +19,13 @@ int main()
     http_client_set_method(GET,ct);
     http_client_set_address("localhost",ct);
     http_client_set_port("2000",ct);
-    http_client_set_url("/",ct); 97 - 122
-    65-90
+    http_client_set_url("/",ct);
 
     http_client_set_header("Content-Type","image/jpeg",ct);
     http_client_set_header("Connection","keep-alive",ct);
 
     http_client_connect(ct);*/
 
-    puts(string_to_lower("AZZ"));
+    http_client_create_bios();
 
 }
