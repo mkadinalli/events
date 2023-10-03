@@ -236,3 +236,45 @@ char *setchar_at(char *str, char c, size_t pos, size_t len)
     free(temp);
     return chars;
 }
+
+char *remove_leading_and_trailing_spaces(char *buffer)
+{
+    int start = find_first_not_space(buffer);
+    int stop = find_last_not_space(buffer);
+
+    return string_sub(start,stop,buffer,strlen(buffer));
+}
+
+size_t find_last_not_space(char *str)
+{
+    size_t len = strlen(str);
+    size_t i;
+
+    for(i = len-1; i ; i--)
+    {
+        if(str[i] != ' ')
+        {
+            if(str[i] != '\t')
+                break;
+        }
+    }
+
+    return i;
+}
+
+size_t find_first_not_space(char *str)
+{
+    size_t len = strlen(str);
+    size_t i;
+
+    for(i = 0; i < len ; i++)
+    {
+        if(str[i] != ' ')
+        {
+            if(str[i] != '\t')
+                break;
+        }
+    }
+
+    return i;
+}

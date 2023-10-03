@@ -57,3 +57,9 @@ string_create_copy(char *str);
 char *string_cover(char *str);
 
 char *base64_encode(const char *str ,size_t len);
+
+char *remove_leading_and_trailing_spaces(char *str);
+
+size_t find_last_not_space(char *str);
+
+size_t find_first_not_space(char *str);

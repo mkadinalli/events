@@ -13,7 +13,7 @@
 
 int main()
 {
-    http_client *ct = http_client_create();
+    /*http_client *ct = http_client_create();
 
     http_client_append_string("{\"hello\" : \"world\"}",ct);
     http_client_set_method(GET,ct);
@@ -24,5 +24,13 @@ int main()
     http_client_set_header("Content-Type","image/jpeg",ct);
     http_client_set_header("Connection","keep-alive",ct);
 
-    http_client_connect(ct);
+    http_client_connect(ct);*/
+
+    char *a = "t     hello       t";
+
+    char * ar = remove_leading_and_trailing_spaces(a);
+
+    puts(ar);
+    assert(!strcmp(ar,"hello"));
+
 }

@@ -229,7 +229,7 @@ bool http_client_connect(http_client *client)
 
   char *header = http_client_write_header(client);
 
-  if ((sock = http_client_create_socket("localhost", client->port)) == -1)
+  if ((sock = http_client_create_socket("localhost", NULL)) == -1)
   {
     puts("failed to create socket");
     return false;
@@ -263,12 +263,9 @@ bool http_client_receive_response(int sock, http_client *client)
   int bytes_received, file_type = 0, lopps = 0, marker = 0;
   string_t *b = string_create(), *json_b = string_create();
 
-  FILE *ptr = NULL;
   bool file_reached = false;
 
   map_t *http_req = NULL;
-
-  //char filename[200] = {0};
 
   while (true)
   {
@@ -284,9 +281,6 @@ bool http_client_receive_response(int sock, http_client *client)
       string_append(b, recv_buf[0]);
     else
     {
-      if (ptr && file_type == IMAGE)
-        fwrite(recv_buff_f, 1, bytes_received, ptr);
-
       if (file_type == JSON)
         string_concat(json_b, recv_buff_f, bytes_received);
     }
@@ -304,16 +298,26 @@ bool http_client_receive_response(int sock, http_client *client)
       file_reached = true;
       lopps = 0;
 
-      if ((http_req = parse_http_req(b->chars)) == NULL)
+      if ((http_req = parse_http_response(b->chars)) == NULL)
         return false;
 
-      map_print(http_req);
+      if(!map_get(http_req,"Content-Type"))
+        return false; 
+
+      if(!strcmp(map_get(http_req,"Content-Type"),"application/json"))
+        file_type = JSON;
     }
 
     file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
                  : bzero(&recv_buf, sizeof recv_buf);
 
     lopps++;
+  }
+
+  if(file_type == JSON)
+  {
+    json_object * obj = json_tokener_parse(json_b->chars);
+    puts(json_object_to_json_string_ext(obj,JSON_C_TO_STRING_PRETTY));
   }
 
   return false;
