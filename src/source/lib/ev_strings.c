@@ -278,3 +278,26 @@ size_t find_first_not_space(char *str)
 
     return i;
 }
+
+
+char *string_to_lower(char *str)
+{
+    string_t *low = string_create();
+    size_t len = strlen(str);
+
+    for(size_t i = 0; i < len; i++)
+    {
+        if(str[i] >= 'A' && str[i] <= 'Z')
+        {
+            string_append(low,str[i] + 32);
+            continue;
+        }
+
+        string_append(low,str[i]);
+    }
+
+    string_append(low, '\0');
+    char *chars = low->chars;
+    free(low);
+    return chars;
+}

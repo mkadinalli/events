@@ -199,13 +199,13 @@ map_t * parse_http_response(char *req)
             continue;
         }
 
-        char *ss = string_removechar_at(0,
-                                        list_get(vc, 1),
-                                        strlen(list_get(vc, 1)));
+        char *ss = remove_leading_and_trailing_spaces(list_get(vc, 1));
+        char *sk = remove_leading_and_trailing_spaces(list_get(vc, 0));
 
-        map_add(map, list_get(vc, 0), ss);
+        map_add(map, sk, ss);
 
         free(ss);
+        free(sk);
 
         list_destroy(vc);
         vl = vl->next;
