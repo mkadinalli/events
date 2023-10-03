@@ -55,6 +55,7 @@ void *
 get_in_addr(struct sockaddr *sa);
 map_t *
 parse_http_req(char *req);
+map_t * parse_http_response(char *req);
 bool upload_file(char *file_name,
                  char *type,
                  int sock);

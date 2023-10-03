@@ -324,6 +324,8 @@ end #
 delimiter ; 
 
 
+drop trigger if exists add_u_img_id;
+/*
 delimiter #
 drop trigger if exists add_u_img_id #
 create trigger add_u_img_id
@@ -332,9 +334,10 @@ for each row
 begin
     set new.id = uuid_to_bin(uuid());
 end #
-delimiter ; 
+delimiter ; */
 
-
+drop trigger if exists add_p_img_id;
+/*
 delimiter #
 drop trigger if exists add_p_img_id #
 create trigger add_p_img_id
@@ -343,7 +346,7 @@ for each row
 begin
     set new.id = uuid_to_bin(uuid());
 end #
-delimiter ; 
+delimiter ; */
 
 /*
 delimiter #
@@ -699,6 +702,38 @@ begin
 end #
 delimiter ;
 
+
+delimiter #
+drop procedure if exists insert_user_image #
+create procedure insert_user_image(
+	user_id varchar(256),
+    file_n varchar(256)
+)
+begin
+	declare im_id varchar(256) default uuid();
+	insert into user_images (id,user_id,file_path)
+    values (uuid_to_bin(im_id),uuid_to_bin(user_id),file_n);
+    
+    select im_id as id;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists insert_pub_image #
+create procedure insert_pub_image(
+	pub_id varchar(256),
+    file_n varchar(256)
+)
+begin
+	declare im_id varchar(256) default uuid();
+	insert into pub_images (id,user_id,file_path)
+    values (uuid_to_bin(im_id),uuid_to_bin(pub_id),file_n);
+    
+    select im_id as id;
+end #
+delimiter ;
+
 -- so you read code ???????????????????????? :D
 
 call get_many_published(@muuid,now(),now());
@@ -725,7 +760,11 @@ select * from users;
 
 select * from published;
 
+-- /home/vic/Desktop/ev2/events/files/image1695926754.jpg
+
 select * from subscriptions;
+
+select * from user_images;
 
 select cast(bin_to_uuid(id) as char) as id from users;
 

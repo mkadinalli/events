@@ -1,5 +1,76 @@
 #include "../../include/data-structures/ev_string.h"
 
+char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+char *base64_encode(const char *str,size_t len)
+{
+
+    char *out,*pos;
+    const char *end,*in;
+
+    size_t olen;
+    int line_len;
+
+    olen = len * 4 / 3 + 4;
+
+    olen += 72;
+    olen++;
+
+    if(olen < len)
+        return NULL;
+    
+    out = malloc(olen);
+
+    if(out == NULL)
+        return NULL;
+
+    end = str+len;
+    in = str;
+    pos = out;
+
+    line_len = 0;
+
+    while(end - in >= 3)
+    {
+        *pos++ = charset[in[0] >> 2];
+        *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+        *pos++ = charset[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+        *pos++ = charset[in[2] & 0x3f];
+        in += 3;
+
+        line_len += 4;
+
+        if(line_len >= 72)
+        {
+            *pos++ = '\n';
+            line_len = 0;
+        }   
+    }
+
+    if(end - in)
+    {
+        *pos++ = charset[in[0] >> 2];
+
+        if(end - in == 1)
+        {
+            *pos++ = charset[(in[0] & 0x03) << 4];
+            *pos++ = '=';
+        }else{
+            *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+            *pos++ = charset[(in[1] & 0x0f) << 2];
+        }
+
+        *pos++ = '=';
+        line_len += 4;
+    }
+
+    *pos = '\0';
+
+    return out;
+}
+
+
+
 string_t *string_create()
 {
     string_t *t = malloc(sizeof(string_t));
