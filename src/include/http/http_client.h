@@ -28,10 +28,11 @@ struct http_client
     char * response;
 };
 
+int http_client_create_socket(char *address_,char *port);
 
 char * get_ip_as_string(struct sockaddr *address);
 
-int http_client_create_socket(char *address,...);
+SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock);
 
 http_client *http_client_create();
 
@@ -55,9 +56,9 @@ bool http_client_connect(http_client * client);
 
 void dbg_client(http_client *ct);
 
-bool http_client_receive_response(int sock,http_client *client);
+bool http_client_receive_response(SSL *sock,http_client *client);
 
 char *http_client_write_header(http_client *ct);
 
-SSL * http_client_create_bios(char *address_, ...);
+SSL * http_client_create_bios();
 

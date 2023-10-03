@@ -25,6 +25,9 @@ CC := gcc
 
 CFLAGS := -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
 
+run: $(BUILD_DIR)/$(TARGET_EXEC)
+	./$(BUILD_DIR)/$(TARGET_EXEC)
+
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking $@"
 	$(V_AT)$(CXX) -g $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)

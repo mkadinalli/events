@@ -15,24 +15,19 @@ char *get_ip_as_string(struct sockaddr *address)
   return ip_string;
 }
 
-int http_client_create_socket(char *address_, ...)
+
+int http_client_create_socket(char *address_,char *port)
 {
-  int status, sock;
+    int status, sock;
   struct addrinfo hints;
   struct addrinfo *res, *p;
-
-  va_list args;
-
-  va_start(args, address_);
 
   memset(&hints, 0, sizeof hints);
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
 
-  status = getaddrinfo(address_, va_arg(args, char *), &hints, &res);
-
-  va_end(args);
+  status = getaddrinfo(address_, port, &hints, &res);
 
   if (status != 0)
   {
@@ -62,16 +57,14 @@ int http_client_create_socket(char *address_, ...)
 
   freeaddrinfo(res);
 
-
   return sock;
 }
 
-BIO * http_client_create_bios()
+
+SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock)
 {
-  SSL_CTX *ctx = NULL;
-  BIO *web = NULL,* out = NULL;
   SSL *ssl = NULL;
-  
+  puts("On sssl fn");
   (void)SSL_library_init();
   SSL_load_error_strings();
   //OPENSSL_config(NULL);
@@ -80,58 +73,30 @@ BIO * http_client_create_bios()
   // to do
   #endif
 
-  const SSL_METHOD *method = SSLv23_method();
 
-  if(method == NULL)
+
+  int res;
+
+  ssl = SSL_new(ctx);
+  if(ssl == NULL)
   {
-    // handle error
-    puts("Method failed");
-    exit(1);
+    puts("Failed to create ssl");
+    return NULL;
   }
 
-  ctx = SSL_CTX_new(method);
-
-  if(ctx == NULL)
-  {
-    puts("failed to start context");
-    exit(1);
-  }
 
   const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
   SSL_CTX_set_options(ctx,flags);
 
-  int res;
+  puts("set ciphers");
 
-  res = SSL_CTX_load_verify_locations(ctx,"/home/vic/Desktop/ssl_cookbook/fd.crt",NULL);
-
+  res = SSL_set_tlsext_host_name(ssl,address_);
   if(res != 1)
   {
-    puts("failed to load certificate");
-    exit(1);
+    puts("Failed to set host name");
+    return NULL;
   }
 
-  web = BIO_new_ssl_connect(ctx);
-  if(web == NULL)
-  {
-    puts("Failed to start web bio");
-    exit(1);
-  }
-
-  res = BIO_set_conn_hostname(web,"localhost:2000");
-
-  if(res != 1)
-  {
-    puts("failed to set hostname on web bio");
-    exit(1);
-  }
-
-  BIO_get_ssl(web,&ssl);
-
-  if(ssl == NULL)
-  {
-    puts("web bio failed to get ssl");
-    exit(1);
-  }
 
   const char * preffered_ciphers = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
 
@@ -140,55 +105,39 @@ BIO * http_client_create_bios()
   if(res != 1)
   {
     puts("Failed to set cipher list");
-    exit(1);
+    return NULL;
   }
 
-  res = SSL_set_tlsext_host_name(ssl,"localhost");
+  res = SSL_set_fd(ssl,sock);
   if(res != 1)
   {
-    puts("Failed to set host name");
-    exit(1);
+    puts("Failed to set fd");
+    return NULL;
   }
 
-  out = BIO_new_fp(stdout,BIO_NOCLOSE);
+  puts("fd set..");
 
-  if(out == NULL)
-  {
-    puts("failed to create out");
-    exit(1);
-  }
-
-  res = BIO_do_connect(web);
-
+  res = SSL_connect(ssl);
   if(res != 1)
   {
     puts("Failed to connect");
-    exit(1);
+    return NULL;
   }
 
-  res = BIO_do_handshake(web);
+  puts("connected ....");
 
+  res = SSL_do_handshake(ssl);
   if(res != 1)
   {
-    puts("Handshake failed");
-    exit(1);
+    puts("Failed to handshake");
+    return NULL;
   }
 
-  BIO_puts(web,"GET / HTTP/1.1\r\n\r\n");
+  puts("Handshake");
 
-  int len = 0;
-  do
-  {
-    char buff[1024] = {0};
-    len = BIO_read(web,buff,sizeof buff);
-
-    if(len > 0)
-      BIO_write(out,buff,len);
-      
-  } while (len > 0 || BIO_should_retry(web));
-  
-
+  return ssl;
 }
+
 
 http_client *http_client_create()
 {
@@ -351,42 +300,74 @@ bool http_client_connect(http_client *client)
     return false;
   }
 
-  int sock;
-
   char *header = http_client_write_header(client);
 
-  if ((sock = http_client_create_socket("localhost", "2000")) == -1)
+  SSL_CTX * ctx = NULL;
+  (void)SSL_library_init();
+  SSL_load_error_strings();
+
+  const SSL_METHOD *method = SSLv23_method();
+
+  if(method == NULL)
+  {
+    // handle error
+    puts("Method failed");
+    return false;
+  }
+
+  ctx = SSL_CTX_new(method);
+
+
+  if(ctx == NULL)
+  {
+    puts("failed to start context");
+    return false;
+  }
+
+  int sock;
+
+  if ((sock = http_client_create_socket(client->address, client->port)) == -1)
   {
     puts("failed to create socket");
     return false;
   }
 
-  if ((send(sock, header, strlen(header), 0)) == -1)
+  SSL *ssl = NULL;
+
+  if ((ssl = http_client_create_ssl(client->address,ctx,sock)) == NULL)
+  {
+    puts("failed to create ssl");
+    return false;
+  }
+
+  if ((SSL_write(ssl, header, strlen(header))) == -1)
   {
     puts("Error sending");
     return false;
   }
 
-  int offset = 0;
+  /*int offset = 0;
   int b_sent;
   if (client->body)
   {
-    while ((b_sent = send(sock, client->body + offset, 100, 0)) != -1)
+    while ((b_sent = SSL_write(ssl, client->body + offset, 100)) != -1)
     {
       offset += 100;
     }
-  }
+  }*/
 
-  http_client_receive_response(sock,client);
+  http_client_receive_response(ssl,client);
 
+  SSL_free(ssl);
+  SSL_CTX_free(ctx);
   close(sock);
   return true;
 }
 
-bool http_client_receive_response(int sock, http_client *client)
+bool http_client_receive_response(SSL * sock, http_client *client)
 {
   char recv_buf[1] = {0}, recv_buff_f[100] = {0}, end_of_header[] = "\r\n\r\n";
-  int bytes_received, file_type = 0, lopps = 0, marker = 0;
+  int bytes_received, file_type = JSON, lopps = 0, marker = 0;
   string_t *b = string_create(), *json_b = string_create();
 
   bool file_reached = false;
@@ -395,8 +376,8 @@ bool http_client_receive_response(int sock, http_client *client)
 
   while (true)
   {
-    bytes_received = recv(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1, 0);
 
+    bytes_received = SSL_read(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 100 : 1);
     if (bytes_received == -1)
     {
       perror("recv");
@@ -416,8 +397,11 @@ bool http_client_receive_response(int sock, http_client *client)
     else
       marker = 0;
 
-    if (bytes_received < 99 && file_reached)
+    if (bytes_received <= 0/* && file_reached*/)
+    {
+      puts("less than 10 received, time to break");
       break;
+    }
 
     if (marker == 4)
     {

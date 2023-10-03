@@ -13,19 +13,17 @@
 
 int main()
 {
-    /*http_client *ct = http_client_create();
+    http_client *ct = http_client_create();
 
-    http_client_append_string("{\"hello\" : \"world\"}",ct);
+    //http_client_append_string("{\"hello\" : \"world\"}",ct);
     http_client_set_method(GET,ct);
-    http_client_set_address("localhost",ct);
-    http_client_set_port("2000",ct);
-    http_client_set_url("/",ct);
+    http_client_set_address("www.google.com",ct);
+    http_client_set_port("443",ct);
+    http_client_set_url("/search?channel=fs&client=ubuntu-sn&q=how+to+check+coredump+in+ubuntu",ct);
 
-    http_client_set_header("Content-Type","image/jpeg",ct);
-    http_client_set_header("Connection","keep-alive",ct);
+    http_client_set_header("post","localhost",ct);
+    http_client_set_header("Connection","close",ct);
 
-    http_client_connect(ct);*/
-
-    http_client_create_bios();
+    http_client_connect(ct);
 
 }
