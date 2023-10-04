@@ -1,7 +1,6 @@
 #include "http_client.h"
 #include <stdarg.h>
 
-
 char *get_ip_as_string(struct sockaddr *address)
 {
   char *ip_string = malloc(INET6_ADDRSTRLEN);
@@ -15,10 +14,9 @@ char *get_ip_as_string(struct sockaddr *address)
   return ip_string;
 }
 
-
-int http_client_create_socket(char *address_,char *port)
+int http_client_create_socket(char *address_, char *port)
 {
-    int status, sock;
+  int status, sock;
   struct addrinfo hints;
   struct addrinfo *res, *p;
 
@@ -35,6 +33,8 @@ int http_client_create_socket(char *address_,char *port)
     return -1;
   }
 
+  puts("hello");
+
   for (p = res; p; p = p->ai_next)
   {
     get_ip_as_string(p->ai_addr);
@@ -42,74 +42,75 @@ int http_client_create_socket(char *address_,char *port)
     sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 
     if (sock < 0)
-      break;
+      continue;
 
     if (!connect(sock, p->ai_addr, p->ai_addrlen))
     {
       break;
     }
+
+    perror("connect");
   }
 
   if (p == NULL)
   {
+    
+    puts("NULL");
     return -1;
   }
+
+  printf("sock is %d\n",sock);
 
   freeaddrinfo(res);
 
   return sock;
 }
 
-
-SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock)
+SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
 {
   SSL *ssl = NULL;
   puts("On sssl fn");
   (void)SSL_library_init();
   SSL_load_error_strings();
-  //OPENSSL_config(NULL);
+  // OPENSSL_config(NULL);
 
-  #if defined (OPENSSL_THREADS)
-  // to do
-  #endif
-
-
+#if defined(OPENSSL_THREADS)
+// to do
+#endif
 
   int res;
 
   ssl = SSL_new(ctx);
-  if(ssl == NULL)
+  if (ssl == NULL)
   {
     puts("Failed to create ssl");
     return NULL;
   }
 
-
   const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
-  SSL_CTX_set_options(ctx,flags);
+  SSL_CTX_set_options(ctx, flags);
 
   puts("set ciphers");
 
-  res = SSL_set_tlsext_host_name(ssl,address_);
-  if(res != 1)
+  res = SSL_set_tlsext_host_name(ssl, address_);
+  if (res != 1)
   {
     puts("Failed to set host name");
     return NULL;
   }
 
+  const char *preffered_ciphers = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
 
-  const char * preffered_ciphers = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
+  res = SSL_set_cipher_list(ssl, preffered_ciphers);
 
-  res = SSL_set_cipher_list(ssl,preffered_ciphers);
-
-  if(res != 1)
+  if (res != 1)
   {
     puts("Failed to set cipher list");
     return NULL;
   }
 
-  res = SSL_set_fd(ssl,sock);
-  if(res != 1)
+  res = SSL_set_fd(ssl, sock);
+  if (res != 1)
   {
     puts("Failed to set fd");
     return NULL;
@@ -118,7 +119,7 @@ SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock)
   puts("fd set..");
 
   res = SSL_connect(ssl);
-  if(res != 1)
+  if (res != 1)
   {
     puts("Failed to connect");
     return NULL;
@@ -127,7 +128,7 @@ SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock)
   puts("connected ....");
 
   res = SSL_do_handshake(ssl);
-  if(res != 1)
+  if (res != 1)
   {
     puts("Failed to handshake");
     return NULL;
@@ -137,7 +138,6 @@ SSL * http_client_create_ssl(char *address_,SSL_CTX *ctx,int sock)
 
   return ssl;
 }
-
 
 http_client *http_client_create()
 {
@@ -287,6 +287,8 @@ bool http_client_append_string(char *str, http_client *client)
   if (!client->body)
     return false;
 
+  client->file_size = len;
+
   strcpy(client->body, str);
 
   return true;
@@ -302,13 +304,13 @@ bool http_client_connect(http_client *client)
 
   char *header = http_client_write_header(client);
 
-  SSL_CTX * ctx = NULL;
+  SSL_CTX *ctx = NULL;
   (void)SSL_library_init();
   SSL_load_error_strings();
 
   const SSL_METHOD *method = SSLv23_method();
 
-  if(method == NULL)
+  if (method == NULL)
   {
     // handle error
     puts("Method failed");
@@ -317,8 +319,7 @@ bool http_client_connect(http_client *client)
 
   ctx = SSL_CTX_new(method);
 
-
-  if(ctx == NULL)
+  if (ctx == NULL)
   {
     puts("failed to start context");
     return false;
@@ -334,11 +335,14 @@ bool http_client_connect(http_client *client)
 
   SSL *ssl = NULL;
 
-  if ((ssl = http_client_create_ssl(client->address,ctx,sock)) == NULL)
+  if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
     puts("failed to create ssl");
     return false;
   }
+
+  //puts("<---ssl created--->");
+  //puts(header);
 
   if ((SSL_write(ssl, header, strlen(header))) == -1)
   {
@@ -346,25 +350,70 @@ bool http_client_connect(http_client *client)
     return false;
   }
 
-  /*int offset = 0;
-  int b_sent;
+  bool out = true;
+
   if (client->body)
   {
-    while ((b_sent = SSL_write(ssl, client->body + offset, 100)) != -1)
+
+    int size;
+    int offset = 0;
+    int rem = 100;
+    size_t total_sent = 0;
+
+    while (true)
     {
+      int b_sent;
+
+      printf("offset = %d\n", offset);
+
+      if (client->file_size <= 100)
+      {
+        size = client->file_size;
+      }else{ size = rem; }
+
+      b_sent = SSL_write(ssl, client->body + offset, size);
+
+      total_sent += b_sent;
+
+      printf("total_sentt = %ld\n", total_sent);
+
+      if(b_sent < 1)
+      {
+        if(b_sent == -1) out = false;
+        break;
+      }
+
+      if(total_sent >= client->file_size)
+        break;
+
+      if (client->file_size <= 100)
+        break;
+
+      rem = client->file_size - total_sent;
+
+      if (rem < 100)
+      {
+        size = rem;
+      }
+      else
+      {
+        size = 100;
+      }
+
       offset += 100;
     }
-  }*/
+  }
 
-  http_client_receive_response(ssl,client);
+  out = http_client_receive_response(ssl, client);
+  puts("**********************************");
 
   SSL_free(ssl);
   SSL_CTX_free(ctx);
   close(sock);
-  return true;
+  return out;
 }
 
-bool http_client_receive_response(SSL * sock, http_client *client)
+bool http_client_receive_response(SSL *sock, http_client *client)
 {
   char recv_buf[1] = {0}, recv_buff_f[100] = {0}, end_of_header[] = "\r\n\r\n";
   int bytes_received, file_type = JSON, lopps = 0, marker = 0;
@@ -397,7 +446,7 @@ bool http_client_receive_response(SSL * sock, http_client *client)
     else
       marker = 0;
 
-    if (bytes_received <= 0/* && file_reached*/)
+    if (bytes_received <= 0 /* && file_reached*/)
     {
       puts("less than 10 received, time to break");
       break;
@@ -413,10 +462,10 @@ bool http_client_receive_response(SSL * sock, http_client *client)
 
       map_print(http_req);
 
-      if(!map_get(http_req,"content-type"))
-        return false; 
+      if (!map_get(http_req, "content-type"))
+        return false;
 
-      if(!strcmp(map_get(http_req,"content-type"),"text/html"))
+      if (!strcmp(map_get(http_req, "content-type"), "text/html"))
         file_type = JSON;
     }
 
@@ -426,10 +475,10 @@ bool http_client_receive_response(SSL * sock, http_client *client)
     lopps++;
   }
 
-  if(file_type == JSON)
+  if (file_type == JSON)
   {
-      client->body = json_b->chars;
-      puts(client->body);
+    client->response = json_b->chars;
+    puts(client->response);
   }
 
   return false;
