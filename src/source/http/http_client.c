@@ -423,15 +423,20 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
   map_t *http_req = NULL;
 
+  bool out = true;
+
   while (true)
   {
-
+    puts("enter loop");
     bytes_received = SSL_read(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 100 : 1);
     if (bytes_received == -1)
     {
       perror("recv");
+      out = false;
       break;
     }
+
+    puts("read ....");
 
     if (!file_reached)
       string_append(b, recv_buf[0]);
