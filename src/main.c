@@ -23,16 +23,18 @@ int main()
     http_client_set_url("/",ct);
 
     http_client_set_header("User-Agent","PostmanRuntime/7.32.3",ct);
-    http_client_set_header("Accept","*/*",ct);
+    http_client_set_header("Accept","*",ct);
     http_client_set_header("Postman-Token","cade1aa7-6db4-46cf-ba00-e1b63fa9ec2a",ct);
-    http_client_set_header("Host","dummyjson.com:443",ct);
+    //http_client_set_header("Host","dummyjson.com:443",ct);
     //http_client_set_header("Accept-Encoding","gzip, deflate, br",ct);
     http_client_set_header("Cache-control","no-cache",ct);
     http_client_set_header("Connection","close",ct);
     http_client_set_header("Authorization","",ct);
 
+
+
     http_client_connect(ct);
 
-    
+    //printf("%d\n",http_client_get_service_port("FTP"));
     
 }

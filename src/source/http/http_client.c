@@ -14,7 +14,7 @@ char *get_ip_as_string(struct sockaddr *address)
   return ip_string;
 }
 
-int http_client_create_socket(char *address_, char *port)
+int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
 {
   int status, sock;
   struct addrinfo hints;
@@ -24,6 +24,7 @@ int http_client_create_socket(char *address_, char *port)
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE;
 
   status = getaddrinfo(address_, port, &hints, &res);
 
@@ -32,8 +33,6 @@ int http_client_create_socket(char *address_, char *port)
     fprintf(stderr, "%s\n", gai_strerror(status));
     return -1;
   }
-
-  puts("hello");
 
   for (p = res; p; p = p->ai_next)
   {
@@ -46,6 +45,8 @@ int http_client_create_socket(char *address_, char *port)
 
     if (!connect(sock, p->ai_addr, p->ai_addrlen))
     {
+      *host = malloc(sizeof p->ai_addr);
+      memcpy(*host,p->ai_addr,p->ai_addrlen);
       break;
     }
 
@@ -62,14 +63,12 @@ int http_client_create_socket(char *address_, char *port)
   printf("sock is %d\n",sock);
 
   freeaddrinfo(res);
-
   return sock;
 }
 
 SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
 {
   SSL *ssl = NULL;
-  puts("On sssl fn");
   (void)SSL_library_init();
   SSL_load_error_strings();
   // OPENSSL_config(NULL);
@@ -89,8 +88,6 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
 
   const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
   SSL_CTX_set_options(ctx, flags);
-
-  puts("set ciphers");
 
   res = SSL_set_tlsext_host_name(ssl, address_);
   if (res != 1)
@@ -115,9 +112,11 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
     puts("Failed to set fd");
     return NULL;
   }
+//////////////////////////////////////////////
+  BIO_set_nbio(SSL_get_rbio(ssl),1);
+  //BIO_set_nbio(SSL_get_wbio(ssl),1);
 
-  puts("fd set..");
-
+///////////////////////////////////////////
   res = SSL_connect(ssl);
   if (res != 1)
   {
@@ -302,7 +301,6 @@ bool http_client_connect(http_client *client)
     return false;
   }
 
-  char *header = http_client_write_header(client);
 
   SSL_CTX *ctx = NULL;
   (void)SSL_library_init();
@@ -326,14 +324,27 @@ bool http_client_connect(http_client *client)
   }
 
   int sock;
+  struct sockaddr *remote_host = NULL;
 
-  if ((sock = http_client_create_socket(client->address, client->port)) == -1)
+  if ((sock = http_client_create_socket(client->address, client->port,&remote_host)) == -1)
   {
     puts("failed to create socket");
     return false;
   }
 
+
+  if(remote_host == NULL)
+    puts("Host is null");
+  else
+  {
+    http_client_set_host(remote_host,client);
+    //puts(remote_host->sa_data);
+  }
+
   SSL *ssl = NULL;
+  char *header = http_client_write_header(client);
+
+  puts(header);
 
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
@@ -364,8 +375,6 @@ bool http_client_connect(http_client *client)
     {
       int b_sent;
 
-      printf("offset = %d\n", offset);
-
       if (client->file_size <= 100)
       {
         size = client->file_size;
@@ -374,8 +383,6 @@ bool http_client_connect(http_client *client)
       b_sent = SSL_write(ssl, client->body + offset, size);
 
       total_sent += b_sent;
-
-      printf("total_sentt = %ld\n", total_sent);
 
       if(b_sent < 1)
       {
@@ -425,9 +432,36 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
   bool out = true;
 
+  struct pollfd pfds[1];
+
+  pfds[0].fd = SSL_get_fd(sock);
+  pfds[0].events = POLLIN;
+
+
   while (true)
   {
-    puts("enter loop");
+    int num_evs = poll(pfds,1,50);
+    
+
+    if(num_evs < 1)
+    {
+      if(num_evs == 0)
+      {
+        puts("Time out ''''''''");
+      }
+      puts("Error occureed");
+      out = false;
+      break;
+    }
+    else
+    {
+      int pollin_happened = pfds[0].revents & POLLIN;
+
+      if(!pollin_happened)
+      {
+         break; }
+    }
+
     bytes_received = SSL_read(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 100 : 1);
     if (bytes_received == -1)
     {
@@ -435,8 +469,6 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       out = false;
       break;
     }
-
-    puts("read ....");
 
     if (!file_reached)
       string_append(b, recv_buf[0]);
@@ -453,7 +485,6 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
     if (bytes_received <= 0 /* && file_reached*/)
     {
-      puts("less than 10 received, time to break");
       break;
     }
 
@@ -486,7 +517,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
     puts(client->response);
   }
 
-  return false;
+  return out;
 }
 
 void dbg_client(http_client *ct)
@@ -533,4 +564,47 @@ char *http_client_write_header(http_client *ct)
   char *chd = head->chars;
   free(head);
   return chd;
+}
+
+bool http_client_set_host(struct sockaddr * host,http_client *client)
+{
+  char host_name[1024];
+  char service[50];
+  int status;
+
+  host->sa_family = AF_INET;
+
+  if((status = getnameinfo(host,sizeof host,host_name,sizeof host_name,service,sizeof service,0)) != 0)
+  {
+    puts(gai_strerror(status));
+    return false;
+  }
+
+
+  puts(service);
+
+  int port = http_client_get_service_port("HTTP");
+
+  char host_port[1074];
+
+  sprintf(host_port,"%s:%d",host_name,port);
+
+  puts(host_port);
+  puts("=======");
+  
+  return http_client_set_header("Host",host_port,client);
+}
+
+int http_client_get_service_port(char *service_name)
+{
+  /*printf("=== serv ===> %s\n",service_name);
+  struct servent *sv = NULL;
+
+  char proto[4] = "TCP";
+
+  sv =  getservbyname(service_name,proto);
+
+  if(sv == NULL) return -1;*/
+  getservbyname(service_name,"TCP");
+  return 443;
 }
