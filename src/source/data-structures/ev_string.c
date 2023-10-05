@@ -1,74 +1,31 @@
 #include "../../include/data-structures/ev_string.h"
 
-char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+#include <openssl/evp.h>
 
 char *base64_encode(const char *str,size_t len)
 {
-
-    char *out,*pos;
-    const char *end,*in;
-
-    size_t olen;
-    int line_len;
-
-    olen = len * 4 / 3 + 4;
-
-    olen += 72;
-    olen++;
-
-    if(olen < len)
-        return NULL;
-    
-    out = malloc(olen);
-
-    if(out == NULL)
-        return NULL;
-
-    end = str+len;
-    in = str;
-    pos = out;
-
-    line_len = 0;
-
-    while(end - in >= 3)
+    int pl = 4*((len+2)/3);
+    char *out = calloc(pl+1,1);
+    int ol = EVP_EncodeBlock(out,str,len);
+    if(pl != ol)
     {
-        *pos++ = charset[in[0] >> 2];
-        *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
-        *pos++ = charset[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
-        *pos++ = charset[in[2] & 0x3f];
-        in += 3;
-
-        line_len += 4;
-
-        if(line_len >= 72)
-        {
-            *pos++ = '\n';
-            line_len = 0;
-        }   
+        return NULL;
     }
-
-    if(end - in)
-    {
-        *pos++ = charset[in[0] >> 2];
-
-        if(end - in == 1)
-        {
-            *pos++ = charset[(in[0] & 0x03) << 4];
-            *pos++ = '=';
-        }else{
-            *pos++ = charset[((in[0] & 0x03) << 4) | (in[1] >> 4)];
-            *pos++ = charset[(in[1] & 0x0f) << 2];
-        }
-
-        *pos++ = '=';
-        line_len += 4;
-    }
-
-    *pos = '\0';
-
     return out;
 }
 
+
+char *base64_decode(const char *input,int length)
+{
+    int pl = 3*length/4;
+    char *output = calloc(pl+1,1);
+    int ol = EVP_DecodeBlock(output,input,length);
+    if(pl != ol)
+    {
+        puts("decoding gone wrong");
+    }
+    return output;
+}
 
 
 string_t *string_create()

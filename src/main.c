@@ -16,25 +16,31 @@ int main()
 {
     http_client *ct = http_client_create();
 
-    http_client_append_string("xcxcxcxcxcxcxcxcxcxcxcxcxcxppcxcxcxcxcxcxcxcxcxcxcxcxcxcxcxcxxcxcxcxcxcxcxcxcxcxccxcxcxcxcxcxcxcxcxcxcx",ct);
+    //http_client_append_string("xcxcxcxcxcxcxcxcxcxcxcxcxcxppcxcxcxcxcxcxcxcxcxcxcxcxcxcxcxcxxcxcxcxcxcxcxcxcxcxccxcxcxcxcxcxcxcxcxcxcx",ct);
     http_client_set_method(GET,ct);
-    http_client_set_address("localhost",ct);
-    http_client_set_port("2000",ct);
-    http_client_set_url("/",ct);
+    http_client_set_address("sandbox.safaricom.co.ke",ct);
+    http_client_set_port("443",ct);
+    http_client_set_url("/oauth/v1/generate?grant_type=client_credentials",ct);
 
     http_client_set_header("User-Agent","PostmanRuntime/7.32.3",ct);
-    http_client_set_header("Accept","*",ct);
     http_client_set_header("Postman-Token","cade1aa7-6db4-46cf-ba00-e1b63fa9ec2a",ct);
     //http_client_set_header("Host","dummyjson.com:443",ct);
     //http_client_set_header("Accept-Encoding","gzip, deflate, br",ct);
     http_client_set_header("Cache-control","no-cache",ct);
-    http_client_set_header("Connection","close",ct);
-    http_client_set_header("Authorization","",ct);
+    http_client_set_header("Connection","keep-alive",ct);
+    
+
+    char *a =string_create_mpesa_auth("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
+    puts(base64_decode(a,strlen(a)));
+
+    http_client_set_header("Authorization",a,ct);
 
 
 
     http_client_connect(ct);
 
     //printf("%d\n",http_client_get_service_port("FTP"));
+
+
     
 }

@@ -440,7 +440,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
   while (true)
   {
-    int num_evs = poll(pfds,1,50);
+    int num_evs = poll(pfds,1,-1);
     
 
     if(num_evs < 1)
@@ -572,39 +572,31 @@ bool http_client_set_host(struct sockaddr * host,http_client *client)
   char service[50];
   int status;
 
-  host->sa_family = AF_INET;
-
-  if((status = getnameinfo(host,sizeof host,host_name,sizeof host_name,service,sizeof service,0)) != 0)
+  if((status = getnameinfo(host,sizeof(struct sockaddr_in),host_name,sizeof host_name,service,sizeof service,0)) != 0)
   {
     puts(gai_strerror(status));
     return false;
   }
 
-
-  puts(service);
-
-  int port = http_client_get_service_port("HTTP");
+  int port = http_client_get_service_port(service);
 
   char host_port[1074];
 
-  sprintf(host_port,"%s:%d",host_name,port);
-
-  puts(host_port);
-  puts("=======");
+  //sprintf(host_port,"%s:%d",host_name,port);
   
-  return http_client_set_header("Host",host_port,client);
+  return http_client_set_header("Host","sandbox.safaricom.co.ke",client);
 }
 
 int http_client_get_service_port(char *service_name)
 {
-  /*printf("=== serv ===> %s\n",service_name);
+  printf("Service name is -> %s\n",service_name);
   struct servent *sv = NULL;
 
-  char proto[4] = "TCP";
+  char proto[4] = "tcp";
 
   sv =  getservbyname(service_name,proto);
 
-  if(sv == NULL) return -1;*/
-  getservbyname(service_name,"TCP");
-  return 443;
+  if(sv == NULL) return -1;
+  //getservbyname(service_name,"TCP");
+  return ntohs(sv->s_port);
 }

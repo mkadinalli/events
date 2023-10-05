@@ -65,3 +65,7 @@ size_t find_last_not_space(char *str);
 size_t find_first_not_space(char *str);
 
 char *string_to_lower(char *str);
+
+char *string_create_mpesa_auth(char *consumer_key,char *secret_key);
+
+char *base64_decode(const char *input,int length);
