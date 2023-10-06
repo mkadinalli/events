@@ -22,18 +22,18 @@ int main()
     http_client_set_port("443",ct);
     http_client_set_url("/oauth/v1/generate?grant_type=client_credentials",ct);
 
-    http_client_set_header("User-Agent","PostmanRuntime/7.32.3",ct);
-    http_client_set_header("Postman-Token","cade1aa7-6db4-46cf-ba00-e1b63fa9ec2a",ct);
-    //http_client_set_header("Host","dummyjson.com:443",ct);
+    //http_client_set_header("User-Agent","PostmanRuntime/7.32.3",ct);
+    //http_client_set_header("Postman-Token","cade1aa7-6db4-46cf-ba00-e1b63fa9ec2a",ct);
+    http_client_set_header("Host","sandbox.safaricom.co.ke",ct);
     //http_client_set_header("Accept-Encoding","gzip, deflate, br",ct);
     http_client_set_header("Cache-control","no-cache",ct);
-    http_client_set_header("Connection","keep-alive",ct);
+    http_client_set_header("Connection","close",ct);
     
 
     char *a =string_create_mpesa_auth("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
-    puts(base64_decode(a,strlen(a)));
+    //puts(base64_decode(a,strlen(a)));
 
-    http_client_set_header("Authorization",a,ct);
+    http_client_set_header("authorization",a,ct);
 
 
 

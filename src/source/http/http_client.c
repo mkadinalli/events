@@ -24,7 +24,7 @@ int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;
+  hints.ai_flags = AI_CANONNAME | AF_INET;
 
   status = getaddrinfo(address_, port, &hints, &res);
 
@@ -47,6 +47,7 @@ int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
     {
       *host = malloc(sizeof p->ai_addr);
       memcpy(*host,p->ai_addr,p->ai_addrlen);
+      printf("Cannon name = %s -------> \n",p->ai_canonname);
       break;
     }
 
@@ -337,7 +338,7 @@ bool http_client_connect(http_client *client)
     puts("Host is null");
   else
   {
-    http_client_set_host(remote_host,client);
+    //http_client_set_host(remote_host,client);
     //puts(remote_host->sa_data);
   }
 
@@ -409,10 +410,12 @@ bool http_client_connect(http_client *client)
 
       offset += 100;
     }
+
+    puts("wrote body");
   }
 
-  out = http_client_receive_response(ssl, client);
   puts("**********************************");
+  out = http_client_receive_response(ssl, client);
 
   SSL_free(ssl);
   SSL_CTX_free(ctx);
@@ -440,10 +443,12 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
   while (true)
   {
-    int num_evs = poll(pfds,1,-1);
+    //printf("loops = %d\n",lopps);
+    puts(recv_buf);
+    //int num_evs = poll(pfds,1,1000);
     
 
-    if(num_evs < 1)
+    /*if(num_evs < 1)
     {
       if(num_evs == 0)
       {
@@ -451,7 +456,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       }
       puts("Error occureed");
       out = false;
-      break;
+      continue;
     }
     else
     {
@@ -460,7 +465,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       if(!pollin_happened)
       {
          break; }
-    }
+    }*/
 
     bytes_received = SSL_read(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 100 : 1);
     if (bytes_received == -1)
@@ -476,6 +481,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
     {
       if (file_type == JSON)
         string_concat(json_b, recv_buff_f, bytes_received);
+        puts(json_b->chars);
     }
 
     if (recv_buf[0] == end_of_header[marker])
@@ -485,8 +491,11 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
     if (bytes_received <= 0 /* && file_reached*/)
     {
+      puts("============================================================");
       break;
     }
+
+    printf("Bytes received -> %d\n",bytes_received);
 
     if (marker == 4)
     {
@@ -578,9 +587,9 @@ bool http_client_set_host(struct sockaddr * host,http_client *client)
     return false;
   }
 
-  int port = http_client_get_service_port(service);
+  //int port = http_client_get_service_port(service);
 
-  char host_port[1074];
+  //char host_port[1074];
 
   //sprintf(host_port,"%s:%d",host_name,port);
   
