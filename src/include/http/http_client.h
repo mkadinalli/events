@@ -68,3 +68,5 @@ bool http_client_set_host(struct sockaddr * host,http_client *client);
 
 int http_client_get_service_port(char *service_name);
 
+void http_client_destroy(http_client *client);
+

@@ -47,7 +47,6 @@ int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
     {
       *host = malloc(sizeof p->ai_addr);
       memcpy(*host,p->ai_addr,p->ai_addrlen);
-      printf("Cannon name = %s -------> \n",p->ai_canonname);
       break;
     }
 
@@ -60,8 +59,6 @@ int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
     puts("NULL");
     return -1;
   }
-
-  printf("sock is %d\n",sock);
 
   freeaddrinfo(res);
   return sock;
@@ -345,7 +342,7 @@ bool http_client_connect(http_client *client)
   SSL *ssl = NULL;
   char *header = http_client_write_header(client);
 
-  puts(header);
+  //puts(header);
 
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
@@ -414,7 +411,7 @@ bool http_client_connect(http_client *client)
     puts("wrote body");
   }
 
-  puts("**********************************");
+  //puts("**********************************");
   out = http_client_receive_response(ssl, client);
 
   SSL_free(ssl);
@@ -443,18 +440,17 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
   while (true)
   {
-    //printf("loops = %d\n",lopps);
-    puts(recv_buf);
-    //int num_evs = poll(pfds,1,1000);
+    int num_evs = poll(pfds,1,10000);
     
 
-    /*if(num_evs < 1)
+    if(num_evs < 1)
     {
       if(num_evs == 0)
       {
-        puts("Time out ''''''''");
+        puts(" ======= Connection Time out ========");
+      }else{
+          puts("<<<<<<< Connection failed >>>>>>>>>");
       }
-      puts("Error occureed");
       out = false;
       continue;
     }
@@ -465,7 +461,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       if(!pollin_happened)
       {
          break; }
-    }*/
+    }
 
     bytes_received = SSL_read(sock, file_reached ? recv_buff_f : recv_buf, file_reached ? 100 : 1);
     if (bytes_received == -1)
@@ -481,7 +477,6 @@ bool http_client_receive_response(SSL *sock, http_client *client)
     {
       if (file_type == JSON)
         string_concat(json_b, recv_buff_f, bytes_received);
-        puts(json_b->chars);
     }
 
     if (recv_buf[0] == end_of_header[marker])
@@ -491,11 +486,8 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
     if (bytes_received <= 0 /* && file_reached*/)
     {
-      puts("============================================================");
       break;
     }
-
-    printf("Bytes received -> %d\n",bytes_received);
 
     if (marker == 4)
     {
@@ -505,7 +497,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       if ((http_req = parse_http_response(b->chars)) == NULL)
         return false;
 
-      map_print(http_req);
+      //map_print(http_req);
 
       if (!map_get(http_req, "content-type"))
         return false;
@@ -523,7 +515,6 @@ bool http_client_receive_response(SSL *sock, http_client *client)
   if (file_type == JSON)
   {
     client->response = json_b->chars;
-    puts(client->response);
   }
 
   return out;
@@ -608,4 +599,21 @@ int http_client_get_service_port(char *service_name)
   if(sv == NULL) return -1;
   //getservbyname(service_name,"TCP");
   return ntohs(sv->s_port);
+}
+
+
+void http_client_destroy(http_client *client)
+{
+  if(client == NULL) return;
+
+  if(client->address) free(client->address);
+  if(client->body) free(client->body);
+  if(client->response) free(client->response);
+  if(client->url) free(client->url);
+  if(client->headers) map_destroy(client->headers);
+  if(client->port) free(client->port);
+  if(client->method) free(client->method);
+  if(client->http_version) free(client->http_version);
+
+  free(client);
 }

@@ -428,6 +428,7 @@ conn_pool *create_conn_pool(size_t size)
     conns->next = NULL;
     conns->t_id = conns->connection->thread_id;
 
+
     for (size_t i = 1; i < checked_size; i++)
     {
         db_conn *temp = malloc(sizeof(db_conn));
