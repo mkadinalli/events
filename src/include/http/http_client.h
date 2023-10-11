@@ -13,6 +13,8 @@
 #include "../data-structures/map.h"
 #include "server.h"
 #include <openssl/ssl.h>
+#include <poll.h>
+#include <fcntl.h>
 
 typedef struct http_client http_client;
 struct http_client
@@ -28,7 +30,7 @@ struct http_client
     char * response;
 };
 
-int http_client_create_socket(char *address_,char *port);
+int http_client_create_socket(char *address_,char *port,struct sockaddr **host);
 
 char * get_ip_as_string(struct sockaddr *address);
 
@@ -61,4 +63,10 @@ bool http_client_receive_response(SSL *sock,http_client *client);
 char *http_client_write_header(http_client *ct);
 
 SSL * http_client_create_bios();
+
+bool http_client_set_host(struct sockaddr * host,http_client *client);
+
+int http_client_get_service_port(char *service_name);
+
+void http_client_destroy(http_client *client);
 

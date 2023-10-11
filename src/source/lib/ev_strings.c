@@ -5,6 +5,25 @@
 #include <string.h>
 #include <stdbool.h>
 
+
+char *string_create_mpesa_auth(char *consumer_key,char *secret_key)
+{
+    char merged[1024];
+    sprintf(merged,"%s:%s",consumer_key,secret_key);
+    char *enc = base64_encode(merged,strlen(merged));
+
+    string_t * ss = string_create_from_string("Basic ");
+
+    string_concat(ss,enc,strlen(enc));
+
+    char *tmp = ss->chars;
+
+    free(ss);
+    free(enc);
+
+    return tmp;  
+}
+
 char *string_create_copy(char *str)
 {
     int len = strlen(str) + 1;
@@ -301,3 +320,4 @@ char *string_to_lower(char *str)
     free(low);
     return chars;
 }
+

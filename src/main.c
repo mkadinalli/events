@@ -10,20 +10,16 @@
 #include <time.h>
 #include "events-da.h"
 #include "http_client.h"
+#include <openssl/ssl.h>
+#include "mpesa.h"
+#include "gmail.h"
+
+#define BUFFLEN 4096
 
 int main()
 {
-    http_client *ct = http_client_create();
+    if(gmail_send_message("murimimlvictor@gmail.com","Niaje Mkuu bana"))
+        puts("Message sent succesfully");
 
-    //http_client_append_string("{\"hello\" : \"world\"}",ct);
-    http_client_set_method(GET,ct);
-    http_client_set_address("www.google.com",ct);
-    http_client_set_port("443",ct);
-    http_client_set_url("/search?channel=fs&client=ubuntu-sn&q=how+to+check+coredump+in+ubuntu",ct);
-
-    http_client_set_header("post","localhost",ct);
-    http_client_set_header("Connection","close",ct);
-
-    http_client_connect(ct);
-
+    return 0;
 }
