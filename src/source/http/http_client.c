@@ -111,10 +111,18 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
     return NULL;
   }
 //////////////////////////////////////////////
-  BIO_set_nbio(SSL_get_rbio(ssl),1);
+  //BIO_set_nbio(SSL_get_rbio(ssl),1);
   //BIO_set_nbio(SSL_get_wbio(ssl),1);
 
 ///////////////////////////////////////////
+  puts("about to connect");
+
+  if(ssl == NULL)
+  {
+    puts("ssl is nulllllll");
+    exit(1);
+  }
+
   res = SSL_connect(ssl);
   if (res != 1)
   {
@@ -274,6 +282,13 @@ bool http_client_append_file(char *path, http_client *client)
 
 bool http_client_append_string(char *str, http_client *client)
 {
+
+  puts("=============================");
+
+  puts(str);
+
+  puts("=============================");
+
   if (!str || !client || client->body)
     return false;
 
@@ -287,6 +302,12 @@ bool http_client_append_string(char *str, http_client *client)
   client->file_size = len;
 
   strcpy(client->body, str);
+
+  puts("=============================");
+
+  puts(client->body);
+
+  puts("=============================");
 
   return true;
 }
@@ -342,7 +363,7 @@ bool http_client_connect(http_client *client)
   SSL *ssl = NULL;
   char *header = http_client_write_header(client);
 
-  //puts(header);
+  puts(header);
 
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
@@ -363,7 +384,6 @@ bool http_client_connect(http_client *client)
 
   if (client->body)
   {
-
     int size;
     int offset = 0;
     int rem = 100;
@@ -406,6 +426,8 @@ bool http_client_connect(http_client *client)
       }
 
       offset += 100;
+
+      printf("%d ",b_sent);
     }
 
     puts("wrote body");

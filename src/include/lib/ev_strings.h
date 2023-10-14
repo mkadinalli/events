@@ -2,10 +2,18 @@
 
 #include <mysql/mysql.h>
 #include <json-c/json.h>
+#include <openssl/rand.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 
 #include "../data-structures/ev_string.h"
 #include "../data-structures/list.h"
 #include "../data-structures/list.h"
+
+unsigned char *string_encrypt(char *instr,char *key_path);
+
+
+int uuid_v4_gen(char *buffer);
 
 
 char *
@@ -56,7 +64,7 @@ string_create_copy(char *str);
 
 char *string_cover(char *str);
 
-char *base64_encode(const char *str ,size_t len);
+unsigned char *base64_encode(unsigned char *str ,size_t len);
 
 char *remove_leading_and_trailing_spaces(char *str);
 
@@ -68,4 +76,4 @@ char *string_to_lower(char *str);
 
 char *string_create_mpesa_auth(char *consumer_key,char *secret_key);
 
-char *base64_decode(const char *input,int length);
+unsigned char *base64_decode(unsigned char *input,int length);

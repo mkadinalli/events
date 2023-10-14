@@ -321,3 +321,81 @@ char *string_to_lower(char *str)
     return chars;
 }
 
+
+int uuid_v4_gen(char *buffer)
+{
+	union
+	{
+		struct
+		{
+			uint32_t time_low;
+			uint16_t time_mid;
+			uint16_t time_hi_and_version;
+			uint8_t  clk_seq_hi_res;
+			uint8_t  clk_seq_low;
+			uint8_t  node[6];
+		};
+		uint8_t __rnd[16];
+	} uuid;
+
+	int rc = RAND_bytes(uuid.__rnd, sizeof(uuid));
+
+	uuid.clk_seq_hi_res = (uint8_t) ((uuid.clk_seq_hi_res & 0x3F) | 0x80);
+	uuid.time_hi_and_version = (uint16_t) ((uuid.time_hi_and_version & 0x0FFF) | 0x4000);
+
+	snprintf(buffer, 38, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+			uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
+			uuid.clk_seq_hi_res, uuid.clk_seq_low,
+			uuid.node[0], uuid.node[1], uuid.node[2],
+			uuid.node[3], uuid.node[4], uuid.node[5]);
+
+	return rc;
+}
+
+
+unsigned char *string_encrypt(char *instr,char *key_path)
+{
+    FILE *f = fopen(key_path,"r");
+
+    if(f == NULL)
+        return NULL;
+
+    EVP_PKEY *pkey = PEM_read_PUBKEY(f,NULL,NULL,NULL);
+
+    if(!pkey)
+        return NULL;
+
+    fclose(f);
+
+    EVP_PKEY_CTX *ctx;
+
+    ctx = EVP_PKEY_CTX_new(pkey,NULL);
+
+    if(!ctx)
+        return NULL;
+
+    EVP_PKEY_encrypt_init(ctx);
+
+    size_t cipher_txt_len;
+
+    if(EVP_PKEY_encrypt(ctx,NULL,&cipher_txt_len,(const unsigned char *)instr,strlen(instr)) <= 0)
+        return NULL;
+
+    unsigned char *out = OPENSSL_malloc(cipher_txt_len);
+
+    if(out == NULL)
+        return out;
+
+    if(EVP_PKEY_encrypt(ctx,out,&cipher_txt_len,(const unsigned char *)instr,strlen(instr)) <= 0)
+    {
+        OPENSSL_free(out);
+        return NULL;
+    }
+
+    unsigned char *res = base64_encode(out,cipher_txt_len);
+    
+    OPENSSL_free(out);
+
+    return res;
+}
+
