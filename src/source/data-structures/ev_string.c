@@ -2,10 +2,10 @@
 
 #include <openssl/evp.h>
 
-char *base64_encode(const char *str,size_t len)
+unsigned char *base64_encode(unsigned char *str,size_t len)
 {
     int pl = 4*((len+2)/3);
-    char *out = calloc(pl+1,1);
+    unsigned char *out = calloc(pl+1,1);
     int ol = EVP_EncodeBlock(out,str,len);
     if(pl != ol)
     {
@@ -15,10 +15,11 @@ char *base64_encode(const char *str,size_t len)
 }
 
 
-char *base64_decode(const char *input,int length)
+unsigned char *base64_decode(unsigned char *input,int length)
 {
     int pl = 3*length/4;
-    char *output = calloc(pl+1,1);
+    unsigned char *output = calloc(pl+1,1);
+    printf("pl is %d\n",pl);
     int ol = EVP_DecodeBlock(output,input,length);
     if(pl != ol)
     {

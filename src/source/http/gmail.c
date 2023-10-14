@@ -3,7 +3,7 @@
 bool gmail_send_message(char *receiver_email,char *message)
 {
     char recvbuff[4096];
-    char *cmd, *enc_cmd;
+    char *cmd;
     int r;
     struct sockaddr *addr = NULL;
     int sock = http_client_create_socket("smtp.gmail.com","587",&addr);
@@ -41,11 +41,6 @@ bool gmail_send_message(char *receiver_email,char *message)
 
     if(r <= 0)
         return false;
-
-    OpenSSL_add_all_algorithms();
-    ERR_load_BIO_strings();
-    ERR_load_CRYPTO_strings();
-    SSL_load_error_strings();
 
     SSL_CTX * ctx = SSL_CTX_new(SSLv23_client_method());
 
