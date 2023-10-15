@@ -15,54 +15,60 @@
 #include "gmail.h"
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include "ev_time.h"
 
 #define BUFFLEN 4096
 
 
 
-
 int main()
 {
-    char uuid[39];
+    //char uuid[39];
 
-    uuid_v4_gen(uuid);
-    unsigned char * sec_c = string_encrypt("Safaricom999!*!","/home/vic/Desktop/mpesa_crt/pubkey.pem");
+    //uuid_v4_gen(uuid);
+    //unsigned char * sec_c = string_encrypt("Safaricom999!*!","/home/vic/Desktop/mpesa_crt/pubkey.pem");
     
 
     char res_fmt[] = "{\
-\"OriginatorConversationID\": \"%s\",\
-\"InitiatorName\": \"%s\",\
-\"SecurityCredential\": \"%s\",\
-\"CommandID\": \"%s\",\
+\"BusinessShortCode\": \"%s\",\
+\"Password\": \"%s\",\
+\"Timestamp\": \"%s\",\
+\"TransactionType\": \"%s\",\
 \"Amount\": \"%s\",\
 \"PartyA\": \"%s\",\
 \"PartyB\": \"%s\",\
-\"Remarks\": \"%s\",\
-\"QueueTimeOutURL\": \"%s\",\
-\"ResultURL\": \"%s\",\
-\"Occassion\": \"%s\"\
+\"PhoneNumber\": \"%s\",\
+\"CallBackURL\": \"%s\",\
+\"AccountReference\": \"%s\",\
+\"TransactionDesc\": \"%s\"\
 }";
 
 
     char res_c[4096];
 
+    lipa *lp = mpesa_get_password();
+
+    if(lp == NULL) exit(1);
+
     sprintf(res_c,res_fmt,
-        uuid,
-        "testapi",
-        sec_c,
-        "BusinessPayment",
+        "174379",
+        lp->pass_word,
+        lp->time,
+        "CustomerPayBillOnline",
         "10",
-        "600996",
         "254716732614",
-        "BusinessPayment",
-        "https://mydomain.com/b2c/queue",
-        "https://mydomain.com/b2c/queue",
-        "Christmass"
+        "174379",
+        "254716732614",
+        "https://8jjpcdf8-3000.uks1.devtunnels.ms/",
+        "BIKESHARE",
+        "testing"
     );
+
+    mpesa_destroy_password(lp);
 
     //puts(res_c);
 
-    free(sec_c);
+    //free(sec_c);
 
     http_client * cl = http_client_create();
 
@@ -79,9 +85,9 @@ int main()
     //puts(str->chars);
 
     http_client_set_header("Host", "sandbox.safaricom.co.ke", cl);
-    http_client_set_header("authorization",str->chars,cl);
+    http_client_set_header("Authorization",str->chars,cl);
     http_client_set_header("Content-Type","application/json",cl);
-    http_client_set_url("/mpesa/b2c/v3/paymentrequest",cl);
+    http_client_set_url("/mpesa/stkpush/v1/processrequest",cl);
     http_client_set_address("sandbox.safaricom.co.ke",cl);
     http_client_set_method(POST,cl);
     http_client_set_port("443",cl);
@@ -97,11 +103,6 @@ int main()
 
     http_client_append_string(res_c,cl);
 
-
-    if(http_client_connect(cl))
-    {
-        puts(cl->response);
-    }
 
     if(http_client_connect(cl))
     {

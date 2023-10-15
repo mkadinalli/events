@@ -9,6 +9,6 @@ void get_current_time(char *current_time)
 
     t = localtime(&time_);
 
-    strftime(current_time,100,"%a-%e-%b-%Y %r",t);
+    strftime(current_time,100,"%Y%m%d%H%M%S",t);
 
 }

@@ -1,4 +1,5 @@
 #include "mpesa.h"
+#include "ev_time.h"
 
 char *mpesa_get_access_token(char *consumer, char *secret)
 {
@@ -107,3 +108,34 @@ bool mpesa_do_b2c(char * p_number)
 
     puts(str->chars);
 }
+
+
+ lipa * mpesa_get_password()
+ {
+    char short_code[500] =  "174379";
+    char lipa_time[100];
+    get_current_time(lipa_time);
+
+    char * passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
+
+    strcat(short_code,passkey);
+    strcat(short_code,lipa_time);
+
+    unsigned char * enc_pass = base64_encode((unsigned char *)short_code,strlen(short_code));
+
+    lipa *l = malloc(sizeof(lipa));
+
+    l->pass_word = enc_pass;
+    l->time = malloc(strlen(lipa_time)+1);
+    strcpy(l->time,lipa_time);
+
+    return l;
+ }
+
+ void *mpesa_destroy_password(lipa *l)
+ {
+    if(!l) return;
+    if(l->pass_word)free(l->pass_word);
+    if(l->time)free(l->time);
+    free(l);
+ }
