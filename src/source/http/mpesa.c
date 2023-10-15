@@ -1,4 +1,5 @@
 #include "mpesa.h"
+#include "ev_time.h"
 
 char *mpesa_get_access_token(char *consumer, char *secret)
 {
@@ -50,54 +51,50 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     //return NULL;
 }
 
-bool mpesa_do_b2c(char * p_number)
+bool mpesa_do_stk_push(char * p_number,int amount)
 {
-    char uuid[39];
-
-    uuid_v4_gen(uuid);
-    unsigned char * sec_c = string_encrypt("Safaricom999!*!","/home/vic/Desktop/mpesa_crt/pubkey.pem");
-    
-
-    char res_fmt[] = "{\n\
-    \"OriginatorConversationID\": \"%s\",\n\
-    \"InitiatorName\": \"%s\",\n\
-    \"SecurityCredential\": \"%s\",\n\
-    \"CommandID\": \"%s\",\n\
-    \"Amount\": \"%s\",\n\
-    \"PartyA\": \"%s\",\n\
-    \"PartyB\": \"%s\",\n\
-    \"Remarks\": \"%s\",\n\
-    \"QueueTimeOutURL\": \"%s\",\n\
-    \"ResultURL\": \"%s\",\n\
-    \"Occassion\": \"%s\",\n\
-    }";
+    char res_fmt[] = "{\
+\"BusinessShortCode\": \"%s\",\
+\"Password\": \"%s\",\
+\"Timestamp\": \"%s\",\
+\"TransactionType\": \"%s\",\
+\"Amount\": \"%d\",\
+\"PartyA\": \"%s\",\
+\"PartyB\": \"%s\",\
+\"PhoneNumber\": \"%s\",\
+\"CallBackURL\": \"%s\",\
+\"AccountReference\": \"%s\",\
+\"TransactionDesc\": \"%s\"\
+}";
 
 
     char res_c[4096];
 
+    lipa *lp = mpesa_get_password();
+
+    if(lp == NULL) exit(1);
+
     sprintf(res_c,res_fmt,
-        uuid,
-        "testapi",
-        sec_c,
-        "BusinessPayment",
-        "10",
-        "600996",
+        "174379",
+        lp->pass_word,
+        lp->time,
+        "CustomerPayBillOnline",
+        amount,
         p_number,
-        "BusinessPayment",
-        "https://mydomain.com/b2c/queue",
-        "https://mydomain.com/b2c/queue",
-        "Christmass"
+        "174379",
+        "254716732614",
+        "https://8jjpcdf8-3000.uks1.devtunnels.ms/",
+        "EV",
+        "testing"
     );
 
-    //puts(res_c);
-
-    free(sec_c);
+    mpesa_destroy_password(lp);
 
     http_client * cl = http_client_create();
 
     char * atk = mpesa_get_access_token("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
 
-    if(!atk) exit(1);
+    if(!atk) return false;
 
 
 
@@ -105,5 +102,64 @@ bool mpesa_do_b2c(char * p_number)
 
     string_concat(str,atk,strlen(atk));
 
-    puts(str->chars);
+    http_client_set_header("Host", "sandbox.safaricom.co.ke", cl);
+    http_client_set_header("Authorization",str->chars,cl);
+    http_client_set_header("Content-Type","application/json",cl);
+    http_client_set_url("/mpesa/stkpush/v1/processrequest",cl);
+    http_client_set_address("sandbox.safaricom.co.ke",cl);
+    http_client_set_method(POST,cl);
+    http_client_set_port("443",cl);
+    http_client_set_header("Connection", "close", cl);
+   
+
+    char c_len[10];
+
+    sprintf(c_len,"%ld",strlen(res_c));
+
+    http_client_set_header("Content-Length",c_len,cl);
+
+
+    http_client_append_string(res_c,cl);
+
+    bool success = false;
+
+    if(http_client_connect(cl))
+    {
+        success = true;
+    }
+
+    http_client_destroy(cl);
+
+    return success;
 }
+
+
+ lipa * mpesa_get_password()
+ {
+    char short_code[500] =  "174379";
+    char lipa_time[100];
+    get_current_time(lipa_time);
+
+    char * passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
+
+    strcat(short_code,passkey);
+    strcat(short_code,lipa_time);
+
+    unsigned char * enc_pass = base64_encode((unsigned char *)short_code,strlen(short_code));
+
+    lipa *l = malloc(sizeof(lipa));
+
+    l->pass_word = enc_pass;
+    l->time = malloc(strlen(lipa_time)+1);
+    strcpy(l->time,lipa_time);
+
+    return l;
+ }
+
+ void *mpesa_destroy_password(lipa *l)
+ {
+    if(!l) return;
+    if(l->pass_word)free(l->pass_word);
+    if(l->time)free(l->time);
+    free(l);
+ }
