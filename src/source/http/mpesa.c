@@ -83,7 +83,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
         p_number,
         "174379",
         "254716732614",
-        "https://8jjpcdf8-3000.uks1.devtunnels.ms/",
+        "https://f373-105-160-81-150.ngrok.io/home",
         "EV",
         "testing"
     );

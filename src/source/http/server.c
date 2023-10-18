@@ -62,33 +62,23 @@ void *handle_request(void *args)
         }
 
         if (!file_reached)
-        {
             string_append(b, recv_buf[0]);
-        }
         else
         {
             if (ptr && file_type == IMAGE)
                 fwrite(recv_buff_f, 1, bytes_received, ptr);
 
             if (file_type == JSON)
-            {
                 string_concat(json_b, recv_buff_f, bytes_received);
-            }
         }
 
         if (recv_buf[0] == end_of_header[marker])
-        {
             marker++;
-        }
         else
-        {
             marker = 0;
-        }
 
         if (bytes_received < 99 && file_reached)
-        {
             break;
-        }
 
         if (marker == 4)
         {
@@ -113,9 +103,7 @@ void *handle_request(void *args)
                     ptr = fopen(filename, "a");
                 }
                 else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
-                {
                     file_type = JSON;
-                }
             }
 
             if (!strcmp(map_get(http_req, "method"), "GET"))
@@ -124,28 +112,20 @@ void *handle_request(void *args)
                 break;
             }
             else if (!strcmp(map_get(http_req, "method"), "POST"))
-            {
                 req_method = POST;
-            }
             else if (!strcmp(map_get(http_req, "method"), "PUT"))
-            {
                 req_method = PUT;
-            }
 
             else if (!strcmp(map_get(http_req, "method"), "PATCH"))
-            {
                 req_method = PATCH;
-            }
             else if (!strcmp(map_get(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
                 break;
             }
             else
-            {
                 error_code = BAD_REQ;
                 break;
-            }
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -168,9 +148,7 @@ void *handle_request(void *args)
     puts(f);
 
     if (starts_with_word("/files", map_get(http_req, "url")))
-    {
         upload_file(f, "image/jpeg", their_socket);
-    }
     else if (starts_with_word("/api", map_get(http_req, "url")))
     {
         switch (req_method)
@@ -188,29 +166,13 @@ void *handle_request(void *args)
             break;
         }
     }
-    else if (starts_with_word("/js", map_get(http_req, "url")))
-    {
-        upload_file(f, "text/javascript", their_socket);
-    }
-    else if (starts_with_word("/css", map_get(http_req, "url")))
-    {
-        upload_file(f, "text/css", their_socket);
-    }
-    else if (starts_with_word("/pages", map_get(http_req, "url")))
-    {
-        upload_file(f, "text/html", their_socket);
-    }
     else if (starts_with_word("/upload", map_get(http_req, "url")))
     {
         if (req_method == POST)
-        {
             receive_file(their_socket, map_get(http_req, "url"), filename);
-        }
     }
     else
-    {
         write_404(their_socket);
-    }
 
 clean_me:
 
