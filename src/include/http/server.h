@@ -50,8 +50,14 @@ enum files
     JSON
 };
 
+typedef struct ssl_holder ssl_holder;
+struct ssl_holder{
+    SSL **ssl_strct;
+    int sock;
+};
+
 void signal_handler(int sig);
-void *handle_request(void *args);
+int handle_request(void *args);
 void accept_connections(int socketfd);
 
 //start server

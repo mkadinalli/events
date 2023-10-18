@@ -22,22 +22,38 @@ void clean_up()
     if (thread_pool != NULL)
         tpool_destroy(thread_pool);
 
-    printf("\n===Server is off rn===\n");
+    puts("\n===Server is off rn===\n");
     exit(1);
 }
 
-void *handle_request(void *ssl)
+int handle_request(void *ss)
 {
+    puts("=================================================hhh");
+
+    ssl_holder *sh = ss;
+
+    SSL *ssl = *(sh->ssl_strct);
+
+    puts("freeing");
+
+    //SSL_free(ssl);
+
+    puts("freed");
+
+
+
     char recv_buf[1] = {0};
     char recv_buff_f[100] = {0};
     int bytes_received;
+    puts("rrrrrrrrrrrr");
     string_t *b = string_create();
     string_t *json_b = string_create();
 
     char end_of_header[] = "\r\n\r\n";
     int marker = 0;
 
-    FILE *ptr;
+
+    FILE *ptr = NULL;
     bool file_reached = false;
 
     int error_code = OK;
@@ -52,11 +68,14 @@ void *handle_request(void *ssl)
 
     while (true)
     {
+
         bytes_received = SSL_read(ssl, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1);
 
+        
         if (bytes_received == -1)
         {
-            perror("recv");
+            perror("recving");
+            ERR_print_errors_fp(stderr);
             break;
         }
 
@@ -68,7 +87,13 @@ void *handle_request(void *ssl)
                 fwrite(recv_buff_f, 1, bytes_received, ptr);
 
             if (file_type == JSON)
-                string_concat(json_b, recv_buff_f, bytes_received);
+            {
+                    string_concat(json_b, recv_buff_f, bytes_received);
+                   // puts(json_b);
+            }
+
+            puts(recv_buff_f);
+                
         }
 
         if (recv_buf[0] == end_of_header[marker])
@@ -76,7 +101,7 @@ void *handle_request(void *ssl)
         else
             marker = 0;
 
-        if (bytes_received < 99 && file_reached)
+        if (bytes_received <= 0 && file_reached)
             break;
 
         if (marker == 4)
@@ -88,20 +113,20 @@ void *handle_request(void *ssl)
             {
                 write_BAD(ssl);
 
-                return NULL;
+                return 1;
             }
 
-            map_print(http_req);
+            //map_print(http_req);
 
             if (map_get(http_req, "Content-Type") != NULL)
             {
-                if (!strcmp(map_get(http_req, "Content-Type"), "image/jpeg"))
+                if (starts_with_word("image/jpeg",map_get(http_req, "Content-Type")))
                 {
                     file_type = IMAGE;
                     sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
                     ptr = fopen(filename, "a");
                 }
-                else if (!strcmp(map_get(http_req, "Content-Type"), "application/json"))
+                else if (starts_with_word("application/json",map_get(http_req, "Content-Type")))
                     file_type = JSON;
             }
 
@@ -123,8 +148,7 @@ void *handle_request(void *ssl)
                 break;
             }
             else
-                error_code = BAD_REQ;
-                break;
+                {error_code = BAD_REQ; break;}
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -177,7 +201,9 @@ clean_me:
 
     b = NULL;
     map_destroy(http_req);
-    return NULL;
+    SSL_free(ssl);
+    close(sh->sock);
+    return 0;
 }
 
 SSL_CTX *create_context()
@@ -242,21 +268,43 @@ void accept_connections(int socketfd)
         ssl = SSL_new(ctx);
         SSL_set_fd(ssl, their_socket);
 
-        if (SSL_accept(ssl) <= 0)
-           ERR_print_errors_fp(stderr);
+
+
+        if (SSL_accept(ssl) <= 0){
+            ERR_print_errors_fp(stderr);
+            puts("failed to accept");
+            continue;
+        }
         else
-            tpool_add_work(thread_pool, handle_request, ssl);
+        {
+
+            ssl_holder * sh = malloc(sizeof(ssl_holder));
+
+            sh->ssl_strct = &ssl;
+            sh->sock = their_socket;
+
+            tpool_add_work(thread_pool, handle_request, sh);
+
+            //handle_request(sh);
+
+            //thrd_t t;
+
+            //thrd_create(&t,handle_request,sh);
+
+            //thrd_join(t,NULL);
+
+            puts("Fala sana --------");
+        }
 
         puts("****************************************");
 
         //SSL_shutdown(ssl);
 
         puts("============================================");
-        SSL_free(ssl);
-        close(their_socket);
+
 
         
-        // handle_request(&their_socket);
+        
     }
 
     SSL_CTX_free(ctx);
@@ -284,6 +332,7 @@ bool set_up_server(char *PORT)
 
     char address[INET6_ADDRSTRLEN];
     int port = 0;
+    int yes = 1;
 
     for (p = server_info; p != NULL; p = p->ai_next)
     {
@@ -323,7 +372,10 @@ bool set_up_server(char *PORT)
             perror("Socket : ");
         }
         else
+        {
+            setsockopt(socketfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes);
             break;
+        }
     }
 
     if (p == NULL)
@@ -342,7 +394,7 @@ bool set_up_server(char *PORT)
     }
 
     thread_pool = tpool_create(2);
-    cpool = create_conn_pool(5);
+    //cpool = create_conn_pool(5);
 
     accept_connections(socketfd);
 

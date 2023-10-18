@@ -3,77 +3,6 @@
 #include <stdlib.h>
 #include "in_images.h"
 
-
-
-char *send_http_request(map_t *map, char *url)
-{
-    // char *PORT = "3000";
-    SSL *socketfd;
-    struct addrinfo hints;
-    struct addrinfo *server_info, *p;
-
-    memset(&hints, 0, sizeof hints);
-
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    // 0 for success
-    int status = getaddrinfo(url, "2000", &hints, &server_info);
-
-    if (status != 0)
-    {
-        fprintf(stderr, "Error : %s\n", gai_strerror(status));
-        return NULL;
-    }
-
-    char address[INET6_ADDRSTRLEN];
-    // int port = 0;
-
-    for (p = server_info; p != NULL; p = p->ai_next)
-    {
-
-        if ((socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-        {
-            perror("client socket");
-            continue;
-        }
-
-        if ((status = connect(socketfd, p->ai_addr, p->ai_addrlen)) == -1)
-        {
-            close(socketfd);
-            perror("client connect");
-            continue;
-        }
-
-        break;
-    }
-
-    if (p == NULL)
-    {
-        fprintf(stderr, "Failed to connect\n");
-        return NULL;
-    }
-
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-              address,
-              sizeof address);
-
-    printf("Connecting to %s\n", address);
-
-    char *message = "GET /song.mp3 HTTP/1.1\r\nContent-Type: text\r\n";
-
-    if ((send(socketfd, message, strlen(message), 0)) == -1)
-    {
-        perror("send");
-        return NULL;
-    }
-
-    close(socketfd);
-    free(server_info);
-    return NULL;
-}
-
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET)
@@ -391,6 +320,11 @@ void serve_JSON(SSL *sock, char *url)
         get_subs_by_user(sock,url);//done
     }
 
+    if(starts_with_word("/api/callback",url))
+    {
+        //puts(json);
+    }
+
 }
 //==============================
 
@@ -441,6 +375,12 @@ void receive_json(SSL *sock,
     if(starts_with_word("/api/u-update",url))
     {
         update_user(sock,json);
+    }
+
+
+    if(starts_with_word("/api/callback",url))
+    {
+        //puts(json);
     }
 
 }
