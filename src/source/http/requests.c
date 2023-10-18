@@ -3,77 +3,6 @@
 #include <stdlib.h>
 #include "in_images.h"
 
-
-
-char *send_http_request(map_t *map, char *url)
-{
-    // char *PORT = "3000";
-    int socketfd;
-    struct addrinfo hints;
-    struct addrinfo *server_info, *p;
-
-    memset(&hints, 0, sizeof hints);
-
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    // 0 for success
-    int status = getaddrinfo(url, "2000", &hints, &server_info);
-
-    if (status != 0)
-    {
-        fprintf(stderr, "Error : %s\n", gai_strerror(status));
-        return NULL;
-    }
-
-    char address[INET6_ADDRSTRLEN];
-    // int port = 0;
-
-    for (p = server_info; p != NULL; p = p->ai_next)
-    {
-
-        if ((socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-        {
-            perror("client socket");
-            continue;
-        }
-
-        if ((status = connect(socketfd, p->ai_addr, p->ai_addrlen)) == -1)
-        {
-            close(socketfd);
-            perror("client connect");
-            continue;
-        }
-
-        break;
-    }
-
-    if (p == NULL)
-    {
-        fprintf(stderr, "Failed to connect\n");
-        return NULL;
-    }
-
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-              address,
-              sizeof address);
-
-    printf("Connecting to %s\n", address);
-
-    char *message = "GET /song.mp3 HTTP/1.1\r\nContent-Type: text\r\n";
-
-    if ((send(socketfd, message, strlen(message), 0)) == -1)
-    {
-        perror("send");
-        return NULL;
-    }
-
-    close(socketfd);
-    free(server_info);
-    return NULL;
-}
-
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET)
@@ -236,7 +165,7 @@ char *write_http_header_from_struct(http_res *http)
     return string_create_from_string(res)->chars;
 }
 
-bool upload_file(char *file_name, char *type, int sock)
+bool upload_file(char *file_name, char *type, SSL *sock)
 {
     bool success = true;
 
@@ -256,7 +185,7 @@ bool upload_file(char *file_name, char *type, int sock)
     {
         fread(buff, 1, sizeof buff, myfile);
 
-        if ((send(sock, buff, sizeof buff, 0)) < 0)
+        if ((SSL_write(sock, buff, sizeof buff)) < 0)
         {
             // perror("send");
             success = false;
@@ -271,9 +200,9 @@ bool upload_file(char *file_name, char *type, int sock)
     return success;
 }
 
-bool write_header(char *header, int sock)
+bool write_header(char *header, SSL *sock)
 {
-    if ((write(sock, header, strlen(header))) == -1)
+    if ((SSL_write(sock, header, strlen(header))) == -1)
     {
         // puts(header);
         return false;
@@ -284,7 +213,7 @@ bool write_header(char *header, int sock)
     return true;
 }
 
-bool write_404(int sock)
+bool write_404(SSL *sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -300,7 +229,7 @@ bool write_404(int sock)
     return bl;
 }
 
-bool write_OK(int sock, char *mime)
+bool write_OK(SSL *sock, char *mime)
 {
     http_res *hp = malloc(sizeof(http_res));
 
@@ -315,7 +244,7 @@ bool write_OK(int sock, char *mime)
     return b;
 }
 
-bool write_BAD(int sock)
+bool write_BAD(SSL *sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -331,12 +260,12 @@ bool write_BAD(int sock)
     return bl;
 }
 
-bool write_json(struct json_object *obj, int sock)
+bool write_json(struct json_object *obj, SSL *sock)
 {
     write_OK(sock, "application/json");
     const char *json = json_object_to_json_string(obj);
 
-    if (write(sock, json, strlen(json)) == -1)
+    if (SSL_write(sock, json, strlen(json)) == -1)
     {
         return false;
     }
@@ -344,7 +273,7 @@ bool write_json(struct json_object *obj, int sock)
 }
 
 //==================================
-void serve_JSON(int sock, char *url)
+void serve_JSON(SSL *sock, char *url)
 {
     if (starts_with_word("/api/login", url))
     {
@@ -391,10 +320,15 @@ void serve_JSON(int sock, char *url)
         get_subs_by_user(sock,url);//done
     }
 
+    if(starts_with_word("/api/callback",url))
+    {
+        //puts(json);
+    }
+
 }
 //==============================
 
-void receive_json(int sock,
+void receive_json(SSL *sock,
                   char *url,
                   char *json)
 {
@@ -443,9 +377,15 @@ void receive_json(int sock,
         update_user(sock,json);
     }
 
+
+    if(starts_with_word("/api/callback",url))
+    {
+        //puts(json);
+    }
+
 }
 
-void receive_file(int sock,char *url,char *filename)
+void receive_file(SSL *sock,char *url,char *filename)
 {
     if(starts_with_word("/upload/u-image",url))
         insert_user_image(sock,url,filename);

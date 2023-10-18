@@ -2,7 +2,7 @@
 #include "../../../include/lib/json.h"
 
 
-void add_star(int sock, char *json_load)
+void add_star(SSL *sock, char *json_load)
 {
     // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);

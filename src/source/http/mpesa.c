@@ -83,7 +83,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
         p_number,
         "174379",
         "254716732614",
-        "https://8jjpcdf8-3000.uks1.devtunnels.ms/",
+        "https://f51f-105-160-81-150.ngrok.io/api/callback",
         "EV",
         "testing"
     );
@@ -156,7 +156,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
     return l;
  }
 
- void *mpesa_destroy_password(lipa *l)
+ void mpesa_destroy_password(lipa *l)
  {
     if(!l) return;
     if(l->pass_word)free(l->pass_word);

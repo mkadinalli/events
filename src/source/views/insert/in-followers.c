@@ -1,6 +1,6 @@
 #include "../../../include/views/insert/in-followers.h"
 
-void add_follower(int sock, char *json_load)
+void add_follower(SSL *sock, char *json_load)
 {
     // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);

@@ -2,7 +2,7 @@
 #include "../../../include/lib/urls.h"
 
 
-void get_stars_for_publish(int sock,char *url)
+void get_stars_for_publish(SSL *sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
     char * last_time_ = get_param_from_url(url,"last_time");
@@ -34,7 +34,7 @@ void get_stars_for_publish(int sock,char *url)
 
 
 
-void get_stars_by_user(int sock,char *url)
+void get_stars_by_user(SSL *sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
     char * last_time_ = get_param_from_url(url,"last_time");

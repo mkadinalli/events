@@ -5,4 +5,4 @@
 #include "../../data-structures/map.h"
 #include "../../da/stars-da.h"
 
-void add_star(int sock,char *json_load);
+void add_star(SSL *sock,char *json_load);

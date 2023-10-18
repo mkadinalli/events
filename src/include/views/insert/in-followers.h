@@ -5,4 +5,4 @@
 #include "../../data-structures/map.h"
 #include "../../da/followers-da.h"
 
-void add_follower(int sock,char *json_load);
+void add_follower(SSL *sock,char *json_load);

@@ -19,7 +19,7 @@
 struct tpool;
 typedef struct tpool tpool_t;
 
-typedef void *(*thread_func_t)(void *arg);
+typedef int (*thread_func_t)(void *arg);
 
 tpool_t *tpool_create(size_t num);
 
