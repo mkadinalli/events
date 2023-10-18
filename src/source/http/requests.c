@@ -8,7 +8,7 @@
 char *send_http_request(map_t *map, char *url)
 {
     // char *PORT = "3000";
-    int socketfd;
+    SSL *socketfd;
     struct addrinfo hints;
     struct addrinfo *server_info, *p;
 
@@ -236,7 +236,7 @@ char *write_http_header_from_struct(http_res *http)
     return string_create_from_string(res)->chars;
 }
 
-bool upload_file(char *file_name, char *type, int sock)
+bool upload_file(char *file_name, char *type, SSL *sock)
 {
     bool success = true;
 
@@ -256,7 +256,7 @@ bool upload_file(char *file_name, char *type, int sock)
     {
         fread(buff, 1, sizeof buff, myfile);
 
-        if ((send(sock, buff, sizeof buff, 0)) < 0)
+        if ((SSL_write(sock, buff, sizeof buff)) < 0)
         {
             // perror("send");
             success = false;
@@ -271,9 +271,9 @@ bool upload_file(char *file_name, char *type, int sock)
     return success;
 }
 
-bool write_header(char *header, int sock)
+bool write_header(char *header, SSL *sock)
 {
-    if ((write(sock, header, strlen(header))) == -1)
+    if ((SSL_write(sock, header, strlen(header))) == -1)
     {
         // puts(header);
         return false;
@@ -284,7 +284,7 @@ bool write_header(char *header, int sock)
     return true;
 }
 
-bool write_404(int sock)
+bool write_404(SSL *sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -300,7 +300,7 @@ bool write_404(int sock)
     return bl;
 }
 
-bool write_OK(int sock, char *mime)
+bool write_OK(SSL *sock, char *mime)
 {
     http_res *hp = malloc(sizeof(http_res));
 
@@ -315,7 +315,7 @@ bool write_OK(int sock, char *mime)
     return b;
 }
 
-bool write_BAD(int sock)
+bool write_BAD(SSL *sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -331,12 +331,12 @@ bool write_BAD(int sock)
     return bl;
 }
 
-bool write_json(struct json_object *obj, int sock)
+bool write_json(struct json_object *obj, SSL *sock)
 {
     write_OK(sock, "application/json");
     const char *json = json_object_to_json_string(obj);
 
-    if (write(sock, json, strlen(json)) == -1)
+    if (SSL_write(sock, json, strlen(json)) == -1)
     {
         return false;
     }
@@ -344,7 +344,7 @@ bool write_json(struct json_object *obj, int sock)
 }
 
 //==================================
-void serve_JSON(int sock, char *url)
+void serve_JSON(SSL *sock, char *url)
 {
     if (starts_with_word("/api/login", url))
     {
@@ -394,7 +394,7 @@ void serve_JSON(int sock, char *url)
 }
 //==============================
 
-void receive_json(int sock,
+void receive_json(SSL *sock,
                   char *url,
                   char *json)
 {
@@ -445,7 +445,7 @@ void receive_json(int sock,
 
 }
 
-void receive_file(int sock,char *url,char *filename)
+void receive_file(SSL *sock,char *url,char *filename)
 {
     if(starts_with_word("/upload/u-image",url))
         insert_user_image(sock,url,filename);

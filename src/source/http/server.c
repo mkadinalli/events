@@ -26,11 +26,8 @@ void clean_up()
     exit(1);
 }
 
-void *handle_request(void *args)
+void *handle_request(void *ssl)
 {
-    int *th = (int *)args;
-    int their_socket = *th;
-
     char recv_buf[1] = {0};
     char recv_buff_f[100] = {0};
     int bytes_received;
@@ -55,7 +52,7 @@ void *handle_request(void *args)
 
     while (true)
     {
-        bytes_received = recv(their_socket, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1, 0);
+        bytes_received = SSL_read(ssl, file_reached ? recv_buff_f : recv_buf, file_reached ? 99 : 1);
 
         if (bytes_received == -1)
         {
@@ -89,7 +86,7 @@ void *handle_request(void *args)
 
             if ((http_req = parse_http_req(b->chars)) == NULL)
             {
-                write_BAD(their_socket);
+                write_BAD(ssl);
 
                 return NULL;
             }
@@ -141,7 +138,7 @@ void *handle_request(void *args)
 
     if (error_code != OK && req_method == 0)
     {
-        write_BAD(their_socket);
+        write_BAD(ssl);
         goto clean_me;
     }
 
@@ -150,37 +147,36 @@ void *handle_request(void *args)
     puts(f);
 
     if (starts_with_word("/files", map_get(http_req, "url")))
-        upload_file(f, "image/jpeg", their_socket);
+        upload_file(f, "image/jpeg", ssl);
     else if (starts_with_word("/api", map_get(http_req, "url")))
     {
         switch (req_method)
         {
         case GET:
-            serve_JSON(their_socket, map_get(http_req, "url"));
+            serve_JSON(ssl, map_get(http_req, "url"));
             break;
         default:
-            receive_json(their_socket,
+            receive_json(ssl,
                          map_get(http_req, "url"),
                          string_create_copy(json_b->chars));
             break;
         case 0:
-            write_BAD(their_socket);
+            write_BAD(ssl);
             break;
         }
     }
     else if (starts_with_word("/upload", map_get(http_req, "url")))
     {
         if (req_method == POST)
-            receive_file(their_socket, map_get(http_req, "url"), filename);
+            receive_file(ssl, map_get(http_req, "url"), filename);
     }
     else
-        write_404(their_socket);
+        write_404(ssl);
 
 clean_me:
 
     b = NULL;
     map_destroy(http_req);
-    close(their_socket);
     return NULL;
 }
 
@@ -225,19 +221,45 @@ void accept_connections(int socketfd)
     struct sockaddr_storage their_address;
     socklen_t len = sizeof their_address;
 
+    SSL_CTX *ctx;
+
+    ctx = create_context();
+
+    configure_contex(ctx);
+
     while (1)
     {
         int their_socket;
+        SSL *ssl;
 
         if ((their_socket = accept(socketfd, (struct sockaddr *)&their_address, &len)) < 0)
         {
-            perror("Accept");
-            exit(EXIT_FAILURE);
+            //perror("Accept");
+            continue;
         }
 
-        tpool_add_work(thread_pool, handle_request, &their_socket);
+
+        ssl = SSL_new(ctx);
+        SSL_set_fd(ssl, their_socket);
+
+        if (SSL_accept(ssl) <= 0)
+           ERR_print_errors_fp(stderr);
+        else
+            tpool_add_work(thread_pool, handle_request, ssl);
+
+        puts("****************************************");
+
+        //SSL_shutdown(ssl);
+
+        puts("============================================");
+        SSL_free(ssl);
+        close(their_socket);
+
+        
         // handle_request(&their_socket);
     }
+
+    SSL_CTX_free(ctx);
 }
 
 bool set_up_server(char *PORT)

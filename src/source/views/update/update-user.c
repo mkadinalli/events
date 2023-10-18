@@ -1,7 +1,7 @@
 #include "../../../include/views/update/update-user.h"
 
 
-void update_user(int sock,char *json_load)
+void update_user(SSL *sock,char *json_load)
 {
         // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);

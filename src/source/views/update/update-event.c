@@ -1,6 +1,6 @@
 #include "../../../include/views/update/update-event.h"
 
-void update_event(int sock,char *json_load)
+void update_event(SSL *sock,char *json_load)
 {
 
     // write_404(sock);

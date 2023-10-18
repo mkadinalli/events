@@ -2,7 +2,7 @@
 #include "../../../include/da/db.h"
 
 
-void sign_up(int sock, char *json_load)
+void sign_up(SSL *sock, char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
     json_object *name, *username, *email, *password;

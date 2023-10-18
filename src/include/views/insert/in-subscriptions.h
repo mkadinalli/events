@@ -5,4 +5,4 @@
 #include "../../data-structures/map.h"
 #include "../../da/subscriptions-da.h"
 
-void add_subscriber(int sock,char *json_load);
+void add_subscriber(SSL *sock,char *json_load);

@@ -5,4 +5,4 @@
 #include "../../data-structures/map.h"
 #include "../../da/events-da.h"
 
-void update_event(int sock,char *json_load);
+void update_event(SSL *sock,char *json_load);

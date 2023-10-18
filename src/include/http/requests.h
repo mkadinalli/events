@@ -12,6 +12,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <signal.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include "../data-structures/map.h"
 #include "../lib/ev_strings.h"
 
@@ -58,16 +61,16 @@ parse_http_req(char *req);
 map_t * parse_http_response(char *req);
 bool upload_file(char *file_name,
                  char *type,
-                 int sock);
+                 SSL *sock);
 bool write_header(char *header,
-                  int sock);
-bool write_404(int sock);
-bool write_BAD(int sock);
-bool write_OK(int sock, char *mime);
-bool write_json(struct json_object *obj, int sock);
-void serve_JSON(int sock, char *url);
-void receive_json(int sock,
+                  SSL *sock);
+bool write_404(SSL *sock);
+bool write_BAD(SSL *sock);
+bool write_OK(SSL *sock, char *mime);
+bool write_json(struct json_object *obj, SSL *sock);
+void serve_JSON(SSL *sock, char *url);
+void receive_json(SSL *sock,
                   char *url,
                   char *json);
 
-void receive_file(int sock,char *url,char *filename);
+void receive_file(SSL *sock,char *url,char *filename);

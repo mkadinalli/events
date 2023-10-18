@@ -1,7 +1,7 @@
 #include "../../../include/views/select/get-events.h"
 #include "../../../include/lib/urls.h"
 
-void get_events(int sock, char *json_load)
+void get_events(SSL *sock, char *json_load)
 {
     // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
@@ -46,7 +46,7 @@ void get_events(int sock, char *json_load)
     json_object_put(jobj);
 }
 
-void get_one_event(int sock, char *json_load)
+void get_one_event(SSL *sock, char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
     json_object *res = NULL;
@@ -75,7 +75,7 @@ void get_one_event(int sock, char *json_load)
 }
 
 
-void get_published_by_user(int sock,char *url)
+void get_published_by_user(SSL *sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
     char * last_time_ = get_param_from_url(url,"last_time");
