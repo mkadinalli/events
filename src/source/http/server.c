@@ -28,24 +28,11 @@ void clean_up()
 
 int handle_request(void *ss)
 {
-    puts("=================================================hhh");
-
     ssl_holder *sh = ss;
-
     SSL *ssl = *(sh->ssl_strct);
-
-    puts("freeing");
-
-    //SSL_free(ssl);
-
-    puts("freed");
-
-
-
     char recv_buf[1] = {0};
     char recv_buff_f[100] = {0};
     int bytes_received;
-    puts("rrrrrrrrrrrr");
     string_t *b = string_create();
     string_t *json_b = string_create();
 
@@ -65,6 +52,9 @@ int handle_request(void *ss)
     int lopps = 0;
 
     char filename[200] = {0};
+
+    long content_len = -1;
+    long total_received = 0;
 
     while (true)
     {
@@ -89,7 +79,6 @@ int handle_request(void *ss)
             if (file_type == JSON)
             {
                     string_concat(json_b, recv_buff_f, bytes_received);
-                   // puts(json_b);
             }
 
             puts(recv_buff_f);
@@ -101,7 +90,9 @@ int handle_request(void *ss)
         else
             marker = 0;
 
-        if (bytes_received <= 0 && file_reached)
+        if(file_reached) total_received += bytes_received;
+
+        if ((bytes_received <= 0 && file_reached) || total_received == content_len)
             break;
 
         if (marker == 4)
@@ -113,36 +104,49 @@ int handle_request(void *ss)
             {
                 write_BAD(ssl);
 
-                return 1;
+                puts("failed to parse http");
+
+                break;
             }
 
-            //map_print(http_req);
+            map_print(http_req);
 
-            if (map_get(http_req, "Content-Type") != NULL)
+            if(map_get_ref(http_req, "content-length") == NULL)
             {
-                if (starts_with_word("image/jpeg",map_get(http_req, "Content-Type")))
+                write_BAD(ssl);
+                break;
+            }
+
+
+            content_len = strtol(map_get_ref(http_req, "content-length"),NULL,NULL);
+
+            
+
+            if (map_get_ref(http_req, "content-type") != NULL)
+            {
+                if (starts_with_word("image/jpeg",map_get_ref(http_req, "content-type")))
                 {
                     file_type = IMAGE;
                     sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
                     ptr = fopen(filename, "a");
                 }
-                else if (starts_with_word("application/json",map_get(http_req, "Content-Type")))
+                else if (starts_with_word("application/json",map_get_ref(http_req, "content-type")))
                     file_type = JSON;
             }
 
-            if (!strcmp(map_get(http_req, "method"), "GET"))
+            if (!strcmp(map_get_ref(http_req, "method"), "GET"))
             {
                 req_method = GET;
                 break;
             }
-            else if (!strcmp(map_get(http_req, "method"), "POST"))
+            else if (!strcmp(map_get_ref(http_req, "method"), "POST"))
                 req_method = POST;
-            else if (!strcmp(map_get(http_req, "method"), "PUT"))
+            else if (!strcmp(map_get_ref(http_req, "method"), "PUT"))
                 req_method = PUT;
 
-            else if (!strcmp(map_get(http_req, "method"), "PATCH"))
+            else if (!strcmp(map_get_ref(http_req, "method"), "PATCH"))
                 req_method = PATCH;
-            else if (!strcmp(map_get(http_req, "method"), "DELETE"))
+            else if (!strcmp(map_get_ref(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
                 break;
@@ -167,21 +171,21 @@ int handle_request(void *ss)
     }
 
     char file_dir[200] = "/home/vic/Desktop/ev2/events";
-    char *f = strcat(file_dir, map_get(http_req, "url"));
+    char *f = strcat(file_dir, map_get_ref(http_req, "url"));
     puts(f);
 
-    if (starts_with_word("/files", map_get(http_req, "url")))
+    if (starts_with_word("/files", map_get_ref(http_req, "url")))
         upload_file(f, "image/jpeg", ssl);
-    else if (starts_with_word("/api", map_get(http_req, "url")))
+    else if (starts_with_word("/api", map_get_ref(http_req, "url")))
     {
         switch (req_method)
         {
         case GET:
-            serve_JSON(ssl, map_get(http_req, "url"));
+            serve_JSON(ssl, map_get_ref(http_req, "url"));
             break;
         default:
             receive_json(ssl,
-                         map_get(http_req, "url"),
+                         map_get_ref(http_req, "url"),
                          string_create_copy(json_b->chars));
             break;
         case 0:
@@ -189,10 +193,10 @@ int handle_request(void *ss)
             break;
         }
     }
-    else if (starts_with_word("/upload", map_get(http_req, "url")))
+    else if (starts_with_word("/upload", map_get_ref(http_req, "url")))
     {
         if (req_method == POST)
-            receive_file(ssl, map_get(http_req, "url"), filename);
+            receive_file(ssl, map_get_ref(http_req, "url"), filename);
     }
     else
         write_404(ssl);
@@ -268,11 +272,7 @@ void accept_connections(int socketfd)
         ssl = SSL_new(ctx);
         SSL_set_fd(ssl, their_socket);
 
-
-
         if (SSL_accept(ssl) <= 0){
-            ERR_print_errors_fp(stderr);
-            puts("failed to accept");
             continue;
         }
         else
@@ -284,27 +284,7 @@ void accept_connections(int socketfd)
             sh->sock = their_socket;
 
             tpool_add_work(thread_pool, handle_request, sh);
-
-            //handle_request(sh);
-
-            //thrd_t t;
-
-            //thrd_create(&t,handle_request,sh);
-
-            //thrd_join(t,NULL);
-
-            puts("Fala sana --------");
-        }
-
-        puts("****************************************");
-
-        //SSL_shutdown(ssl);
-
-        puts("============================================");
-
-
-        
-        
+        }     
     }
 
     SSL_CTX_free(ctx);
@@ -394,7 +374,7 @@ bool set_up_server(char *PORT)
     }
 
     thread_pool = tpool_create(2);
-    //cpool = create_conn_pool(5);
+    cpool = create_conn_pool(5);
 
     accept_connections(socketfd);
 

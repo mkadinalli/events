@@ -62,13 +62,18 @@ map_t *parse_http_req(char *req)
             continue;
         }
 
-        char *ss = string_removechar_at(0,
-                                        list_get(vc, 1),
-                                        strlen(list_get(vc, 1)));
+        char *ss = remove_leading_and_trailing_spaces(list_get(vc, 1));
+        char *sk = remove_leading_and_trailing_spaces(list_get(vc, 0));
 
-        map_add(map, list_get(vc, 0), ss);
+        char *sslow = string_to_lower(ss);
+        char *sklow = string_to_lower(sk);
 
+        map_add(map, sklow, sslow);
+
+        free(sslow);
+        free(sklow);
         free(ss);
+        free(sk);
 
         list_destroy(vc);
         vl = vl->next;
@@ -81,7 +86,7 @@ map_t *parse_http_req(char *req)
 
 map_t * parse_http_response(char *req)
 {
-        int len = strlen(req);
+    int len = strlen(req);
     req = string_removechar('\r', req, len);
     list_t *lines = split('\n', req, strlen(req));
     list_popback(lines);

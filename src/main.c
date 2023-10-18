@@ -24,11 +24,6 @@
 int main()
 {
 
-
-    if(mpesa_do_stk_push("254716732614",50000))
-        puts("Success");
-
-    
     set_up_server("2000");
     
 
