@@ -47,7 +47,7 @@ char *mpesa_get_access_token(char *consumer, char *secret)
 
     //free client
 
-    //http_client_destroy(ct);
+    http_client_destroy(ct);
 
     return token_str;
     //return NULL;
