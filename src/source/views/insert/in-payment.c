@@ -51,7 +51,7 @@ void add_payment(SSL *sock, char *json_load)
                               json_object_get_string(published_id),
                               sr->m_id,
                               sr->c_id,
-                              json_object_get_double(amount));
+                              json_object_get_int(amount));
 
     free(sr->c_id);
     free(sr->m_id);

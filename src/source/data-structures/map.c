@@ -38,7 +38,6 @@ bool map_add(map_t *map, char *key, char *value)
 
     if (strcmp(tmp->key, key) == 0)
     {
-        printf("Key exists.\n");
         new_map = NULL;
         return false;
     }

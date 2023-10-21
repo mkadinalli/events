@@ -342,8 +342,6 @@ bool http_client_connect(http_client *client)
   SSL *ssl = NULL;
   char *header = http_client_write_header(client);
 
-  puts(header);
-
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
     puts("failed to create ssl");

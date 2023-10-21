@@ -13,6 +13,7 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     http_client_set_header("Host", "sandbox.safaricom.co.ke", ct);
     http_client_set_header("Cache-control", "no-cache", ct);
     http_client_set_header("Connection", "close", ct);
+    http_client_set_header("User-Agent", "My-C-proj v0.0.1", ct);
 
     // char *a =string_create_mpesa_auth("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
     char *a = string_create_mpesa_auth(consumer, secret);
@@ -112,6 +113,7 @@ stk_res *mpesa_do_stk_push(char * p_number,int amount)
     http_client_set_method(POST,cl);
     http_client_set_port("443",cl);
     http_client_set_header("Connection", "close", cl);
+    http_client_set_header("User-Agent", "My-C-proj v0.0.1", cl);
    
 
     char c_len[10];
@@ -131,7 +133,6 @@ stk_res *mpesa_do_stk_push(char * p_number,int amount)
     {
         if (cl->response)
         {
-            puts(cl->response);
 
             if ((res = json_tokener_parse(cl->response)) != NULL)
             {

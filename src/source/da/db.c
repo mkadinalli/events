@@ -401,7 +401,14 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
     cpool_drop_connection(conn,cpool);
 
-    return res;
+    json_object * res_h = json_object_new_object();
+
+    json_object_object_add(res_h,"success",json_object_new_boolean(true));
+    json_object_object_add(res_h,"results",res);
+
+    puts("FINISHING======");
+
+    return res_h;
 }
 
 conn_pool *create_conn_pool(size_t size)
