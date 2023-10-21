@@ -18,3 +18,4 @@ void fill_map_item(map_t *map, char *key, char *value);
 void map_print(map_t *map);
 int map_len(map_t *map);
 char *map_get(map_t *map, char *key);
+char *map_get_ref(map_t *map,char *key);

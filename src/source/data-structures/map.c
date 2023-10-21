@@ -127,3 +127,25 @@ map_get(map_t *map, char *key)
     }
     return NULL;
 }
+
+
+char *map_get_ref(map_t *map,char *key)
+{
+    if (map_len(map) < 1)
+    {
+        return NULL;
+    }
+
+    map_t *tmp = map;
+
+    while (tmp != NULL)
+    {
+        if (strcmp(key, tmp->key) == 0)
+        {
+            return tmp->value;
+        }
+        
+        tmp = tmp->next;
+    }
+    return NULL;
+}

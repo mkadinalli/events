@@ -28,6 +28,8 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     {
         if (ct->response)
         {
+            //puts(ct->response);
+
             if ((res = json_tokener_parse(ct->response)) != NULL)
             {
                 json_object *token = NULL;
@@ -45,13 +47,13 @@ char *mpesa_get_access_token(char *consumer, char *secret)
 
     //free client
 
-    http_client_destroy(ct);
+    //http_client_destroy(ct);
 
     return token_str;
     //return NULL;
 }
 
-bool mpesa_do_stk_push(char * p_number,int amount)
+stk_res *mpesa_do_stk_push(char * p_number,int amount)
 {
     char res_fmt[] = "{\
 \"BusinessShortCode\": \"%s\",\
@@ -72,7 +74,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     lipa *lp = mpesa_get_password();
 
-    if(lp == NULL) exit(1);
+    if(lp == NULL) return NULL;
 
     sprintf(res_c,res_fmt,
         "174379",
@@ -82,8 +84,8 @@ bool mpesa_do_stk_push(char * p_number,int amount)
         amount,
         p_number,
         "174379",
-        "254716732614",
-        "https://f51f-105-160-81-150.ngrok.io/api/callback",
+        p_number,
+        "https://f51f-105-160-81-150.ngrok.io/apicallback",
         "EV",
         "testing"
     );
@@ -94,7 +96,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     char * atk = mpesa_get_access_token("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
 
-    if(!atk) return false;
+    if(!atk) return NULL;
 
 
 
@@ -121,16 +123,51 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     http_client_append_string(res_c,cl);
 
-    bool success = false;
+    json_object *res = NULL;
+    char *token_str = NULL;
+    char *token_str2 = NULL;
 
-    if(http_client_connect(cl))
+    if (http_client_connect(cl))
     {
-        success = true;
+        if (cl->response)
+        {
+            puts(cl->response);
+
+            if ((res = json_tokener_parse(cl->response)) != NULL)
+            {
+                json_object *token = NULL;
+                json_object *token2 = NULL;
+                if (json_object_object_get_ex(res, "MerchantRequestID", &token))
+                {
+                    const char *tval = json_object_get_string(token);
+                    token_str = malloc(strlen(tval) + 1);
+                    strcpy(token_str, tval);
+                    //json_object_put(res);
+                    json_object_put(token);
+                }
+
+                if (json_object_object_get_ex(res, "CheckoutRequestID", &token2))
+                {
+                    const char *tval = json_object_get_string(token2);
+                    token_str2 = malloc(strlen(tval) + 1);
+                    strcpy(token_str2, tval);
+                    //json_object_put(res);
+                    json_object_put(token2);
+                }
+            }
+        }
     }
 
     http_client_destroy(cl);
 
-    return success;
+    if(token_str2 == NULL || token_str == NULL) return NULL;
+
+     stk_res * results = malloc(sizeof(stk_res));
+
+     results->c_id = token_str2;
+     results->m_id = token_str;
+    
+    return results;
 }
 
 

@@ -80,7 +80,6 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
   ssl = SSL_new(ctx);
   if (ssl == NULL)
   {
-    puts("Failed to create ssl");
     return NULL;
   }
 
@@ -110,12 +109,6 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
     puts("Failed to set fd");
     return NULL;
   }
-//////////////////////////////////////////////
-  //BIO_set_nbio(SSL_get_rbio(ssl),1);
-  //BIO_set_nbio(SSL_get_wbio(ssl),1);
-
-///////////////////////////////////////////
-  puts("about to connect");
 
   if(ssl == NULL)
   {
@@ -130,16 +123,12 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
     return NULL;
   }
 
-  puts("connected ....");
-
   res = SSL_do_handshake(ssl);
   if (res != 1)
   {
     puts("Failed to handshake");
     return NULL;
   }
-
-  puts("Handshake");
 
   return ssl;
 }
@@ -429,8 +418,6 @@ bool http_client_connect(http_client *client)
 
       printf("%d ",b_sent);
     }
-
-    puts("wrote body");
   }
 
   //puts("**********************************");

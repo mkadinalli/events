@@ -291,9 +291,6 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
             p_bind[i].buffer = result_bind_get_string(i, params);
             p_bind[i].buffer_length = 100;
 
-            printf("len is %ld\n",len[i]);
-            puts(result_bind_get_string(i, params));
-
         }
 
         bool status = mysql_stmt_bind_param(stmt, p_bind);

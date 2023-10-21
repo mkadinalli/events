@@ -85,7 +85,7 @@ create table stars
 );
 
 -- =========PAYMENTS========================================================================
-/*
+
 drop table if exists payments;
 create table payments
 (
@@ -93,6 +93,9 @@ create table payments
     user_id binary(16) ,
     published_id binary(16) ,
 	date_created timestamp default now(),
+    conversation_id varchar(256),
+    transaction_id varchar(256) null,
+    amount decimal(10,2),
     
 
     constraint 
@@ -106,7 +109,7 @@ create table payments
 		pay_events_fk foreign key(published_id) references published(id)
     on delete cascade
 );
-*/
+
 -- ==============FOLLOWERS=============================================================
 
 drop table if exists followers;
@@ -348,7 +351,7 @@ begin
 end #
 delimiter ; */
 
-/*
+
 delimiter #
 drop trigger if exists add_payment_id #
 create trigger add_payment_id
@@ -357,7 +360,7 @@ for each row
 begin
     set new.id = uuid_to_bin(uuid());
 end #
-delimiter ; */
+delimiter ;
 
 
 delimiter #

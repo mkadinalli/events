@@ -18,13 +18,12 @@
 #include "../data-structures/map.h"
 #include "../lib/ev_strings.h"
 
-
-
 #include "../views/insert/in-events.h"
 #include "../views/insert/in-followers.h"
 #include "../views/insert/in-stars.h"
 #include "../views/insert/in-subscriptions.h"
 #include "../views/insert/in-users.h"
+#include "in-payment.h"
 
 #include "../views/select/get-events.h"
 #include "../views/select/get-followers.h"
