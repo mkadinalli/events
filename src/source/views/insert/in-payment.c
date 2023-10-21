@@ -1,5 +1,6 @@
 
 #include "in-payment.h"
+#include "mpesa.h"
 
 void add_payment(SSL *sock, char *json_load)
 {
@@ -36,9 +37,9 @@ void add_payment(SSL *sock, char *json_load)
         return;
     }
 
-    char *conv_id = mpesa_do_stk_push(json_object_get_string(phone_number),json_object_get_double(amount));
+    stk_res *sr = mpesa_do_stk_push((char *)json_object_get_string(phone_number),json_object_get_int(amount));
 
-    if(!conv_id)
+    if(!sr)
     {
         write_BAD(sock);
         //should be server err
@@ -48,8 +49,9 @@ void add_payment(SSL *sock, char *json_load)
     // write_404(sock);
     json_object *j_res = insert_into_payments(json_object_get_string(user_id),
                               json_object_get_string(published_id),
-                              conv_id,
-                              json_object_get_float(amount));
+                              sr->m_id,
+                              sr->c_id,
+                              json_object_get_double(amount));
 
     write_json(j_res, sock);
     json_object_put(j_res);

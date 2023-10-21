@@ -28,6 +28,8 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     {
         if (ct->response)
         {
+            //puts(ct->response);
+
             if ((res = json_tokener_parse(ct->response)) != NULL)
             {
                 json_object *token = NULL;
@@ -45,20 +47,20 @@ char *mpesa_get_access_token(char *consumer, char *secret)
 
     //free client
 
-    http_client_destroy(ct);
+    //http_client_destroy(ct);
 
     return token_str;
     //return NULL;
 }
 
-char *mpesa_do_stk_push(char * p_number,float amount)
+stk_res *mpesa_do_stk_push(char * p_number,int amount)
 {
     char res_fmt[] = "{\
 \"BusinessShortCode\": \"%s\",\
 \"Password\": \"%s\",\
 \"Timestamp\": \"%s\",\
 \"TransactionType\": \"%s\",\
-\"Amount\": \"%f\",\
+\"Amount\": \"%d\",\
 \"PartyA\": \"%s\",\
 \"PartyB\": \"%s\",\
 \"PhoneNumber\": \"%s\",\
@@ -82,8 +84,8 @@ char *mpesa_do_stk_push(char * p_number,float amount)
         amount,
         p_number,
         "174379",
-        "254716732614",
-        "https://f51f-105-160-81-150.ngrok.io/api/callback",
+        p_number,
+        "https://f51f-105-160-81-150.ngrok.io/apicallback",
         "EV",
         "testing"
     );
@@ -123,15 +125,19 @@ char *mpesa_do_stk_push(char * p_number,float amount)
 
     json_object *res = NULL;
     char *token_str = NULL;
+    char *token_str2 = NULL;
 
     if (http_client_connect(cl))
     {
         if (cl->response)
         {
+            puts(cl->response);
+
             if ((res = json_tokener_parse(cl->response)) != NULL)
             {
                 json_object *token = NULL;
-                if (json_object_object_get_ex(res, "ConversationID", &token))
+                json_object *token2 = NULL;
+                if (json_object_object_get_ex(res, "MerchantRequestID", &token))
                 {
                     const char *tval = json_object_get_string(token);
                     token_str = malloc(strlen(tval) + 1);
@@ -139,14 +145,29 @@ char *mpesa_do_stk_push(char * p_number,float amount)
                     //json_object_put(res);
                     json_object_put(token);
                 }
+
+                if (json_object_object_get_ex(res, "CheckoutRequestID", &token2))
+                {
+                    const char *tval = json_object_get_string(token2);
+                    token_str2 = malloc(strlen(tval) + 1);
+                    strcpy(token_str2, tval);
+                    //json_object_put(res);
+                    json_object_put(token2);
+                }
             }
         }
     }
 
     http_client_destroy(cl);
 
+    if(token_str2 == NULL || token_str == NULL) return NULL;
 
-    return token_str;
+     stk_res * results = malloc(sizeof(stk_res));
+
+     results->c_id = token_str2;
+     results->m_id = token_str;
+    
+    return results;
 }
 
 

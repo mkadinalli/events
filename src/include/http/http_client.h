@@ -30,6 +30,7 @@ struct http_client
     char * response;
 };
 
+
 int http_client_create_socket(char *address_,char *port,struct sockaddr **host);
 
 char * get_ip_as_string(struct sockaddr *address);
