@@ -77,11 +77,7 @@ int handle_request(void *ss)
                 fwrite(recv_buff_f, 1, bytes_received, ptr);
 
             if (file_type == JSON)
-            {
                     string_concat(json_b, recv_buff_f, bytes_received);
-            }
-
-            puts(recv_buff_f);
                 
         }
 
@@ -109,8 +105,6 @@ int handle_request(void *ss)
                 break;
             }
 
-            map_print(http_req);
-
             if(map_get_ref(http_req, "content-length") == NULL)
             {
                 write_BAD(ssl);
@@ -118,7 +112,7 @@ int handle_request(void *ss)
             }
 
 
-            content_len = strtol(map_get_ref(http_req, "content-length"),NULL,NULL);
+            content_len = strtol(map_get_ref(http_req, "content-length"),NULL,0);
 
             
 
