@@ -25,6 +25,7 @@
 #include "../views/insert/in-stars.h"
 #include "../views/insert/in-subscriptions.h"
 #include "../views/insert/in-users.h"
+#include "in-payment.h"
 
 #include "../views/select/get-events.h"
 #include "../views/select/get-followers.h"

@@ -51,14 +51,14 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     //return NULL;
 }
 
-bool mpesa_do_stk_push(char * p_number,int amount)
+char *mpesa_do_stk_push(char * p_number,float amount)
 {
     char res_fmt[] = "{\
 \"BusinessShortCode\": \"%s\",\
 \"Password\": \"%s\",\
 \"Timestamp\": \"%s\",\
 \"TransactionType\": \"%s\",\
-\"Amount\": \"%d\",\
+\"Amount\": \"%f\",\
 \"PartyA\": \"%s\",\
 \"PartyB\": \"%s\",\
 \"PhoneNumber\": \"%s\",\
@@ -72,7 +72,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     lipa *lp = mpesa_get_password();
 
-    if(lp == NULL) exit(1);
+    if(lp == NULL) return NULL;
 
     sprintf(res_c,res_fmt,
         "174379",
@@ -94,7 +94,7 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     char * atk = mpesa_get_access_token("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
 
-    if(!atk) return false;
+    if(!atk) return NULL;
 
 
 
@@ -121,16 +121,32 @@ bool mpesa_do_stk_push(char * p_number,int amount)
 
     http_client_append_string(res_c,cl);
 
-    bool success = false;
+    json_object *res = NULL;
+    char *token_str = NULL;
 
-    if(http_client_connect(cl))
+    if (http_client_connect(cl))
     {
-        success = true;
+        if (cl->response)
+        {
+            if ((res = json_tokener_parse(cl->response)) != NULL)
+            {
+                json_object *token = NULL;
+                if (json_object_object_get_ex(res, "ConversationID", &token))
+                {
+                    const char *tval = json_object_get_string(token);
+                    token_str = malloc(strlen(tval) + 1);
+                    strcpy(token_str, tval);
+                    //json_object_put(res);
+                    json_object_put(token);
+                }
+            }
+        }
     }
 
     http_client_destroy(cl);
 
-    return success;
+
+    return token_str;
 }
 
 

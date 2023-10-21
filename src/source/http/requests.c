@@ -383,9 +383,9 @@ void receive_json(SSL *sock,
     }
 
 
-    if(starts_with_word("/api/callback",url))
+    if(starts_with_word("/api/pay",url))
     {
-        //puts(json);
+        add_payment(sock,json);
     }
 
 }
