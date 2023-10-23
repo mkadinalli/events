@@ -90,6 +90,7 @@ void sign_up(SSL *sock, char *json_load)
 
 void verify_user(SSL *sock, char *url)
 {
+
     char *id = get_param_from_url(url, "id");
     char *v_token = get_param_from_url(url, "token");
 
@@ -108,7 +109,7 @@ void verify_user(SSL *sock, char *url)
         return;
     }
 
-    json_object *jobj = get_published_by_user_id(id, v_token);
+    json_object *jobj = verify_user_email(id, v_token);
 
     jobj == NULL ? write_404(sock) : write_json(jobj, sock);
 

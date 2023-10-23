@@ -128,7 +128,7 @@ int handle_request(void *ss)
                     file_type = JSON;
             }
 
-            if (!strcmp(map_get_ref(http_req, "method"), "GET"))
+            if (starts_with_word( map_get_ref(http_req, "method"), "GET"))
             {
                 req_method = GET;
                 break;

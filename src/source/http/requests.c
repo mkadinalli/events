@@ -280,6 +280,7 @@ bool write_json(struct json_object *obj, SSL *sock)
 //==================================
 void serve_JSON(SSL *sock, char *url)
 {
+
     if (starts_with_word("/api/login", url))
     {
         login(url, sock);
@@ -327,7 +328,7 @@ void serve_JSON(SSL *sock, char *url)
 
     if(starts_with_word("/api/verify",url))
     {
-        add_payment(sock,url);
+        verify_user(sock,url);
     }
 
 }

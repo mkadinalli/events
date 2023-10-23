@@ -21,13 +21,13 @@ json_object * insert_into_users(const char *name, const char *username, const ch
 
 json_object *verify_user_email(char *id,char *tok)
 {
-    char *query = "update users set verified = true where id = ? and verify_token = ?)";
+    char *query = "call verify_user_email(?,?)";
 
     result_bind * rb = result_bind_create(2);
     result_bind_set_string(0,rb,id);
     result_bind_set_string(1,rb,tok);
 
-    json_object *res =  execute_prepared_query(query,rb);
+    json_object *res =  execute_prepared_call_query(query,rb);
 
     result_bind_destroy(rb);
 
