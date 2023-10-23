@@ -4,13 +4,28 @@
 
 json_object * insert_into_users(const char *name, const char *username, const char *email, const char *password)
 {
-    char *query = "insert into users (name,username,email,pass_word) values (?,?,?,?)";
+    char *query = "call insert_user(?,?,?,?)";
 
     result_bind * rb = result_bind_create(4);
     result_bind_set_string(0,rb,name);
     result_bind_set_string(1,rb,username);
     result_bind_set_string(2,rb,email);
     result_bind_set_string(3,rb,password);
+    json_object *res =  execute_prepared_call_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
+
+json_object *verify_user_email(char *id)
+{
+    char *query = "update users set verified = true where id = ?)";
+
+    result_bind * rb = result_bind_create(1);
+    result_bind_set_string(0,rb,id);
+
     json_object *res =  execute_prepared_query(query,rb);
 
     result_bind_destroy(rb);

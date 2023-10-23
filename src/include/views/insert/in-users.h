@@ -6,3 +6,5 @@
 #include "../../da/users-da.h"
 
 void sign_up(SSL *sock, char *json_load);
+
+void verify_user(SSL *sock, char *url);
