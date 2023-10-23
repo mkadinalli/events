@@ -30,6 +30,9 @@ create table users(
     avater varchar(100) NULL,
     bio varchar(1000) NULL,
     about varchar(50) NULL,
+    verify_token binary(16),
+    verified boolean default false,
+    token_valid_until timestamp not null,
     date_created timestamp default now(),
     date_modified timestamp default now() on update now(),
     
@@ -291,6 +294,8 @@ begin
     set new.id = uuid_to_bin(uuid());
     set new.pass_word = encrypt_password(new.pass_word,p_salt);
     set new.salt = p_salt;
+    set new.verify_token = uuid_to_bin(uuid());
+    set new.token_valid_until = date_add(now(),interval 1 hour);
 end #
 delimiter ;
 
@@ -733,6 +738,76 @@ begin
 end #
 delimiter ;
 
+
+delimiter #
+drop procedure if exists insert_user #
+create procedure insert_user(
+	in_name varchar(256),
+    in_username varchar(256),
+    in_email varchar(256),
+    in_pass_word varchar(256)
+)
+begin
+	insert into users 
+	(
+	name,username,email,pass_word
+	)
+	values
+	(
+	in_name,in_username,in_email,in_pass_word
+	);
+    
+    select bin_to_uuid(id) as id,
+    in_email as email,
+    bin_to_uuid(verify_token) as token
+    from users where email = in_email;
+end #
+delimiter ;
+
+
+delimiter #
+drop procedure if exists verify_user_email #
+create procedure verify_user_email(
+	in_user_id varchar(256),
+    in_tok varchar(256)
+)
+begin
+    declare exp_time timestamp default null;
+    declare success boolean default false;
+    
+    declare user_id binary(16) default uuid_to_bin(in_user_id);
+    declare token binary(16) default uuid_to_bin(in_tok);
+		
+	select token_valid_until
+    into exp_time 
+    from users 
+    where id = user_id
+    and verify_token = token
+    and verified = false;
+    
+    if exp_time is not null then
+        if exp_time < now() then
+			delete from users where id = user_id;
+		else
+			update users set verified = true where id = user_id;
+			set success = true;
+		end if;
+	end if;
+    
+    select success;
+    
+end #
+delimiter ;
+
+
+call verify_user_email('24df0b8b-71ad-11ee-b82b-dc215ca11a9e','24e0909f-71ad-11ee-b82b-dc215ca11a9e');
+
+
+call insert_user('vic','user2','email2','1234');
+
+delete from users where email != 'hello';
+
+select * from users;
 
 select * from payments;
 
