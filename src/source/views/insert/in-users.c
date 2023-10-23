@@ -41,8 +41,6 @@ void sign_up(SSL *sock, char *json_load)
                                            json_object_get_string(email),
                                            json_object_get_string(password));
 
-    puts(json_object_to_json_string_ext(j_res,JSON_C_TO_STRING_PRETTY));
-
 
     if (!json_object_object_get_ex(j_res, "results", &results))
     {
@@ -74,11 +72,12 @@ void sign_up(SSL *sock, char *json_load)
 
     char v_url[200];
 
-    sprintf(v_url, "https://localhost:2000/api/verify/?token=%s&id=%s",
+    sprintf(v_url, "Click on this link to verify <a href=\"https\://localhost\:2000/api/verify/?token=%s&id=%s\">Verify</a>",
             json_object_get_string(token),
             json_object_get_string(id));
 
-    gmail_send_message(json_object_get_string(email), v_url);
+
+    gmail_send_message(json_object_get_string(email),(char *)v_url);
     json_object_put(j_res);
 
 
