@@ -325,9 +325,9 @@ void serve_JSON(SSL *sock, char *url)
         get_subs_by_user(sock,url);//done
     }
 
-    if(starts_with_word("/api/callback",url))
+    if(starts_with_word("/api/verify",url))
     {
-        //puts(json);
+        add_payment(sock,url);
     }
 
 }
@@ -381,7 +381,6 @@ void receive_json(SSL *sock,
     {
         update_user(sock,json);
     }
-
 
     if(starts_with_word("/api/pay",url))
     {

@@ -32,3 +32,5 @@ json_object * update_one_user(const char *name,
  * @brief Get one user by id 
 */
 json_object *get_user(char *id);
+
+json_object *verify_user_email(char *id);

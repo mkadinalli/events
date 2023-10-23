@@ -93,9 +93,11 @@ create table payments
     user_id binary(16) ,
     published_id binary(16) ,
 	date_created timestamp default now(),
-    conversation_id varchar(256),
+    date_modified timestamp default now() on update now(),
+    merchant_request_id varchar(256),
+    checkout_request_id varchar(256),
     transaction_id varchar(256) null,
-    amount decimal(10,2),
+    amount int,
     
 
     constraint 
@@ -490,12 +492,6 @@ begin
 end #
 delimiter ;
 
--- how much money you got -- a lot
--- how many times you got shot -- a lot
--- how many niggas you shot -- a lot
--- how many times did you cheat -- a lot
--- how many lawyers you got -- a lot
---                            21 - Savage.
 
 delimiter #
 drop procedure if exists get_followers #
@@ -736,6 +732,9 @@ begin
     select im_id as id;
 end #
 delimiter ;
+
+
+select * from payments;
 
 -- so you read code ???????????????????????? :D
 

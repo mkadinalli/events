@@ -173,7 +173,16 @@ bool gmail_send_message(char *receiver_email,char *message)
     if(r <= 0)
         goto exit_with_error;
 
-    cmd = "Date: Tue, 09 oct 2023 16:26:00\r\nFrom: vycnjagi@gmail.com\r\nSubject: Hello world\r\nTo: %s\r\nBill:\r\n%s\nvic.\r\n.\r\n";
+    cmd = "Date: Tue, 09 oct 2023 16:26:00\r\n\
+From: vycnjagi@gmail.com\r\n\
+Subject: Hello world\r\n\
+To: %s\r\n\
+MIME-Version: 1.0\r\n\
+Content-type: text/html\r\n\
+\r\n\
+<HTML><p>%s</p></HTML>\n\
+vic.\
+\r\n.\r\n";
     
     bzero(rcmd,sizeof rcmd);
     
@@ -216,5 +225,6 @@ bool gmail_send_message(char *receiver_email,char *message)
     SSL_free(ssl);
     SSL_CTX_free(ctx);
     close(sock);
+    puts("Email faild");
     return false;
 }

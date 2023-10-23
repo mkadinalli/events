@@ -39,7 +39,7 @@ void add_payment(SSL *sock, char *json_load)
 
     stk_res *sr = mpesa_do_stk_push((char *)json_object_get_string(phone_number),json_object_get_int(amount));
 
-    if(!sr)
+    if(sr == NULL)
     {
         write_BAD(sock);
         //should be server err
@@ -51,7 +51,11 @@ void add_payment(SSL *sock, char *json_load)
                               json_object_get_string(published_id),
                               sr->m_id,
                               sr->c_id,
-                              json_object_get_double(amount));
+                              json_object_get_int(amount));
+
+    free(sr->c_id);
+    free(sr->m_id);
+    free(sr);
 
     write_json(j_res, sock);
     json_object_put(j_res);
