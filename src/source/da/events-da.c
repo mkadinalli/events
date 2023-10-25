@@ -105,3 +105,18 @@ json_object *get_published_by_user_id(char *id_,char *last_time)
 }
 
 
+json_object *delete_from_published(char *id)
+{
+    char *query = "delete from published where id = uuid_to_bin(?)";
+
+    result_bind * rb = result_bind_create(1);
+    result_bind_set_string(0,rb,id);
+
+    json_object *res =  execute_prepared_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
+

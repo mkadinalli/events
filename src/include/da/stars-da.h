@@ -23,3 +23,6 @@ json_object *get_stars_by_user_id(char *id,char *last_time);
  * @brief get 20 stars from a published
 */
 json_object *get_stars_by_pub_id(char *id,char *last_time);
+
+
+json_object *delete_from_stars(char *id);

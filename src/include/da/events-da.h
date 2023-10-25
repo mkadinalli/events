@@ -51,3 +51,6 @@ json_object * update_published(
  * @brief Get 20 events published by a user 
 */
 json_object *get_published_by_user_id(char *id,char *last_time);//done
+
+json_object *delete_from_published(char *id);
+

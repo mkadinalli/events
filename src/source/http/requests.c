@@ -1,7 +1,6 @@
 #include "../../include/http/requests.h"
 #include <string.h>
 #include <stdlib.h>
-#include "in_images.h"
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -224,11 +223,15 @@ bool write_404(SSL *sock)
 
     h_err->code = 404;
     h_err->code_name = "NOT FOUND";
-    h_err->content_length = 0;
+    h_err->content_length = 30;
     h_err->http_version = "1.1";
-    h_err->content_type = "NULL";
+    h_err->content_type = "application/json";
 
     bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    char * json_char = "{\"error\":\"Resource not found\"}";
+
+    SSL_write(sock,json_char,30);
 
     free(h_err);
     return bl;
@@ -255,11 +258,15 @@ bool write_BAD(SSL *sock)
 
     h_err->code = 400;
     h_err->code_name = "BAD REQUEST";
-    h_err->content_length = 0;
+    h_err->content_length = 23;
     h_err->http_version = "1.1";
-    h_err->content_type = "NULL";
+    h_err->content_type = "application/json";
 
     bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    char * json_char = "{\"error\":\"Bad request\"}";
+
+    SSL_write(sock,json_char,23);
 
     free(h_err);
     return bl;
@@ -275,125 +282,4 @@ bool write_json(struct json_object *obj, SSL *sock)
         return false;
     }
     return true;
-}
-
-//==================================
-void serve_JSON(SSL *sock, char *url)
-{
-    if (starts_with_word("/api/login", url))
-    {
-        login(url, sock);
-    }
-
-    if(starts_with_word("/api/user",url))
-    {
-        get_one_user(sock,url); //done
-    }
-
-    if(starts_with_word("/api/followers",url))
-    {
-        get_followers_for_user(sock,url); //done
-    }
-
-    if(starts_with_word("/api/u-followers",url))
-    {
-        get_followed_by_user(sock,url); //done
-    }
-
-    if(starts_with_word("/api/published",url))
-    {
-        get_published_by_user(sock,url);// done
-    }
-
-    if(starts_with_word("/api/stars",url))
-    {
-        get_stars_by_user(sock,url); //done
-    }
-
-    if(starts_with_word("/api/p-stars",url))
-    {
-        get_stars_for_publish(sock,url); //done
-    }
-
-    if(starts_with_word("/api/p-subscriptions",url))
-    {
-        get_subs_for_publish(sock,url);//done
-    }
-
-    if(starts_with_word("/api/subscriptions",url))
-    {
-        get_subs_by_user(sock,url);//done
-    }
-
-    if(starts_with_word("/api/verify",url))
-    {
-        add_payment(sock,url);
-    }
-
-}
-//==============================
-
-void receive_json(SSL *sock,
-                  char *url,
-                  char *json)
-{
-    if (starts_with_word("/api/signup", url))
-    {
-        sign_up(sock, json);
-    }
-
-    if(starts_with_word("/api/events",url))
-    {
-        add_event(sock,json);
-    }
-
-    if(starts_with_word("/api/follow",url))
-    {
-        add_follower(sock,json);
-    }
-
-    if(starts_with_word("/api/subscribe",url))
-    {
-        add_subscriber(sock,json);
-    }
-
-    if(starts_with_word("/api/star",url))
-    {
-        add_star(sock,json);
-    }
-
-    if(starts_with_word("/api/gevents",url))
-    {
-        get_events(sock,json);
-    }
-
-    if(starts_with_word("/api/one-event",url))
-    {
-        get_one_event(sock,json);
-    }
-
-    if(starts_with_word("/api/ev-update",url))
-    {
-        update_event(sock,json);
-    }
-
-    if(starts_with_word("/api/u-update",url))
-    {
-        update_user(sock,json);
-    }
-
-    if(starts_with_word("/api/pay",url))
-    {
-        add_payment(sock,json);
-    }
-
-}
-
-void receive_file(SSL *sock,char *url,char *filename)
-{
-    if(starts_with_word("/upload/u-image",url))
-        insert_user_image(sock,url,filename);
-
-    if(starts_with_word("/upload/p-image",url))
-        insert_pub_image(sock,url,filename);
 }
