@@ -132,8 +132,7 @@ void method_post(SSL *sock, char *url, char *json)
 
     if(starts_with_word("/api/callback",url))
     {
-        //get_one_event(sock,json);
-        puts(json);
+        process_payment(sock,json);
         return;
     }
 }

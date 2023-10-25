@@ -225,6 +225,5 @@ vic.\
     SSL_free(ssl);
     SSL_CTX_free(ctx);
     close(sock);
-    puts("Email faild");
     return false;
 }

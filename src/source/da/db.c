@@ -182,8 +182,6 @@ json_object *execute_prepared_query(char *query, result_bind *params)
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
 
-        result_bind_print(params);
-
         unsigned long len[15];
 
         for (int i = 0; i < param_count; i++)
@@ -320,8 +318,6 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
         MYSQL_BIND p_bind[param_count];
         memset(p_bind, 0, sizeof p_bind);
-
-        //result_bind_print(params);
 
         unsigned long len[15];
 
@@ -493,8 +489,6 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
     json_object_object_add(res_h,"success",json_object_new_boolean(true));
     json_object_object_add(res_h,"results",res);
 
-    puts("FINISHING======");
-
     return res_h;
 }
 
@@ -509,7 +503,6 @@ conn_pool *create_conn_pool(size_t size)
 
     if (checked_size > 10)
     {
-        puts("too large");
         exit(1);
     }
 
@@ -570,12 +563,7 @@ MYSQL *cpool_get_connection(conn_pool *cpool)
 
     if (conn == NULL)
     {
-
         mtx_unlock(&(cpool->conn_mtx));
-
-        puts("----returning a null connection-----");
-
-        printf("Busy connections -> %ld\n", cpool->busy_conns);
     }
 
     return conn;

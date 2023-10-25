@@ -10,56 +10,42 @@ void update_user(SSL *sock,char *json_load)
     if (!json_object_object_get_ex(jobj, "name", &name))
     {
         write_BAD(sock);
-        // todo
-        puts("mising title");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "username", &username))
     {
         write_BAD(sock);
-        // todo
-        puts("mising desc");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "avater", &avater))
     {
         write_BAD(sock);
-        // todo
-        puts("mising venue");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "bio", &bio))
     {
         write_BAD(sock);
-        // todo
-        puts("mising event date");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "about", &about))
     {
         write_BAD(sock);
-        // todo
-        puts("mising deadline");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "email", &email))
     {
         write_BAD(sock);
-        // todo
-        puts("mising pulisher");
         return;
     }
 
     if (!json_object_object_get_ex(jobj, "id", &id))
     {
         write_BAD(sock);
-        // todo
-        puts("mising id");
         return;
     }
 

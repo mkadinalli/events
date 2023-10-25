@@ -208,11 +208,8 @@ bool write_header(char *header, SSL *sock)
 {
     if ((SSL_write(sock, header, strlen(header))) == -1)
     {
-        // puts(header);
         return false;
     }
-
-    // puts(header);
 
     return true;
 }

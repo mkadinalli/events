@@ -24,7 +24,6 @@ char *read_file_to_string(char *path)
         free(buf);
         return btmp;
     }
-    puts("file not found");
     free(buf);
     return NULL;
 }
@@ -36,8 +35,6 @@ MYSQL *create_connection_from_a_file(char *path_to_config)
 
     char *str = read_file_to_string(path_to_config);
     struct json_object *jobj, *host, *password, *username, *db;
-
-    // puts(str);
 
     jobj = json_tokener_parse(str);
 

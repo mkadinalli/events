@@ -19,11 +19,8 @@ void login(char *url, SSL *sock)
         map_destroy(url_m);
         return;
     }
-    puts(map_get(url_m, "query"));
 
     map_t *params = parse_url_query(map_get(url_m, "query"));
-
-    puts("parsed");
 
     if (params == NULL)
     {
@@ -44,7 +41,6 @@ void login(char *url, SSL *sock)
 
     if (colname == NULL)
     {
-        puts("is nill");
         log_wit_email = false;
         colname = map_get(params, "username");
     }

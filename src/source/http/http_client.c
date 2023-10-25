@@ -55,14 +55,14 @@ int http_client_create_socket(char *address_, char *port,struct sockaddr **host)
 
   if (p == NULL)
   {
-    
-    puts("NULL");
     return -1;
   }
 
   freeaddrinfo(res);
   return sock;
 }
+
+
 
 SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
 {
@@ -89,7 +89,6 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
   res = SSL_set_tlsext_host_name(ssl, address_);
   if (res != 1)
   {
-    puts("Failed to set host name");
     return NULL;
   }
 
@@ -99,34 +98,29 @@ SSL *http_client_create_ssl(char *address_, SSL_CTX *ctx, int sock)
 
   if (res != 1)
   {
-    puts("Failed to set cipher list");
     return NULL;
   }
 
   res = SSL_set_fd(ssl, sock);
   if (res != 1)
   {
-    puts("Failed to set fd");
     return NULL;
   }
 
   if(ssl == NULL)
   {
-    puts("ssl is nulllllll");
     exit(1);
   }
 
   res = SSL_connect(ssl);
   if (res != 1)
   {
-    puts("Failed to connect");
     return NULL;
   }
 
   res = SSL_do_handshake(ssl);
   if (res != 1)
   {
-    puts("Failed to handshake");
     return NULL;
   }
 
@@ -295,7 +289,6 @@ bool http_client_connect(http_client *client)
 {
   if (!client->url || !client->method || !client || !client->address)
   {
-    puts("missing members");
     return false;
   }
 
@@ -309,7 +302,6 @@ bool http_client_connect(http_client *client)
   if (method == NULL)
   {
     // handle error
-    puts("Method failed");
     return false;
   }
 
@@ -317,7 +309,6 @@ bool http_client_connect(http_client *client)
 
   if (ctx == NULL)
   {
-    puts("failed to start context");
     return false;
   }
 
@@ -326,17 +317,7 @@ bool http_client_connect(http_client *client)
 
   if ((sock = http_client_create_socket(client->address, client->port,&remote_host)) == -1)
   {
-    puts("failed to create socket");
     return false;
-  }
-
-
-  if(remote_host == NULL)
-    puts("Host is null");
-  else
-  {
-    //http_client_set_host(remote_host,client);
-    //puts(remote_host->sa_data);
   }
 
   SSL *ssl = NULL;
@@ -344,16 +325,11 @@ bool http_client_connect(http_client *client)
 
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
-    puts("failed to create ssl");
     return false;
   }
 
-  //puts("<---ssl created--->");
-  //puts(header);
-
   if ((SSL_write(ssl, header, strlen(header))) == -1)
   {
-    puts("Error sending");
     return false;
   }
 
@@ -403,12 +379,9 @@ bool http_client_connect(http_client *client)
       }
 
       offset += 100;
-
-      printf("%d ",b_sent);
     }
   }
 
-  //puts("**********************************");
   out = http_client_receive_response(ssl, client);
 
   SSL_free(ssl);
@@ -442,12 +415,6 @@ bool http_client_receive_response(SSL *sock, http_client *client)
 
     if(num_evs < 1)
     {
-      if(num_evs == 0)
-      {
-        puts(" ======= Connection Time out ========");
-      }else{
-          puts("<<<<<<< Connection failed >>>>>>>>>");
-      }
       out = false;
       continue;
     }
@@ -538,7 +505,6 @@ char *http_client_write_header(http_client *ct)
   if (ct->headers == NULL)
   {
     char *chd = head->chars;
-    puts("No headers");
     free(head);
     return chd;
   }
@@ -571,7 +537,6 @@ bool http_client_set_host(struct sockaddr * host,http_client *client)
 
   if((status = getnameinfo(host,sizeof(struct sockaddr_in),host_name,sizeof host_name,service,sizeof service,0)) != 0)
   {
-    puts(gai_strerror(status));
     return false;
   }
 
@@ -586,7 +551,6 @@ bool http_client_set_host(struct sockaddr * host,http_client *client)
 
 int http_client_get_service_port(char *service_name)
 {
-  printf("Service name is -> %s\n",service_name);
   struct servent *sv = NULL;
 
   char proto[4] = "tcp";
