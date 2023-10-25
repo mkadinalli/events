@@ -52,3 +52,5 @@ json_object * update_published(
 */
 json_object *get_published_by_user_id(char *id,char *last_time);//done
 
+json_object *delete_from_published(char *id);
+

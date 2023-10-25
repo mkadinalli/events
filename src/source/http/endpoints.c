@@ -122,6 +122,11 @@ void method_delete(SSL *sock, char *url)
     {
         delete_follower(sock,url);
     }
+
+    if(starts_with_word("/api/event",url))
+    {
+        delete_event(sock,url);
+    }
 }
 
 void method_post_file(SSL *sock,char *url,char *filename)
