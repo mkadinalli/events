@@ -5,9 +5,16 @@ void add_event(SSL *sock, char *json_load)
 
     // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
-    json_object *title, *description, *venue, *event_date, *deadline_date, *publisher_id;
+    json_object *title, *description, *venue, *event_date, *deadline_date, *publisher_id, *price;
 
     if (!json_object_object_get_ex(jobj, "title", &title))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
+
+    if (!json_object_object_get_ex(jobj, "price", &price))
     {
         write_BAD(sock);
         // todo
@@ -55,7 +62,8 @@ void add_event(SSL *sock, char *json_load)
                               json_object_get_string(venue),
                               json_object_get_string(event_date),
                               json_object_get_string(deadline_date),
-                              json_object_get_string(publisher_id));
+                              json_object_get_string(publisher_id),
+                              json_object_get_int(price));
 
     write_json(j_res, sock);
     json_object_put(j_res);

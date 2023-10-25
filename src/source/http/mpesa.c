@@ -86,7 +86,7 @@ stk_res *mpesa_do_stk_push(char * p_number,int amount)
         p_number,
         "174379",
         p_number,
-        "https://f51f-105-160-81-150.ngrok.io/apicallback",
+        "https://a9b8-105-167-22-94.ngrok.io/api/callback",
         "EV",
         "testing"
     );

@@ -100,9 +100,6 @@ int handle_request(void *ss)
             if ((http_req = parse_http_req(b->chars)) == NULL)
             {
                 write_BAD(ssl);
-
-                puts("failed to parse http");
-
                 break;
             }
 
@@ -134,27 +131,23 @@ int handle_request(void *ss)
             if (starts_with_word( map_get_ref(http_req, "method"), "GET"))
             {
                 req_method = GET;
-                puts("method is get");
                 break;
             }
             else if (!strcmp(map_get_ref(http_req, "method"), "POST"))
             {
                 req_method = POST;
-                puts("method is post");
             }
             else if (!strcmp(map_get_ref(http_req, "method"), "PUT"))
             {
                 req_method = PUT;
-                puts("Method is put");
             }
             else if (!strcmp(map_get_ref(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
-                puts("Mehod is delete");
                 break;
             }
             else
-                {error_code = BAD_REQ; puts("Bad request"); break;}
+                {error_code = BAD_REQ; break;}
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -199,7 +192,6 @@ int handle_request(void *ss)
 
         default:
             write_BAD(ssl);
-            puts("default");
             break;
         }
     }

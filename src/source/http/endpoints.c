@@ -129,6 +129,12 @@ void method_post(SSL *sock, char *url, char *json)
         get_one_event(sock,json);
         return;
     }
+
+    if(starts_with_word("/api/callback",url))
+    {
+        process_payment(sock,json);
+        return;
+    }
 }
 
 void method_delete(SSL *sock, char *url)

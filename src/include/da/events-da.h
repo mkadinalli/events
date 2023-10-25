@@ -16,7 +16,8 @@ json_object * insert_into_published(const char *title,
                           const char *venue,
                           const char *event_date,
                           const char *deadline_date,
-                          const char *publisher_id);
+                          const char *publisher_id,
+                          long price);
 
 
 /**

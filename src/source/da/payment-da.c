@@ -11,7 +11,22 @@ json_object * insert_into_payments(const char *user_id, const char *pub_id,char 
     result_bind_set_string(3,rb,m_id);
     result_bind_set_string(4,rb,c_id);
 
-    printf("Amount is %d\n",amount);
+    json_object *res =  execute_prepared_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
+
+json_object *verify_payment(const char *m_id,const char *c_id,const char *t_id)
+{
+    char *query = "update payments set transaction_id = ? where merchant_request_id = ? and checkout_request_id = ?";
+
+    result_bind * rb = result_bind_create(3);
+    result_bind_set_string(0,rb,t_id);
+    result_bind_set_string(1,rb,m_id);
+    result_bind_set_string(2,rb,c_id);
 
     json_object *res =  execute_prepared_query(query,rb);
 
