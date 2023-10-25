@@ -106,6 +106,8 @@ int handle_request(void *ss)
                 break;
             }
 
+            map_print(http_req);
+
             if(map_get_ref(http_req, "content-length") == NULL)
             {
                 write_BAD(ssl);
@@ -132,22 +134,27 @@ int handle_request(void *ss)
             if (starts_with_word( map_get_ref(http_req, "method"), "GET"))
             {
                 req_method = GET;
+                puts("method is get");
                 break;
             }
             else if (!strcmp(map_get_ref(http_req, "method"), "POST"))
+            {
                 req_method = POST;
+                puts("method is post");
+            }
             else if (!strcmp(map_get_ref(http_req, "method"), "PUT"))
+            {
                 req_method = PUT;
-
-            else if (!strcmp(map_get_ref(http_req, "method"), "PATCH"))
-                req_method = PATCH;
+                puts("Method is put");
+            }
             else if (!strcmp(map_get_ref(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
+                puts("Mehod is delete");
                 break;
             }
             else
-                {error_code = BAD_REQ; break;}
+                {error_code = BAD_REQ; puts("Bad request"); break;}
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -176,7 +183,7 @@ int handle_request(void *ss)
         switch (req_method)
         {
         case GET:
-            serve_JSON(ssl, map_get_ref(http_req, "url"));
+            method_get(ssl, map_get_ref(http_req, "url"));
             break;
         case POST:
             method_post(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
@@ -188,9 +195,11 @@ int handle_request(void *ss)
 
         case DELETE:
             method_delete(ssl,map_get_ref(http_req, "url"));
+            break;
 
         default:
             write_BAD(ssl);
+            puts("default");
             break;
         }
     }

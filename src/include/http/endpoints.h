@@ -21,6 +21,7 @@
 
 #include "map.h"
 #include "ev_strings.h"
+#include "delete_.h"
 
 #include "in_images.h"
 

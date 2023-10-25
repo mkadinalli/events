@@ -72,7 +72,7 @@ void sign_up(SSL *sock, char *json_load)
 
     char v_url[200];
 
-    sprintf(v_url, "Click on this link to verify <a href=\"https\://localhost\:2000/api/verify/?token=%s&id=%s\">Verify</a>",
+    sprintf(v_url, "Click on this link to verify <a href=\"https://localhost:2000/api/verify/?token=%s&id=%s\">Verify</a>",
             json_object_get_string(token),
             json_object_get_string(id));
 

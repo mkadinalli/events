@@ -111,7 +111,15 @@ void method_post(SSL *sock, char *url, char *json)
     }
 }
 
-void method_delete(SSL *sock, char *url){};
+void method_delete(SSL *sock, char *url)
+{
+    if(starts_with_word("/api/subscribe",url))
+    {
+        delete_subscription(sock,url);
+    }
+
+    puts("Delete Mehod");
+}
 
 void method_post_file(SSL *sock,char *url,char *filename)
 {

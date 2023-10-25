@@ -21,3 +21,5 @@ json_object *get_subs_by_pub_id(char *id,char *last_time);
  * @brief insert a new subscriber 
 */
 json_object * insert_into_subscribers(const char *user_id, const char *publish_id);
+
+json_object *delete_from_subscriptions(char *user_id);
