@@ -1,6 +1,7 @@
 #include "../../include/http/server.h"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include "endpoints.h"
 
 int socketfd = 0;
 
@@ -177,12 +178,18 @@ int handle_request(void *ss)
         case GET:
             serve_JSON(ssl, map_get_ref(http_req, "url"));
             break;
-        default:
-            receive_json(ssl,
-                         map_get_ref(http_req, "url"),
-                         string_create_copy(json_b->chars));
+        case POST:
+            method_post(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
             break;
-        case 0:
+
+        case PUT:
+            method_put(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
+            break;
+
+        case DELETE:
+            method_delete(ssl,map_get_ref(http_req, "url"));
+
+        default:
             write_BAD(ssl);
             break;
         }
@@ -190,7 +197,7 @@ int handle_request(void *ss)
     else if (starts_with_word("/upload", map_get_ref(http_req, "url")))
     {
         if (req_method == POST)
-            receive_file(ssl, map_get_ref(http_req, "url"), filename);
+            method_post_file(ssl, map_get_ref(http_req, "url"), filename);
     }
     else
         write_404(ssl);
