@@ -7,18 +7,20 @@ json_object * insert_into_published(const char *title,
                           const char *venue,
                           const char *event_date,
                           const char *deadline_date,
-                          const char *publisher_id)
+                          const char *publisher_id,
+                          long price)
 {
 
-    char *query = "insert into published (title,description,venue,event_date,deadline_date,publisher_id) values (?,?,?,?,?,uuid_to_bin(?))";
+    char *query = "insert into published (title,description,venue,event_date,deadline_date,publisher_id,price) values (?,?,?,?,?,uuid_to_bin(?),?)";
     
-    result_bind * rb = result_bind_create(6);
+    result_bind * rb = result_bind_create(7);
     result_bind_set_string(0,rb,title);
     result_bind_set_string(1,rb,description);
     result_bind_set_string(2,rb,venue);
     result_bind_set_string(3,rb,event_date);
     result_bind_set_string(4,rb,deadline_date);
     result_bind_set_string(5,rb,publisher_id);
+    result_bind_set_i32(6,rb,price);
 
     json_object *res =  execute_prepared_query(query,rb);
 

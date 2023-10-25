@@ -193,8 +193,52 @@ json_object *execute_prepared_query(char *query, result_bind *params)
             p_bind[i].buffer_type = result_bind_get_at(i, params)->type_name;
             p_bind[i].is_null = 0;
             p_bind[i].length = &(len[i]);
-            p_bind[i].buffer = result_bind_get_string(i, params);
-            p_bind[i].buffer_length = 100;
+
+
+            switch (result_bind_get_at(i, params)->type_name)
+            {
+
+            case MYSQL_TYPE_SHORT:
+                int b_int = result_bind_get_int(i, params);
+                p_bind[i].buffer = &b_int;
+                break;
+
+            case MYSQL_TYPE_LONG:
+                long b_long = result_bind_get_i32(i, params);
+                p_bind[i].buffer = &b_long;
+                break;
+
+            case MYSQL_TYPE_LONGLONG:
+                long long b_long_long = result_bind_get_i64(i, params);
+                p_bind[i].buffer = b_long_long;
+                break;
+
+            case MYSQL_TYPE_BOOL:
+                bool b_bool = result_bind_get_bool(i, params);
+                p_bind[i].buffer = &b_bool;
+                break;
+
+            case MYSQL_TYPE_FLOAT:
+                double b_float = result_bind_get_float(i, params);
+                p_bind[i].buffer = &b_float;
+                break;
+
+            case MYSQL_TYPE_DOUBLE:
+                double b_double = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_double;
+                break;
+
+            case MYSQL_TYPE_DECIMAL:
+                double b_decimal = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_decimal;
+                break;
+
+            default:
+                char *b_str = result_bind_get_string(i, params);
+                p_bind[i].buffer = b_str;
+                p_bind[i].buffer_length = strlen(b_str);
+                break;
+            }
 
         }
 
@@ -288,8 +332,51 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
             p_bind[i].buffer_type = result_bind_get_at(i, params)->type_name;
             p_bind[i].is_null = 0;
             p_bind[i].length = &(len[i]);
-            p_bind[i].buffer = result_bind_get_string(i, params);
-            p_bind[i].buffer_length = 100;
+
+            switch (result_bind_get_at(i, params)->type_name)
+            {
+
+            case MYSQL_TYPE_SHORT:
+                int b_int = result_bind_get_int(i, params);
+                p_bind[i].buffer = &b_int;
+                break;
+
+            case MYSQL_TYPE_LONG:
+                long b_long = result_bind_get_i32(i, params);
+                p_bind[i].buffer = &b_long;
+                break;
+
+            case MYSQL_TYPE_LONGLONG:
+                long long b_long_long = result_bind_get_i64(i, params);
+                p_bind[i].buffer = b_long_long;
+                break;
+
+            case MYSQL_TYPE_BOOL:
+                bool b_bool = result_bind_get_bool(i, params);
+                p_bind[i].buffer = &b_bool;
+                break;
+
+            case MYSQL_TYPE_FLOAT:
+                double b_float = result_bind_get_float(i, params);
+                p_bind[i].buffer = &b_float;
+                break;
+
+            case MYSQL_TYPE_DOUBLE:
+                double b_double = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_double;
+                break;
+
+            case MYSQL_TYPE_DECIMAL:
+                double b_decimal = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_decimal;
+                break;
+
+            default:
+                char *b_str = result_bind_get_string(i, params);
+                p_bind[i].buffer = b_str;
+                p_bind[i].buffer_length = strlen(b_str);
+                break;
+            }
 
         }
 
@@ -360,7 +447,7 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
         result_outputs[i].buffer = result_bind_get_at(i, bnd)->value;
 
         //Todo changes here
-        result_outputs[i].buffer_length = 1000;
+        result_outputs[i].buffer_length = columns[i].length;
         strlen(result_bind_get_at(i, bnd)->value);
     }
 
