@@ -106,7 +106,7 @@ int handle_request(void *ss)
                 break;
             }
 
-            map_print(http_req);
+            //map_print(http_req);
 
             if(map_get_ref(http_req, "content-length") == NULL)
             {
