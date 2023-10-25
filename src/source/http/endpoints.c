@@ -156,6 +156,12 @@ void method_delete(SSL *sock, char *url)
         delete_star(sock,url);
         return;
     }
+
+    if(starts_with_word("/api/user",url))
+    {
+        delete_user(sock,url);
+        return;
+    }
 }
 
 void method_post_file(SSL *sock,char *url,char *filename)

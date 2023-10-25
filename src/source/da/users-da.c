@@ -78,4 +78,19 @@ json_object *get_user(char *id_)
 }
 
 
+json_object *delete_from_users(char *id)
+{
+    char *query = "delete from users where id = uuid_to_bin(?)";
+
+    result_bind * rb = result_bind_create(1);
+    result_bind_set_string(0,rb,id);
+
+    json_object *res =  execute_prepared_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
+
 
