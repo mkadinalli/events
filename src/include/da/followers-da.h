@@ -21,3 +21,5 @@ json_object *get_following_by_user_id(char *id,char *last_time);
  * @brief Insert a new follower
 */
 json_object * insert_into_followers(const char *user_id, const char *follower_id);
+
+json_object *delete_from_followers(char *id);

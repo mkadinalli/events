@@ -118,7 +118,10 @@ void method_delete(SSL *sock, char *url)
         delete_subscription(sock,url);
     }
 
-    puts("Delete Mehod");
+    if(starts_with_word("/api/follow",url))
+    {
+        delete_follower(sock,url);
+    }
 }
 
 void method_post_file(SSL *sock,char *url,char *filename)
