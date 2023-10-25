@@ -223,11 +223,15 @@ bool write_404(SSL *sock)
 
     h_err->code = 404;
     h_err->code_name = "NOT FOUND";
-    h_err->content_length = 0;
+    h_err->content_length = 31;
     h_err->http_version = "1.1";
-    h_err->content_type = "NULL";
+    h_err->content_type = "application/json";
 
     bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    char * json_char = "{\"error\":\"Resource not found\"}";
+
+    SSL_write(sock,json_char,31);
 
     free(h_err);
     return bl;
@@ -254,11 +258,15 @@ bool write_BAD(SSL *sock)
 
     h_err->code = 400;
     h_err->code_name = "BAD REQUEST";
-    h_err->content_length = 0;
+    h_err->content_length = 24;
     h_err->http_version = "1.1";
-    h_err->content_type = "text/plain";
+    h_err->content_type = "application/json";
 
     bool bl = write_header(write_http_header_from_struct(h_err), sock);
+
+    char * json_char = "{\"error\":\"Bad request\"}";
+
+    SSL_write(sock,json_char,24);
 
     free(h_err);
     return bl;
