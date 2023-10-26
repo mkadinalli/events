@@ -1,6 +1,6 @@
 # This is to sub and publish events.
 
-## Setting up
+## Setting up on debian
 
 ```
 # Assuming you have mysql db installed and setup.
