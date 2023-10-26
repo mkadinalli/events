@@ -10,7 +10,7 @@ char *string_create_mpesa_auth(char *consumer_key,char *secret_key)
 {
     char merged[1024];
     sprintf(merged,"%s:%s",consumer_key,secret_key);
-    char *enc = base64_encode(merged,strlen(merged));
+    char *enc = (char *)base64_encode((unsigned char *)merged,strlen(merged));
 
     string_t * ss = string_create_from_string("Basic ");
 

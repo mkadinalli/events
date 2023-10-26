@@ -16,5 +16,5 @@ write_mysql_error_to_file(const char *sql_state,const char *error,char *f,int li
 
     sprintf(full_error," [%s, %d]> %s : %s - %s",f,line,sql_state,error,current_time);
 
-    open_file_to_append("/home/vic/Desktop/ev2/events/logs/db.log",full_error);
+    open_file_to_append("../logs/db.log",full_error);
 }

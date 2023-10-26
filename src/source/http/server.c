@@ -121,7 +121,7 @@ int handle_request(void *ss)
                 if (starts_with_word("image/jpeg",map_get_ref(http_req, "content-type")))
                 {
                     file_type = IMAGE;
-                    sprintf(filename, "/home/vic/Desktop/ev2/events/files/image%lu.jpg", (unsigned long)time(NULL));
+                    sprintf(filename, "./files/image%lu.jpg", (unsigned long)time(NULL));
                     ptr = fopen(filename, "a");
                 }
                 else if (starts_with_word("application/json",map_get_ref(http_req, "content-type")))
@@ -165,7 +165,7 @@ int handle_request(void *ss)
         goto clean_me;
     }
 
-    char file_dir[200] = "/home/vic/Desktop/ev2/events";
+    char file_dir[200] = "./files";
     char *f = strcat(file_dir, map_get_ref(http_req, "url"));
     puts(f);
 
@@ -234,14 +234,14 @@ SSL_CTX *create_context()
 
 void configure_contex(SSL_CTX *ctx)
 {
-    if (SSL_CTX_use_certificate_file(ctx, "/home/vic/Desktop/ssl_cookbook/fd.crt", SSL_FILETYPE_PEM) <= 0)
+    if (SSL_CTX_use_certificate_file(ctx, "./config/fd.crt", SSL_FILETYPE_PEM) <= 0)
     {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
         
     }
 
-    if (SSL_CTX_use_PrivateKey_file(ctx, "/home/vic/Desktop/ssl_cookbook/fd.key", SSL_FILETYPE_PEM) <= 0)
+    if (SSL_CTX_use_PrivateKey_file(ctx, "./config/fd.key", SSL_FILETYPE_PEM) <= 0)
     {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
@@ -345,7 +345,7 @@ bool set_up_server(char *PORT)
 
         inet_ntop(p->ai_family, myaddr, address, INET6_ADDRSTRLEN);
 
-        printf("Locust running on port :%d of this computer\n", port);
+        printf("API running on port :%d of this computer\n", port);
 
         socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 

@@ -77,7 +77,7 @@ void sign_up(SSL *sock, char *json_load)
             json_object_get_string(id));
 
 
-    gmail_send_message(json_object_get_string(email),(char *)v_url);
+    gmail_send_message((char *)json_object_get_string(email),(char *)v_url);
     json_object_put(j_res);
 
 
