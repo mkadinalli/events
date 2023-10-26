@@ -208,7 +208,7 @@ json_object *execute_prepared_query(char *query, result_bind *params)
 
             case MYSQL_TYPE_LONGLONG:
                 long long b_long_long = result_bind_get_i64(i, params);
-                p_bind[i].buffer = b_long_long;
+                p_bind[i].buffer = &b_long_long;
                 break;
 
             case MYSQL_TYPE_BOOL:
@@ -344,7 +344,7 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
 
             case MYSQL_TYPE_LONGLONG:
                 long long b_long_long = result_bind_get_i64(i, params);
-                p_bind[i].buffer = b_long_long;
+                p_bind[i].buffer = &b_long_long;
                 break;
 
             case MYSQL_TYPE_BOOL:
@@ -507,7 +507,7 @@ conn_pool *create_conn_pool(size_t size)
     }
 
     db_conn *conns = malloc(sizeof(db_conn));
-    conns->connection = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
+    conns->connection = create_connection_from_a_file("./config/config.json");
     conns->busy = false;
     conns->next = NULL;
     conns->t_id = conns->connection->thread_id;
@@ -516,7 +516,7 @@ conn_pool *create_conn_pool(size_t size)
     for (size_t i = 1; i < checked_size; i++)
     {
         db_conn *temp = malloc(sizeof(db_conn));
-        temp->connection = create_connection_from_a_file("/home/vic/Desktop/ev2/events/config/config.json");
+        temp->connection = create_connection_from_a_file("./config/config.json");
         temp->next = conns;
         temp->busy = false;
         temp->t_id = temp->connection->thread_id;

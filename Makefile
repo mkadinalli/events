@@ -4,7 +4,7 @@ else
 V_AT = @
 endif
 
-TARGET_EXEC := json
+TARGET_EXEC := events_bin
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
@@ -25,8 +25,8 @@ CC := gcc
 
 CFLAGS := -Wall -Wextra -ljson-c `mysql_config --libs` `mysql_config --cflags`
 
-run: $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC)
+#run: $(BUILD_DIR)/$(TARGET_EXEC)
+#	./$(BUILD_DIR)/$(TARGET_EXEC)
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking $@"

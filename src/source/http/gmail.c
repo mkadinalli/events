@@ -93,7 +93,7 @@ bool gmail_send_message(char *receiver_email,char *message)
 
     cmd = "vycnjagi@gmail.com";
 
-    cmd = base64_encode(cmd,strlen(cmd));
+    cmd = (char *)base64_encode((unsigned char *)cmd,strlen(cmd));
 
     cmd = strcat(cmd,"\r\n");
 
@@ -111,7 +111,7 @@ bool gmail_send_message(char *receiver_email,char *message)
         goto exit_with_error;
 
     cmd = "zmlw avhn mjun mkss";
-    cmd = base64_encode(cmd,strlen(cmd));
+    cmd = (char *)base64_encode((unsigned char *)cmd,strlen(cmd));
 
     cmd = strcat(cmd,"\r\n");
 
