@@ -49,6 +49,7 @@ create table published(
     title varchar(200) NOT NULL,
     description varchar(1000) NOT NULL,
     venue varchar(50) NOT NULL,
+    price long NOT null,
     event_date timestamp not null,
     deadline_date timestamp not null,
     publisher_id binary(16)  NOT NULL,
@@ -799,7 +800,23 @@ begin
 end #
 delimiter ;
 
+call insert_user('vic','user2','email2','1234');
 
+select * from published;
+
+select * from payments;
+
+select cast(bin_to_uuid(id) as char) as id from users;
+
+insert into published
+(
+	title,description,venue,publisher_id,event_date,deadline_date
+)
+values
+('title12','description1','venue1',uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'),'2024-1-1','2024-1-1');
+
+
+/*
 call verify_user_email('24df0b8b-71ad-11ee-b82b-dc215ca11a9e','24e0909f-71ad-11ee-b82b-dc215ca11a9e');
 
 
@@ -859,9 +876,15 @@ insert into published
 	title,description,venue,publisher_id,event_date,deadline_date
 )
 values
-('title12','description1','venue1',uuid_to_bin('58a7e1d2-5df5-11ee-8af4-ce9687e2d584'),'2024-1-1','2024-1-1');
+('title12','description1','venue1',uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'),'2024-1-1','2024-1-1');
 
 select cast(bin_to_uuid(id) as char) as id from published;
+
+select cast(bin_to_uuid(id) as char) as id from subscriptions;
+
+select cast(bin_to_uuid(id) as char) as id from followers;
+
+delete from published where id = uuid_to_bin('7e3512ea-72fc-11ee-b82b-dc215ca11a9e');
 
 call get_one_published('3df7354d-5a1b-11ee-b6f2-1f05bb9bd55d');
 
@@ -872,7 +895,7 @@ insert into subscriptions
 	user_id,published_id
 )
 values
-(uuid_to_bin(@muuid),uuid_to_bin(@muuid2));
+(uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'),uuid_to_bin('7e3512ea-72fc-11ee-b82b-dc215ca11a9e'));
 
 insert into subscriptions
 (
@@ -888,9 +911,9 @@ insert into followers
 	user_id,follower_id
 )
 values
-(uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'),uuid_to_bin('7df5c89c-5aef-11ee-b6f2-1f05bb9bd55d'));
+(uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'),uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'));
 
-/*
+
 
 insert into users 
 (
@@ -1047,6 +1070,54 @@ values
 ;
 
 ===================================================================
+*/
+
+/*
+            switch (result_bind_get_at(i, params)->type_name)
+            {
+
+            case MYSQL_TYPE_SHORT:
+                int b_int = result_bind_get_int(i, params);
+                p_bind[i].buffer = &b_int;
+                break;
+
+            case MYSQL_TYPE_LONG:
+                long b_long = result_bind_get_i32(i, params);
+                p_bind[i].buffer = &b_long;
+                break;
+
+            case MYSQL_TYPE_LONGLONG:
+                long long b_long_long = result_bind_get_i64(i, params);
+                p_bind[i].buffer = b_long_long;
+                break;
+
+            case MYSQL_TYPE_BOOL:
+                bool b_bool = result_bind_get_bool(i, params);
+                p_bind[i].buffer = &b_bool;
+                break;
+
+            case MYSQL_TYPE_FLOAT:
+                double b_float = result_bind_get_float(i, params);
+                p_bind[i].buffer = &b_float;
+                break;
+
+            case MYSQL_TYPE_DOUBLE:
+                double b_double = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_double;
+                break;
+
+            case MYSQL_TYPE_DECIMAL:
+                double b_decimal = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_decimal;
+                break;
+
+            default:
+                char *b_str = result_bind_get_string(i, params);
+                p_bind[i].buffer = b_str;
+                p_bind[i].buffer_length = strlen(b_str);
+                break;
+            }
+
 */
 
 
