@@ -56,7 +56,7 @@ echo $configuration > $FILE
 echo "Writing schema..."
 echo
 
-# mysql -h ${MySQL_HOST} -u ${MySQL_U_NAME} -p"${MySQL_PASS}" < ./schema/scema.sql
+mysql -h ${MySQL_HOST} -u ${MySQL_U_NAME} -p"${MySQL_PASS}" < ./schema/scema.sql
 
 echo "Schema written..."
 echo
