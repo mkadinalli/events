@@ -41,7 +41,8 @@ enum methods
     GET,
     PUT,
     PATCH,
-    DELETE
+    DELETE,
+    OPTIONS
 };
 
 enum files
