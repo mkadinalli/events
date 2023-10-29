@@ -29,6 +29,7 @@ void clean_up()
 
 int handle_request(void *ss)
 {
+
     ssl_holder *sh = ss;
     SSL *ssl = *(sh->ssl_strct);
     char recv_buf[1] = {0};
@@ -57,6 +58,7 @@ int handle_request(void *ss)
     long content_len = -1;
     long total_received = 0;
 
+
     while (true)
     {
 
@@ -74,6 +76,8 @@ int handle_request(void *ss)
             string_append(b, recv_buf[0]);
         else
         {
+            puts(recv_buff_f);
+
             if (ptr && file_type == IMAGE)
                 fwrite(recv_buff_f, 1, bytes_received, ptr);
 
@@ -90,7 +94,9 @@ int handle_request(void *ss)
         if(file_reached) total_received += bytes_received;
 
         if ((bytes_received <= 0 && file_reached) || total_received == content_len)
-            break;
+        {
+                break;
+        }
 
         if (marker == 4)
         {
@@ -103,16 +109,7 @@ int handle_request(void *ss)
                 break;
             }
 
-            //map_print(http_req);
-
-            if(map_get_ref(http_req, "content-length") == NULL)
-            {
-                write_BAD(ssl);
-                break;
-            }
-
-
-            content_len = strtol(map_get_ref(http_req, "content-length"),NULL,0);
+            map_print(http_req);
 
             
 
@@ -124,7 +121,8 @@ int handle_request(void *ss)
                     sprintf(filename, "./files/image%lu.jpg", (unsigned long)time(NULL));
                     ptr = fopen(filename, "a");
                 }
-                else if (starts_with_word("application/json",map_get_ref(http_req, "content-type")))
+                else if (starts_with_word("application/json",map_get_ref(http_req, "content-type")) ||
+                starts_with_word("text/plain",map_get_ref(http_req, "content-type")) )
                     file_type = JSON;
             }
 
@@ -133,31 +131,56 @@ int handle_request(void *ss)
                 req_method = GET;
                 break;
             }
-            else if (!strcmp(map_get_ref(http_req, "method"), "POST"))
+
+            if (starts_with_word(map_get_ref(http_req, "method"), "POST"))
             {
                 req_method = POST;
             }
-            else if (!strcmp(map_get_ref(http_req, "method"), "PUT"))
+
+            if (starts_with_word(map_get_ref(http_req, "method"), "PUT"))
             {
                 req_method = PUT;
             }
-            else if (!strcmp(map_get_ref(http_req, "method"), "DELETE"))
+
+            if (starts_with_word(map_get_ref(http_req, "method"), "DELETE"))
             {
                 req_method = DELETE;
                 break;
             }
-            else
-                {error_code = BAD_REQ; break;}
+            
+            if (starts_with_word(map_get_ref(http_req, "method"), "OPTIONS"))
+            {
+                req_method = OPTIONS;
+                break;
+            }
+
+            
+            if(req_method == 0)   {error_code = BAD_REQ; puts("===Method not found====="); break;}
+
+            if(map_get_ref(http_req, "content-length") == NULL && (req_method == POST || req_method == PUT))
+            {
+                write_BAD(ssl);
+                puts("================================");
+                break;
+            }
+
+            content_len = strtol(map_get_ref(http_req, "content-length"),NULL,0);
+
+            printf("Content len = %ld\n",content_len);
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
                      : bzero(&recv_buf, sizeof recv_buf);
+
+        if((lopps >= 4096 && !file_reached) || (lopps > (1024 * 1024 * 20)))
+            break;
 
         lopps++;
     }
 
     if (!file_reached)
         error_code = BAD_REQ;
+        
 
     if (error_code != OK && req_method == 0)
     {
@@ -180,6 +203,7 @@ int handle_request(void *ss)
             break;
         case POST:
             method_post(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
+            //write_OK(ssl,"");
             break;
 
         case PUT:
@@ -188,6 +212,10 @@ int handle_request(void *ss)
 
         case DELETE:
             method_delete(ssl,map_get_ref(http_req, "url"));
+            break;
+
+        case OPTIONS:
+            write_OK(ssl,"");
             break;
 
         default:
@@ -207,6 +235,7 @@ clean_me:
 
     b = NULL;
     map_destroy(http_req);
+
     SSL_free(ssl);
     close(sh->sock);
     return 0;

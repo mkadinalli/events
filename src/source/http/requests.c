@@ -156,7 +156,7 @@ map_t * parse_http_response(char *req)
 
 char *write_http_header_from_struct(http_res *http)
 {
-    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\n\r\n";
+    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, DELETE, UPDATE\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n";
     char res[500];
 
     sprintf(res,
@@ -272,7 +272,9 @@ bool write_BAD(SSL *sock)
 bool write_json(struct json_object *obj, SSL *sock)
 {
     write_OK(sock, "application/json");
-    const char *json = json_object_to_json_string(obj);
+    const char *json = json_object_to_json_string_ext(obj,JSON_C_TO_STRING_PLAIN);
+
+    puts(json);
 
     if (SSL_write(sock, json, strlen(json)) == -1)
     {

@@ -15,6 +15,7 @@ void sign_up(SSL *sock, char *json_load)
         return;
     }
 
+
     if (!json_object_object_get_ex(jobj, "username", &username))
     {
         write_BAD(sock);

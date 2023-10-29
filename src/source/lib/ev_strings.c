@@ -62,6 +62,9 @@ bool starts_with_word(char *word, char *str)
 
     for (size_t i = 0; i < strlen(word); i++)
     {
+
+        //printf("%c%c \n",word[i],str[i]);
+
         if (word[i] != str[i])
             truth = false;
     }
