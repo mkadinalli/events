@@ -29,6 +29,7 @@ void clean_up()
 
 int handle_request(void *ss)
 {
+
     ssl_holder *sh = ss;
     SSL *ssl = *(sh->ssl_strct);
     char recv_buf[1] = {0};
@@ -57,7 +58,6 @@ int handle_request(void *ss)
     long content_len = -1;
     long total_received = 0;
 
-    bool keep_alive = false;
 
     while (true)
     {
@@ -167,24 +167,19 @@ int handle_request(void *ss)
             content_len = strtol(map_get_ref(http_req, "content-length"),NULL,0);
 
             printf("Content len = %ld\n",content_len);
-
-            if (starts_with_word(map_get_ref(http_req, "connection"), "keep-alive"))
-            {
-                keep_alive = true;
-            }else{ keep_alive = false; }
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
                      : bzero(&recv_buf, sizeof recv_buf);
 
+        if((lopps >= 4096 && !file_reached) || (lopps > (1024 * 1024 * 20)))
+            break;
+
         lopps++;
     }
 
     if (!file_reached)
-    {
         error_code = BAD_REQ;
-        puts("===================================");
-    }
         
 
     if (error_code != OK && req_method == 0)
@@ -240,6 +235,7 @@ clean_me:
 
     b = NULL;
     map_destroy(http_req);
+
     SSL_free(ssl);
     close(sh->sock);
     return 0;
