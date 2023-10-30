@@ -36,3 +36,5 @@ json_object *get_user(char *id);
 json_object *verify_user_email(char *id,char *tok);
 
 json_object *delete_from_users(char *id);
+
+json_object *get_user_by_username(char *id_ );

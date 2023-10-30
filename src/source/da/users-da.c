@@ -92,5 +92,19 @@ json_object *delete_from_users(char *id)
     return res;
 }
 
+json_object *get_user_by_username(char *id_ )
+{
+    char *query = "call check_username_validity(?)";
+
+    result_bind * rb = result_bind_create(1);
+    result_bind_set_string(0,rb,id_);
+
+    json_object *res =  execute_prepared_call_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
 
 

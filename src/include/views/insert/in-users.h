@@ -8,3 +8,5 @@
 void sign_up(SSL *sock, char *json_load);
 
 void verify_user(SSL *sock, char *url);
+
+void check_username_validity(SSL *sock, char *url);

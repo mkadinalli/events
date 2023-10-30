@@ -160,7 +160,6 @@ int handle_request(void *ss)
             if(map_get_ref(http_req, "content-length") == NULL && (req_method == POST || req_method == PUT))
             {
                 write_BAD(ssl);
-                puts("================================");
                 break;
             }
 
