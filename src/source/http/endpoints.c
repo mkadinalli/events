@@ -14,6 +14,13 @@ void method_get(SSL *sock, char *url)
         return;
     }
 
+    if(starts_with_word("/api/checkuser",url))
+    {
+        puts("=========================================");
+        check_username_validity(sock,url); //done
+        return;
+    }
+
     if(starts_with_word("/api/followers",url))
     {
         get_followers_for_user(sock,url); //done

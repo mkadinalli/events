@@ -8,7 +8,7 @@ void sign_up(SSL *sock, char *json_load)
     json_object *jobj = json_tokener_parse(json_load);
     json_object *name, *username, *email, *password, *token, *id, *results, *result_one;
 
-    if (!json_object_object_get_ex(jobj, "name", &name))
+    if (!json_object_object_get_ex(jobj, "fullName", &name))
     {
         write_BAD(sock);
         // todo
@@ -118,4 +118,26 @@ void verify_user(SSL *sock, char *url)
         json_object_put(jobj);
     free(id);
     free(v_token);
+}
+
+void check_username_validity(SSL *sock, char *url)
+{
+
+    char *id = get_param_from_url(url, "userName");
+
+
+    if (id == NULL)
+    {
+        write_BAD(sock);
+        return;
+    }
+
+    json_object *jobj = get_user_by_username(id);
+
+    jobj == NULL ? write_404(sock) : write_json(jobj, sock);
+
+    if (!jobj)
+        json_object_put(jobj);
+
+    free(id);
 }

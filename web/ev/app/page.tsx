@@ -2,46 +2,44 @@
 
 import Image from 'next/image'
 import styles from './page.module.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import MainLayout from './layouts/mainLayout'
+import { useRouter } from 'next/navigation'
+
+
 
 export default function Home() {
 
-  const y = {
-    user_id : "bdc0b320-5a1c-11ee-b6f2-1f05bb9bd55d",
-    last_time : "2022-09-01 00:00:00",
-    last_query_time : "2023-09-01 00:00:00"
-}
+  const router = useRouter();
 
-  const [data,setData] = useState(null);
-
-
-  useEffect(()=>{
-    const fechData = async ()=>{
-      const res = await fetch("https://localhost:2000/api/gevents",{
-      method: "POST",
-      body : JSON.stringify(y),
-      headers: {
-        "content-type": "application/json"
-      }
-    })
-    
-    console.log(y);
-
-    console.log("hello world");
-    console.log(res);
-    const data = await res.json();
-
-
-    console.log(data);
-
+  const goLogin = ()=>{
+    router.push("/login");
   }
 
-  fechData();
-  },[])
+  const goSignin = ()=>{
+    router.push("/signup");
+  }
+
+  const node = (
+    <div className={styles.container}>
+      <div className={styles.header}>
+
+        <div><h3>EV</h3></div>
+
+        <div className={styles.buttonContainer}>
+        <button className={styles.btn} onClick={(e)=>{
+          goLogin();
+        }}>Sign in</button>
+        <button className={styles.btn} onClick={(e)=>{
+          goSignin();
+        }}>Sign up</button>
+        </div>
+      </div>
+    </div>
+  )
+  
 
   return (
-      <html>
-      
-      </html>
+   <MainLayout children={node} title={"Home"}/>
   )
 }

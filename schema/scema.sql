@@ -800,6 +800,18 @@ begin
 end #
 delimiter ;
 
+
+delimiter #
+drop procedure if exists check_username_validity #
+create procedure check_username_validity(
+	in_username varchar(256)
+)
+begin
+    select count(*) as number from users where username = in_username;
+end #
+delimiter ;
+
+
 call insert_user('vic','user2','email2','1234');
 
 select * from published;
