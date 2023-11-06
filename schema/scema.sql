@@ -830,11 +830,13 @@ begin
     
     update users 
     set pass_word = encrypt_password(in_password,p_salt),
-		salt = p_salt
+		salt = p_salt,
+        verified = true
 	where
 		verify_token = tok 
 	and token_valid_until > now()
-    and id = id_;
+    and id = id_
+    and verified = false;
 end #
 delimiter ;
 
