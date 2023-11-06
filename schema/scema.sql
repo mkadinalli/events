@@ -291,14 +291,12 @@ create trigger add_users_id
 before insert on users
 for each row
 begin
-	declare p_salt binary(16) default random_bytes(16);
     set new.id = uuid_to_bin(uuid());
-    set new.pass_word = encrypt_password(new.pass_word,p_salt);
-    set new.salt = p_salt;
     set new.verify_token = uuid_to_bin(uuid());
     set new.token_valid_until = date_add(now(),interval 1 hour);
 end #
 delimiter ;
+
 
 -- ========= add published id ===== ---
 
@@ -745,17 +743,16 @@ drop procedure if exists insert_user #
 create procedure insert_user(
 	in_name varchar(256),
     in_username varchar(256),
-    in_email varchar(256),
-    in_pass_word varchar(256)
+    in_email varchar(256)
 )
 begin
 	insert into users 
 	(
-	name,username,email,pass_word
+	name,username,email
 	)
 	values
 	(
-	in_name,in_username,in_email,in_pass_word
+	in_name,in_username,in_email
 	);
     
     select bin_to_uuid(id) as id,
@@ -764,6 +761,13 @@ begin
     from users where email = in_email;
 end #
 delimiter ;
+
+
+-- Make password null
+alter table users 
+modify pass_word blob null;
+
+
 
 
 delimiter #
@@ -812,8 +816,37 @@ end #
 delimiter ;
 
 
-call insert_user('vic','user2','email2','1234');
+delimiter #
+drop procedure if exists add_user_password #
+create procedure add_user_password(
+	in_password varchar(256),
+    in_vtoken varchar(256),
+    in_id varchar(256)
+)
+begin
+	declare p_salt binary(16) default random_bytes(16);
+    declare tok binary(16) default uuid_to_bin(in_vtoken);
+    declare id_ binary(16) default uuid_to_bin(in_id);
+    
+    update users 
+    set pass_word = encrypt_password(in_password,p_salt),
+		salt = p_salt
+	where
+		verify_token = tok 
+	and token_valid_until > now()
+    and id = id_;
+end #
+delimiter ;
 
+select bin_to_uuid(id) as id, bin_to_uuid(verify_token) as tok from users;
+
+call add_user_password('hello','62282cf3-7cbf-11ee-864c-dc215ca11a9e','62282c42-7cbf-11ee-864c-dc215ca11a9e');
+
+select *from users where id = uuid_to_bin('62282c42-7cbf-11ee-864c-dc215ca11a9e');
+and verify_token = uuid_to_bin('92750f21-7cbb-11ee-864c-dc215ca11a9e');
+
+call insert_user('vic','user2355455','email2786455');
+/*
 select * from published;
 
 select * from payments;
@@ -828,7 +861,7 @@ values
 ('title12','description1','venue1',uuid_to_bin('24df0b8b-71ad-11ee-b82b-dc215ca11a9e'),'2024-1-1','2024-1-1');
 
 
-/*
+
 call verify_user_email('24df0b8b-71ad-11ee-b82b-dc215ca11a9e','24e0909f-71ad-11ee-b82b-dc215ca11a9e');
 
 
