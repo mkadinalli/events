@@ -12,8 +12,7 @@
 */
 json_object * insert_into_users(const char *name,
                       const char *username,
-                      const char *email,
-                      const char *password);
+                      const char *email);
 
 
 /**

@@ -25,14 +25,10 @@ export default function SignUp() {
 
         console.log(JSON.stringify(user));
 
-        //const res = await user.postUser();
+        const res = await user.postUser();
 
-        if (await User.checkUser(username))
-            console.log("user exists");
-        else
-            console.log("user not exist");
 
-        //console.log(res);
+        console.log(res);
 
         /**
          *                 <label>Password</label>
@@ -53,11 +49,11 @@ export default function SignUp() {
 
         if(await User.checkUser(uname))
         {
-            unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-check"></i>`;
+            unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-xmark"></i>`;
             return;    
         }
-
-        unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-xmark"></i>`;
+        
+        unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-check"></i>`;
     }
 
     const node = (

@@ -6,7 +6,7 @@
 void sign_up(SSL *sock, char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
-    json_object *name, *username, *email, *password, *token, *id, *results, *result_one;
+    json_object *name, *username, *email, *token, *id, *results, *result_one;
 
     if (!json_object_object_get_ex(jobj, "fullName", &name))
     {
@@ -29,22 +29,16 @@ void sign_up(SSL *sock, char *json_load)
         return;
     }
 
-    if (!json_object_object_get_ex(jobj, "password", &password))
-    {
-        write_BAD(sock);
-        // todo
-        return;
-    }
+    puts("===========all valid========================");
 
     json_object *j_res = insert_into_users(json_object_get_string(name),
                                            json_object_get_string(username),
-                                           json_object_get_string(email),
-                                           json_object_get_string(password));
+                                           json_object_get_string(email));
 
     if (!json_object_object_get_ex(j_res, "results", &results))
     {
         write_BAD(sock);
-        // todo
+        puts("===============results missing================");
         return;
     }
 
