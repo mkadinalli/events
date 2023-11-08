@@ -48,13 +48,6 @@ export default function SignUp() {
         
     }
 
-
-    useEffect(()=>{
-        if(subBTN.current){
-            subBTN.current.disabled = true;
-        }
-    },[]);
-
     const node = (
         <div className={styles.container}>
             <div className={styles.header}>
