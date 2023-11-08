@@ -2,15 +2,13 @@ interface user {
     fullName: string;
     username: string;
     email: string;
-    password: string;
 }
 
 export default class User implements user{
     constructor(
         public fullName: string,
         public username: string,
-        public email: string,
-        public password: string
+        public email: string
     ){}
 
     public toString(this: User): string{
@@ -22,7 +20,10 @@ export default class User implements user{
             method : "GET"
         })
 
+        if(!res.ok) return false;
+
         const data = await res.json();
+
 
         if(data.results[0].number === "0")
             return false;

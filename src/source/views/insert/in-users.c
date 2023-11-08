@@ -6,7 +6,7 @@
 void sign_up(SSL *sock, char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
-    json_object *name, *username, *email, *password, *token, *id, *results, *result_one;
+    json_object *name, *username, *email, *token, *id, *results, *result_one;
 
     if (!json_object_object_get_ex(jobj, "fullName", &name))
     {
@@ -14,7 +14,6 @@ void sign_up(SSL *sock, char *json_load)
         // todo
         return;
     }
-
 
     if (!json_object_object_get_ex(jobj, "username", &username))
     {
@@ -30,23 +29,13 @@ void sign_up(SSL *sock, char *json_load)
         return;
     }
 
-    if (!json_object_object_get_ex(jobj, "password", &password))
-    {
-        write_BAD(sock);
-        // todo
-        return;
-    }
-
     json_object *j_res = insert_into_users(json_object_get_string(name),
                                            json_object_get_string(username),
-                                           json_object_get_string(email),
-                                           json_object_get_string(password));
-
+                                           json_object_get_string(email));
 
     if (!json_object_object_get_ex(j_res, "results", &results))
     {
         write_BAD(sock);
-        // todo
         return;
     }
 
@@ -73,58 +62,59 @@ void sign_up(SSL *sock, char *json_load)
 
     char v_url[200];
 
-    sprintf(v_url, "Click on this link to verify <a href=\"https://localhost:2000/api/verify/?token=%s&id=%s\">Verify</a>",
+    sprintf(v_url, "Click on this link to verify <a href=\"http://localhost:3000/verify/%s/%s\">Verify</a>",
             json_object_get_string(token),
             json_object_get_string(id));
 
-
-    gmail_send_message((char *)json_object_get_string(email),(char *)v_url);
+    gmail_send_message((char *)json_object_get_string(email), (char *)v_url);
     json_object_put(j_res);
 
+    json_object *rp = json_object_new_object();
+    json_object_object_add(rp, "success", json_object_new_boolean(true));
 
-    json_object * rp = json_object_new_object();
-    json_object_object_add(rp,"success",json_object_new_boolean(true));
-
-    write_json(rp,sock);
-    json_object_put(rp);  
+    write_json(rp, sock);
+    json_object_put(rp);
 }
 
-void verify_user(SSL *sock, char *url)
+void verify_user(SSL *sock, char *json_load)
 {
+    json_object *jobj = json_tokener_parse(json_load);
+    json_object *token, *id, *password;
 
-    char *id = get_param_from_url(url, "id");
-    char *v_token = get_param_from_url(url, "token");
-
-
-    if (id == NULL)
+    if (!json_object_object_get_ex(jobj, "token", &token))
     {
         write_BAD(sock);
-        if (v_token)
-            free(v_token);
+        // todo
         return;
     }
 
-    if (v_token == NULL)
+    if (!json_object_object_get_ex(jobj, "id", &id))
     {
         write_BAD(sock);
+        // todo
         return;
     }
 
-    json_object *jobj = verify_user_email(id, v_token);
+    if (!json_object_object_get_ex(jobj, "password", &password))
+    {
+        write_BAD(sock);
+        // todo
+        return;
+    }
 
-    jobj == NULL ? write_404(sock) : write_json(jobj, sock);
+    json_object *res = verify_user_email((char *)json_object_get_string(id),
+                                         (char *)json_object_get_string(token),
+                                         (char *)json_object_get_string(password));
 
-    if (!jobj)
-        json_object_put(jobj);
-    free(id);
-    free(v_token);
+    write_json(res,sock);
+
+    json_object_put(res);
 }
 
 void check_username_validity(SSL *sock, char *url)
 {
 
     char *id = get_param_from_url(url, "userName");
-
 
     if (id == NULL)
     {

@@ -32,6 +32,14 @@ struct map_t *parse_url_query(char *query)
             continue;
         }
 
+        if(strlen(list_get(this_pair, 0)) <= 0 || strlen(list_get(this_pair, 1)) <= 0)
+        {
+                    list_destroy(this_pair);
+
+                    tmp = tmp->next;
+                    continue;
+        }
+
         map_add(params, list_get(this_pair, 0), list_get(this_pair, 1));
 
         list_destroy(this_pair);

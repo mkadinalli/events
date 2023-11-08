@@ -9,6 +9,7 @@ export default function MainLayout({children, title} : { children : React.ReactN
                 <title>
                     {title}
                 </title>
+                <script src="https://kit.fontawesome.com/fd6d60db34.js" crossOrigin="anonymous"></script>
             </head>
             <body className={Styles.cont}>
                 {children}

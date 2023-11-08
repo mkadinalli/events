@@ -63,12 +63,6 @@ void method_get(SSL *sock, char *url)
         return;
     }
 
-    if(starts_with_word("/api/verify",url))
-    {
-        verify_user(sock,url);
-        return;
-    }
-
 }
 
 void method_put(SSL *sock, char *url, char *json)
@@ -140,6 +134,12 @@ void method_post(SSL *sock, char *url, char *json)
     if(starts_with_word("/api/callback",url))
     {
         process_payment(sock,json);
+        return;
+    }
+
+    if(starts_with_word("/api/verify",url))
+    {
+        verify_user(sock,json);
         return;
     }
 }

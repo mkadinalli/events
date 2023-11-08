@@ -12,8 +12,7 @@
 */
 json_object * insert_into_users(const char *name,
                       const char *username,
-                      const char *email,
-                      const char *password);
+                      const char *email);
 
 
 /**
@@ -33,7 +32,7 @@ json_object * update_one_user(const char *name,
 */
 json_object *get_user(char *id);
 
-json_object *verify_user_email(char *id,char *tok);
+json_object *verify_user_email(char *id,char *tok,char *password);
 
 json_object *delete_from_users(char *id);
 
