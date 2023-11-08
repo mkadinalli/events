@@ -20,12 +20,12 @@ json_object * insert_into_users(const char *name, const char *username, const ch
 
 json_object *verify_user_email(char *id,char *tok,char *password)
 {
-    char *query = "call add_user_password(?,?,?)";
+    char *query = "call verify_user_email(?,?,?)";
 
     result_bind * rb = result_bind_create(3);
-    result_bind_set_string(0,rb,password);
+    result_bind_set_string(0,rb,id);
     result_bind_set_string(1,rb,tok);
-    result_bind_set_string(2,rb,id);
+    result_bind_set_string(2,rb,password);
 
     json_object *res =  execute_prepared_call_query(query,rb);
 

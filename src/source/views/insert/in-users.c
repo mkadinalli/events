@@ -29,8 +29,6 @@ void sign_up(SSL *sock, char *json_load)
         return;
     }
 
-    puts("===========all valid========================");
-
     json_object *j_res = insert_into_users(json_object_get_string(name),
                                            json_object_get_string(username),
                                            json_object_get_string(email));
@@ -38,7 +36,6 @@ void sign_up(SSL *sock, char *json_load)
     if (!json_object_object_get_ex(j_res, "results", &results))
     {
         write_BAD(sock);
-        puts("===============results missing================");
         return;
     }
 
@@ -65,7 +62,7 @@ void sign_up(SSL *sock, char *json_load)
 
     char v_url[200];
 
-    sprintf(v_url, "Click on this link to verify <a href=\"http://localhost:3000/api/verify/%s/%s\">Verify</a>",
+    sprintf(v_url, "Click on this link to verify <a href=\"http://localhost:3000/verify/%s/%s\">Verify</a>",
             json_object_get_string(token),
             json_object_get_string(id));
 

@@ -774,11 +774,13 @@ delimiter #
 drop procedure if exists verify_user_email #
 create procedure verify_user_email(
 	in_user_id varchar(256),
-    in_tok varchar(256)
+    in_tok varchar(256),
+    in_password varchar(256)
 )
 begin
     declare exp_time timestamp default null;
     declare success boolean default false;
+    declare p_salt binary(16) default random_bytes(16);
     
     declare user_id binary(16) default uuid_to_bin(in_user_id);
     declare token binary(16) default uuid_to_bin(in_tok);
@@ -794,7 +796,14 @@ begin
         if exp_time < now() then
 			delete from users where id = user_id;
 		else
-			update users set verified = true where id = user_id;
+			    update users 
+				set pass_word = encrypt_password(in_password,p_salt),
+					salt = p_salt,
+					verified = true
+				where
+					verify_token = token
+				and id = user_id
+				and verified = false;
 			set success = true;
 		end if;
 	end if;
@@ -840,11 +849,14 @@ begin
 end #
 delimiter ;
 
+
+delete from users where email = 'murimimlvictor@gmail.com';
+
 select bin_to_uuid(id) as id, bin_to_uuid(verify_token) as tok from users;
 
 call add_user_password('hello','62282cf3-7cbf-11ee-864c-dc215ca11a9e','62282c42-7cbf-11ee-864c-dc215ca11a9e');
 
-select *from users where id = uuid_to_bin('62282c42-7cbf-11ee-864c-dc215ca11a9e');
+select *from users;
 and verify_token = uuid_to_bin('92750f21-7cbb-11ee-864c-dc215ca11a9e');
 
 call insert_user('vic','user2355455','email2786455');

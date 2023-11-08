@@ -12,7 +12,9 @@ export default function SignUp() {
     const [fullName, setFullName] = useState("");
     const [username, setUserName] = useState("");
     const [email, setEmail] = useState("");
-    const [isValid,setValid] = useState(false);
+
+
+    const subBTN  = useRef<HTMLButtonElement | null>(null);
 
     const unameSpinner = useRef<HTMLSpanElement>(null);
 
@@ -23,38 +25,35 @@ export default function SignUp() {
     const subForm = async () => {
         var user = new User(fullName, username, email);
 
-        console.log(JSON.stringify(user));
-
         const res = await user.postUser();
-
-
-        console.log(res);
-
-        /**
-         *                 <label>Password</label>
-                    <div className={styles.passContainer}><input type="password" className={styles.inputField} value={password} onInput={(e)=>{setPassword(e.target.value)}}/><span><i className="fa-regular fa-eye"></i></span></div>
-                <label>Password</label>
-                    <input type="password" className={styles.inputField} value={passwordRep} onInput={(e)=>{setPasswordRep(e.target.value)}}/>
-                   
-         */
 
     }
 
     const checkUserNameValidity = async (uname: string)=>{
 
         setUserName(uname)
-        if(unameSpinner.current === null) return;
+        if(!unameSpinner.current || !subBTN.current) return;
 
         unameSpinner.current.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
         if(await User.checkUser(uname))
         {
             unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-xmark"></i>`;
+            subBTN.current.disabled = true;
             return;    
         }
         
         unameSpinner.current.innerHTML = `<i class="fa-regular fa-circle-check"></i>`;
+        subBTN.current.disabled = false;
+        
     }
+
+
+    useEffect(()=>{
+        if(subBTN.current){
+            subBTN.current.disabled = true;
+        }
+    },[]);
 
     const node = (
         <div className={styles.container}>
@@ -81,7 +80,8 @@ export default function SignUp() {
                     <span ref={unameSpinner}></span></div>
                     <label>Email</label>
                     <input type="text" className={styles.inputField} value={email} onInput={(e) => { setEmail(e.target.value) }} />
-                    <button className={styles.subBtn} onClick={(e) => {
+                    <button ref={subBTN}
+                    className={styles.subBtn} onClick={(e) => {
                         subForm();
                     }}>Do</button>
                 </div>
