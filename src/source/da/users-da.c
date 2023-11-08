@@ -107,4 +107,20 @@ json_object *get_user_by_username(char *id_ )
 }
 
 
+json_object *get_matching_user(char *id, char *password)
+{
+    char * query = "call check_matching_user(?,?)";
+
+    result_bind *rb = result_bind_create(2);
+    result_bind_set_string(0,rb,id);
+    result_bind_set_string(1,rb,password);
+
+    json_object *res = execute_prepared_call_query(query,rb);
+
+    result_bind_destroy(rb);
+
+    return res;
+}
+
+
 

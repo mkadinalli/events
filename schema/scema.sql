@@ -850,6 +850,10 @@ end #
 delimiter ;
 
 
+
+
+
+
 delete from users where email = 'murimimlvictor@gmail.com';
 
 select bin_to_uuid(id) as id, bin_to_uuid(verify_token) as tok from users;

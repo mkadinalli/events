@@ -54,10 +54,6 @@ export default function Verify(par : {params: {slugs : string[]}}){
                 <div><h3>EV</h3></div>
 
                 <div className={styles.buttonContainer}>
-                    <div><span className={styles.label}>Already have an account?</span></div>
-                    <button className={styles.btn} onClick={(e) => {
-                        //goLogin();
-                    }}>Login</button>
                 </div>
             </div>
 
