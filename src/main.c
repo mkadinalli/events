@@ -16,6 +16,7 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include "ev_time.h"
+#include "urls.h"
 
 #define BUFFLEN 4096
 
@@ -23,6 +24,13 @@
 
 int main()
 {
-    set_up_server("2000");
+    //set_up_server("2000");
+
+    char * dn = get_path_from_url("http://localhost:8/bla/bla");
+
+    if(dn)
+        puts(dn);
+    else
+        puts("inavlid url");
 
 }

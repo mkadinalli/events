@@ -203,3 +203,28 @@ list_get(list_t *list, unsigned int index)
 
     return string_create_copy(tmp->value);
 }
+
+char *
+list_get_ref(list_t *list, unsigned int index)
+{
+    if (index >= list_len(list))
+    {
+        printf("Index outta bounds.\n");
+        return NULL;
+    }
+
+    unsigned int pos = 0;
+    list_t *tmp = list;
+
+    while (tmp != NULL)
+    {
+        if (pos == index)
+        {
+            break;
+        }
+        tmp = tmp->next;
+        pos++;
+    }
+
+    return tmp->value;
+}
