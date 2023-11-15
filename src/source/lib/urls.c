@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <regex.h>
 
 struct map_t *parse_url_query(char *query)
 {
@@ -177,7 +178,6 @@ char *get_port_from_url(char *url)
     return port;
 }
 
-// http://localhost/bla/bla
 
 char *get_path_from_url(char *url)
 {
@@ -227,4 +227,25 @@ char *get_path_from_url(char *url)
 }
 
 
+// http://localhost/bla/bla
+bool verify_url(char *url)
+{
+    regex_t regex;
+    int reti;
+    bool out = false;
 
+    reti = regcomp(&regex, "((http|https)://)[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)", REG_EXTENDED);
+    if (reti) {
+        return false;
+    }
+
+    reti = regexec(&regex, url, 0, NULL, 0);
+    if (!reti) {
+        out = true;
+    }
+
+    regfree(&regex);
+
+    return out;
+
+}
