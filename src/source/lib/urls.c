@@ -7,9 +7,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <regex.h>
 
 struct map_t *parse_url_query(char *query)
 {
+    if(query == NULL) return NULL;
+
+    if(strlen(query) < 2) return NULL;
+
     list_t *param_parts = split('&',
                                 query,
                                 strlen(query));
@@ -65,6 +70,21 @@ struct map_t *parse_url(char *url)
 
     list_destroy(url_parts);
     return my_parts;
+}
+
+char *get_param_part_from_url(char *url)
+{
+    list_t *url_parts = split_lim('?', url, strlen(url), 2);
+
+    if (list_len(url_parts) != 2)
+    {
+        return NULL;
+    }
+
+    char *ret = list_get(url_parts, 1);
+
+    list_destroy(url_parts);
+    return ret;
 }
 
 char *get_param_from_url(char *url, char *key)
@@ -123,24 +143,12 @@ char *get_domain_name_from_url(char *url)
         char *domain_double_slashed = list_get_ref(colon_splits, 1);
         int dds_len = strlen(domain_double_slashed);
 
-        slash_splits = split_lim('/', domain_double_slashed, dds_len, 2);
+        slash_splits = split('/', domain_double_slashed, dds_len);
 
-        if (list_len(slash_splits) == 2)
+        if (slash_splits)
         {
 
-            uri = list_get(slash_splits, 1);
-
-            if (uri[0] == '/')
-            {
-                char *tmp = uri;
-
-                uri = string_removechar_at(0, tmp, strlen(tmp));
-            }
-            else
-            {
-                free(uri);
-                uri = NULL;
-            }
+            uri = list_get(slash_splits, 2);
         }
 
         list_destroy(slash_splits);
@@ -177,7 +185,6 @@ char *get_port_from_url(char *url)
     return port;
 }
 
-// http://localhost/bla/bla
 
 char *get_path_from_url(char *url)
 {
@@ -227,4 +234,25 @@ char *get_path_from_url(char *url)
 }
 
 
+// http://localhost/bla/bla
+bool verify_url(char *url)
+{
+    regex_t regex;
+    int reti;
+    bool out = false;
 
+    reti = regcomp(&regex, "((http|https)://)[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)", REG_EXTENDED);
+    if (reti) {
+        return false;
+    }
+
+    reti = regexec(&regex, url, 0, NULL, 0);
+    if (!reti) {
+        out = true;
+    }
+
+    regfree(&regex);
+
+    return out;
+
+}

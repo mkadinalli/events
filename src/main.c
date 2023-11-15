@@ -1,22 +1,7 @@
 #include <stdio.h>
-#include <json-c/json.h>
-#include <assert.h>
-#include "./include/http/server.h"
-#include <mysql/mysql.h>
-#include "lib/files.h"
-#include <stdbool.h>
-#include "da/db.h"
-#include "result_bind.h"
-#include <time.h>
-#include "events-da.h"
-#include "http_client.h"
-#include <openssl/ssl.h>
-#include "mpesa.h"
-#include "gmail.h"
-#include <openssl/pem.h>
-#include <openssl/err.h>
-#include "ev_time.h"
+
 #include "urls.h"
+#include "url_parser.h"
 
 #define BUFFLEN 4096
 
@@ -26,11 +11,16 @@ int main()
 {
     //set_up_server("2000");
 
-    char * dn = get_path_from_url("http://localhost:8");
+    //char * dn = get_path_from_url("http://localhost:8");
 
-    if(dn)
-        puts(dn);
+    url_t *x = url_parser_parse("https://localhost.com:3000/");
+
+    if(x->domain != NULL)
+        puts(x->domain);
     else
         puts("inavlid url");
+
+    url_free(x);
+        //puts("free successfull");
 
 }
