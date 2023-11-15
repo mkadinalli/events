@@ -11,6 +11,10 @@
 
 struct map_t *parse_url_query(char *query)
 {
+    if(query == NULL) return NULL;
+
+    if(strlen(query) < 2) return NULL;
+
     list_t *param_parts = split('&',
                                 query,
                                 strlen(query));
@@ -66,6 +70,21 @@ struct map_t *parse_url(char *url)
 
     list_destroy(url_parts);
     return my_parts;
+}
+
+char *get_param_part_from_url(char *url)
+{
+    list_t *url_parts = split_lim('?', url, strlen(url), 2);
+
+    if (list_len(url_parts) != 2)
+    {
+        return NULL;
+    }
+
+    char *ret = list_get(url_parts, 1);
+
+    list_destroy(url_parts);
+    return ret;
 }
 
 char *get_param_from_url(char *url, char *key)

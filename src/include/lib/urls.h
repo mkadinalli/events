@@ -25,3 +25,5 @@ char *get_port_from_url(char *url);
 char *get_path_from_url(char *url);
 
 bool verify_url(char *url);
+
+char *get_param_part_from_url(char *url);
