@@ -25,3 +25,4 @@ bool list_destroy(list_t *list);
 unsigned int list_len(list_t *list);
 void fill_list_item(list_t *list, char *str);
 char *list_get(list_t *list, unsigned int index);
+char *list_get_ref(list_t *list, unsigned int index);

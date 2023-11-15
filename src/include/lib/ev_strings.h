@@ -77,3 +77,5 @@ char *string_to_lower(char *str);
 char *string_create_mpesa_auth(char *consumer_key,char *secret_key);
 
 unsigned char *base64_decode(unsigned char *input,int length);
+
+char *string_add_char(char *str,char c,size_t index);

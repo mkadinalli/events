@@ -402,3 +402,28 @@ unsigned char *string_encrypt(char *instr,char *key_path)
     return res;
 }
 
+char *string_add_char(char *str,char c,size_t pos)
+{
+    if(str == NULL) return str;
+
+    size_t len = strlen(str);
+
+    if (pos >= len)
+        return str;
+
+    string_t *temp = string_create();
+    for (size_t i = 0; i < len+1; i++)
+    {
+        if (i == pos)
+        {
+            string_append(temp, c);
+        }
+
+        string_append(temp, str[i]);
+    }
+    string_append(temp, '\0');
+    char *chars = temp->chars;
+    free(temp);
+    return chars;
+}
+

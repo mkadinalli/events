@@ -5,75 +5,28 @@
 
 void login(char *url, SSL *sock)
 {
-    map_t *url_m = parse_url(url);
-    if (url_m == NULL)
-    {
-        write_BAD(sock);
-        return;
-    }
-    
+    char *password = get_param_from_url(url,"password");
+    char * emailOrUsername = get_param_from_url(url,"id");
 
-    if (map_len(url_m) != 2)
-    {
-        write_BAD(sock);
-        map_destroy(url_m);
-        return;
-    }
-
-    map_t *params = parse_url_query(map_get(url_m, "query"));
-
-    if (params == NULL)
-    {
-
+    if(password == NULL){
+        if(emailOrUsername){
+            free(emailOrUsername);
+        }
         write_BAD(sock);
         return;
     }
 
-    if (map_len(params) != 2)
-    {
-        write_BAD(sock);
-        map_destroy(url_m);
-        return;
-    }
-
-    bool log_wit_email = true;
-    char *colname = map_get(params, "email");
-
-    if (colname == NULL)
-    {
-        log_wit_email = false;
-        colname = map_get(params, "username");
-    }
-
-    if (colname == NULL || !map_get(params, "password"))
-    {
+    if(emailOrUsername == NULL){
+        free(password);
         write_BAD(sock);
         return;
     }
 
-    map_t *res = map_create();
-    json_object *jb = NULL;
 
-    if (!check_if_user_exists(
-            log_wit_email ? map_get(params, "email") : map_get(params, "username"),
-            map_get(params, "password"),
-            log_wit_email ? true : false))
-    {
-        map_add(res, "found", "false");
-        jb = create_json_object_from_map(res);
-        write_json(jb, sock);
-        goto clean_up;
-    }
+    json_object * res = get_matching_user(emailOrUsername,password);
 
-    map_add(res, "found", "true");
-    jb = create_json_object_from_map(res);
-    write_json(jb, sock);
+     res == NULL ? write_404(sock) : write_json(res,sock);
 
-clean_up:
-    json_object_put(jb);
-    map_destroy(params);
-    map_destroy(url_m);
-    map_destroy(res);
 }
 
 

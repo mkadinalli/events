@@ -30,6 +30,7 @@ string_t *string_create()
     return t;
 }
 
+
 string_t *string_create_from_string(char *string)
 {
     int len = strlen(string);

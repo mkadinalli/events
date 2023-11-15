@@ -850,6 +850,35 @@ end #
 delimiter ;
 
 
+delimiter #
+drop procedure if exists check_matching_user #
+create procedure check_matching_user(
+	in_id varchar(256),
+    in_password varchar(256)
+)
+begin
+    declare v_salt binary(16) default null;
+    declare pass binary(16) default null;
+    
+    select salt, pass_word
+    into v_salt, pass
+    from users 
+    where username = in_id or email = in_id;
+    
+    if (v_salt is not null) and (pass is not null) then
+		if decrypt_password(pass,v_salt) = in_password then
+			select 1 as matched;
+		else
+			select 0 as matched;
+        end if;
+	else
+		select 0 as matched;
+    end if;
+end #
+delimiter ;
+
+call check_matching_user('vic','123');
+
 delete from users where email = 'murimimlvictor@gmail.com';
 
 select bin_to_uuid(id) as id, bin_to_uuid(verify_token) as tok from users;

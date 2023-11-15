@@ -16,7 +16,6 @@ void method_get(SSL *sock, char *url)
 
     if(starts_with_word("/api/checkuser",url))
     {
-        puts("=========================================");
         check_username_validity(sock,url); //done
         return;
     }
