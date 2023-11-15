@@ -143,24 +143,12 @@ char *get_domain_name_from_url(char *url)
         char *domain_double_slashed = list_get_ref(colon_splits, 1);
         int dds_len = strlen(domain_double_slashed);
 
-        slash_splits = split_lim('/', domain_double_slashed, dds_len, 2);
+        slash_splits = split('/', domain_double_slashed, dds_len);
 
-        if (list_len(slash_splits) == 2)
+        if (slash_splits)
         {
 
-            uri = list_get(slash_splits, 1);
-
-            if (uri[0] == '/')
-            {
-                char *tmp = uri;
-
-                uri = string_removechar_at(0, tmp, strlen(tmp));
-            }
-            else
-            {
-                free(uri);
-                uri = NULL;
-            }
+            uri = list_get(slash_splits, 2);
         }
 
         list_destroy(slash_splits);

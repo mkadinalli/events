@@ -13,9 +13,9 @@ int main()
 
     //char * dn = get_path_from_url("http://localhost:8");
 
-    url_t *x = url_parser_parse("https://localhost.com/");
+    url_t *x = url_parser_parse("https://localhost.com:3000/");
 
-    if(x->params == NULL)
+    if(x->domain != NULL)
         puts(x->domain);
     else
         puts("inavlid url");
