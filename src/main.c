@@ -26,7 +26,7 @@ int main()
 {
     //set_up_server("2000");
 
-    char * dn = get_path_from_url("http://localhost:8/bla/bla");
+    char * dn = get_path_from_url("http://localhost:8");
 
     if(dn)
         puts(dn);

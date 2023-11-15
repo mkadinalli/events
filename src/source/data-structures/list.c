@@ -184,7 +184,6 @@ list_get(list_t *list, unsigned int index)
 {
     if (index >= list_len(list))
     {
-        printf("Index outta bounds.\n");
         return NULL;
     }
 
@@ -209,7 +208,6 @@ list_get_ref(list_t *list, unsigned int index)
 {
     if (index >= list_len(list))
     {
-        printf("Index outta bounds.\n");
         return NULL;
     }
 

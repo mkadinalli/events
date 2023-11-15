@@ -205,5 +205,26 @@ char *get_path_from_url(char *url)
     list_destroy(slash_splits);
     list_destroy(colon_splits);
 
+    if(path == NULL) return path;
+
+    if(strlen(path) == 0){
+        free(path);
+        path = NULL;
+
+        string_t * t = string_create_from_string("/");
+        path = string_create_copy(t->chars);
+        string_destroy(t);
+        return path;
+    }
+
+    char *pathtmp = path;
+
+    path = string_add_char(pathtmp,'/',0);
+
+    free(pathtmp);
+
     return path;
 }
+
+
+
