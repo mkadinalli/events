@@ -26,6 +26,13 @@ url_t *url_parser_parse(char *url)
 
     url_obj->port = get_port_from_url(url);
 
+    string_t * ww = string_create_from_string("www.");
+    string_concat(ww,url_obj->domain,strlen(url_obj->domain));
+
+    url_obj->www_domain = ww->chars;
+
+    free(ww);
+
     free(p);
 
     return url_obj;

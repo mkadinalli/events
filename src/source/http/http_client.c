@@ -1,4 +1,5 @@
 #include "http_client.h"
+#include "url_parser.h"
 #include <stdarg.h>
 
 char *get_ip_as_string(struct sockaddr *address)
@@ -143,6 +144,7 @@ http_client *http_client_create()
 
 
   client->body = NULL;
+  client->response_headers = NULL;
 
   strcpy(client->http_version, "HTTP/1.1");
 
@@ -287,9 +289,29 @@ bool http_client_append_string(char *str, http_client *client)
 
 bool http_client_connect(http_client *client)
 {
-  if (!client->url || !client->method || !client || !client->address)
+  if(client == NULL) return false;
+
+  if (!client->url || !client->method)
   {
     return false;
+  }
+
+
+  url_t *c_url = url_parser_parse(client->url);
+
+  if(c_url == NULL) return false;
+
+  free(client->url);
+  client->url = NULL;
+
+  http_client_set_url(c_url->path,client);
+  http_client_set_address(c_url->domain,client);
+  http_client_set_header("Host",c_url->domain,client);
+  http_client_set_port("443",client);
+  
+  if(!client->body)
+  {
+    http_client_set_header("Content-length","0",client);
   }
 
 
@@ -321,10 +343,12 @@ bool http_client_connect(http_client *client)
   }
 
   SSL *ssl = NULL;
-  char *header = http_client_write_header(client);
+ char *header = http_client_write_header(client);
+
 
   if ((ssl = http_client_create_ssl(client->address, ctx, sock)) == NULL)
   {
+    puts("SSl failed");
     return false;
   }
 
@@ -461,7 +485,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
       if ((http_req = parse_http_response(b->chars)) == NULL)
         return false;
 
-      //map_print(http_req);
+      client->response_headers = http_req;
 
       if (!map_get(http_req, "content-type"))
         return false;
@@ -476,7 +500,7 @@ bool http_client_receive_response(SSL *sock, http_client *client)
     lopps++;
   }
 
-  if (file_type == JSON)
+  if (file_type == JSON && strlen(json_b->chars) > 0)
   {
     client->response = json_b->chars;
   }
@@ -572,6 +596,7 @@ void http_client_destroy(http_client *client)
   if(client->response) free(client->response);
   if(client->url) free(client->url);
   if(client->headers) map_destroy(client->headers);
+  if(client->response_headers) map_destroy(client->response_headers);
   if(client->port) free(client->port);
   if(client->method) free(client->method);
   if(client->http_version) free(client->http_version);
