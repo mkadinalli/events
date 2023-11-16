@@ -2,6 +2,8 @@
 
 #include "urls.h"
 #include "url_parser.h"
+#include "map.h"
+#include "mpesa.h"
 
 #define BUFFLEN 4096
 
@@ -13,14 +15,7 @@ int main()
 
     //char * dn = get_path_from_url("http://localhost:8");
 
-    url_t *x = url_parser_parse("https://localhost.com:3000/");
+    //url_t *x = url_parser_parse("https://sandbox.localhost.co.ke:3000/?hello=world&niaje=poa");
 
-    if(x->domain != NULL)
-        puts(x->domain);
-    else
-        puts("inavlid url");
-
-    url_free(x);
-        //puts("free successfull");
-
+    mpesa_do_stk_push("254716732614",1);
 }

@@ -20,6 +20,7 @@ typedef struct http_client http_client;
 struct http_client
 {
     map_t *headers;
+    map_t *response_headers;
     char * url;
     char * http_version;
     char * body;
@@ -70,4 +71,6 @@ bool http_client_set_host(struct sockaddr * host,http_client *client);
 int http_client_get_service_port(char *service_name);
 
 void http_client_destroy(http_client *client);
+
+void http_client_send_request(http_client *client);
 

@@ -93,11 +93,11 @@ map_t * parse_http_response(char *req)
 
     list_t *vl = lines;
 
-    list_t *vc = split(' ', vl->value, strlen(vl->value));
+    list_t *vc = split_lim(' ', vl->value, strlen(vl->value),3);
 
     if (list_len(vc) != 3)
     {
-        fprintf(stderr, "Invalid request\n");
+        fprintf(stderr, "Invalid response\n");
         return NULL;
     }
 

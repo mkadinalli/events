@@ -6,19 +6,15 @@ char *mpesa_get_access_token(char *consumer, char *secret)
     http_client *ct = http_client_create();
 
     http_client_set_method(GET, ct);
-    http_client_set_address("sandbox.safaricom.co.ke", ct);
-    http_client_set_port("443", ct);
-    http_client_set_url("/oauth/v1/generate?grant_type=client_credentials", ct);
-
-    http_client_set_header("Host", "sandbox.safaricom.co.ke", ct);
-    http_client_set_header("Cache-control", "no-cache", ct);
+    http_client_set_url("https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", ct);
+    //http_client_set_header("Cache-Control", "no-cache", ct);
     http_client_set_header("Connection", "close", ct);
-    http_client_set_header("User-Agent", "My-C-proj v0.0.1", ct);
+    //http_client_set_header("User-Agent", "My-C-proj v0.0.1", ct);
 
     // char *a =string_create_mpesa_auth("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
     char *a = string_create_mpesa_auth(consumer, secret);
 
-    http_client_set_header("authorization", a, ct);
+    http_client_set_header("Authorization", a, ct);
 
     //free(a);
 
@@ -27,9 +23,12 @@ char *mpesa_get_access_token(char *consumer, char *secret)
 
     if (http_client_connect(ct))
     {
+        map_print(ct->response_headers);
         if (ct->response)
         {
             //puts(ct->response);
+
+            
 
             if ((res = json_tokener_parse(ct->response)) != NULL)
             {
@@ -95,7 +94,7 @@ stk_res *mpesa_do_stk_push(char * p_number,int amount)
 
     http_client * cl = http_client_create();
 
-    char * atk = mpesa_get_access_token("pqgen4fQJIx3bSYl17lNYgsBwkY8g44m","5U0icomXgD5mNgkm");
+    char * atk = mpesa_get_access_token("Gqw8dLd1qCKl11AXA2Wf2YxoDtMwtayj","65RuQFXbGAALIsKU");
 
     if(!atk) return NULL;
 
@@ -105,13 +104,12 @@ stk_res *mpesa_do_stk_push(char * p_number,int amount)
 
     string_concat(str,atk,strlen(atk));
 
-    http_client_set_header("Host", "sandbox.safaricom.co.ke", cl);
+    puts(str->chars);
+
     http_client_set_header("Authorization",str->chars,cl);
     http_client_set_header("Content-Type","application/json",cl);
-    http_client_set_url("/mpesa/stkpush/v1/processrequest",cl);
-    http_client_set_address("sandbox.safaricom.co.ke",cl);
+    http_client_set_url("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",cl);
     http_client_set_method(POST,cl);
-    http_client_set_port("443",cl);
     http_client_set_header("Connection", "close", cl);
     http_client_set_header("User-Agent", "My-C-proj v0.0.1", cl);
    

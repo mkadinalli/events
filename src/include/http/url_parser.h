@@ -8,6 +8,7 @@ typedef struct url url_t;
 struct url{
     char *scheme;
     char *domain;
+    char *www_domain;
     char *path;
     char *port;
     map_t * params;
