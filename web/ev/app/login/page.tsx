@@ -25,7 +25,7 @@ export default function LogIn() {
         var logins = new LoginDetails(email,Password);
 
         if(await logins.login())
-            console.log("Login success");
+            router.push("/home");
         else
             console.log("Login failed");
 
