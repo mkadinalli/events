@@ -6,9 +6,13 @@ interface publish{
     date: string;
     deadlineDate: string;
     publisherID: string;
+
+    initialized: boolean
 }
 
 export default class Publish implements publish{
+    initialized = false;
+
     constructor(
         public title: string,
         public price: number,
@@ -17,9 +21,31 @@ export default class Publish implements publish{
         public date: string,
         public deadlineDate: string,
         public publisherID: string
-    ){}
+    ){
+        this.initialized = true;
+    }
 
     public toString(this: Publish): string{
         return JSON.stringify(this);
+    }
+
+    public async send(): Promise<boolean>{
+        if(!this.initialized)
+            return false;
+
+        const res = await fetch("https://localhost:2000/api/events/",{
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+
+            body: this.toString()
+        });
+
+        const data = await res.json();
+
+        console.log(data);
+
+        return true;
     }
 }
