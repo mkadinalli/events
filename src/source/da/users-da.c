@@ -36,23 +36,20 @@ json_object *verify_user_email(char *id,char *tok,char *password)
 
 
 json_object * update_one_user(const char *name,
-                      const char *username,
-                        const char *email,
-                            const char * avater,
                                 const char * bio,
                                     const char * about,
                                         const char * id)
 {
-    char *query = "update users set name = ?,username = ?,email = ? ,avater = ?, bio = ? ,about = ? where id = uuid_to_bin(?)";
+    char *query = "update users set name = ?, bio = ? ,about = ? where id = uuid_to_bin(?)";
 
-    result_bind * rb = result_bind_create(7);
+    result_bind * rb = result_bind_create(4);
     result_bind_set_string(0,rb,name);
-    result_bind_set_string(1,rb,username);
-    result_bind_set_string(2,rb,email);
-    result_bind_set_string(3,rb,avater);
-    result_bind_set_string(4,rb,bio);
-    result_bind_set_string(5,rb,about);
-    result_bind_set_string(6,rb,id);
+    //result_bind_set_string(1,rb,username);
+    //result_bind_set_string(2,rb,email);
+    //result_bind_set_string(1,rb,avater);
+    result_bind_set_string(1,rb,bio);
+    result_bind_set_string(2,rb,about);
+    result_bind_set_string(3,rb,id);
 
     json_object *res =  execute_prepared_query(query,rb);
 

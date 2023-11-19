@@ -4,10 +4,17 @@ import styles from "./page.module.css"
 import MainLayout from "../layouts/mainLayout"
 import Global from "../models/global"
 import { useEffect, useState } from "react"
+import User from "../models/user"
 
 export default function Profile(){
 
     const [data,setData] = useState({});
+    const [updateData,setUpdateData] = useState({
+        name: "",
+        bio: "",
+        about: ""
+    });
+    const [edit, setEdit] = useState(false);
 
     useEffect(()=>{
         fetch(`https://localhost:2000/api/user/?id=${Global.user_id}`,{
@@ -22,6 +29,15 @@ export default function Profile(){
             console.error(d);
         })
     },[])
+
+    const DoUpdate = async ()=>{
+        await User.update(updateData.name,updateData.bio,updateData.about);
+        makeUpdateFalse();
+    }
+
+    const makeUpdateFalse = ()=>{
+        setEdit(false);
+    }
 
     const node = (
         <div className={styles.container}>
@@ -49,6 +65,8 @@ export default function Profile(){
 
 
                         <div className={styles.aboutHolder}>
+                            { !edit? (
+                                <>
                             <h3>{data.name}</h3>
                             <h4 className={styles.username}><b>{data.username}</b></h4>
 
@@ -56,7 +74,7 @@ export default function Profile(){
 
                             <p>{data.bio}</p>
 
-                            <button className={styles.editBtn}>Edit profile</button>
+                            <button className={styles.editBtn} onClick={(e)=> setEdit(true)}>Edit profile</button>
 
                             <div className={styles.follows}>
                                 <div className={styles.followers}><p><b>{data.followers}</b></p><a>followers</a></div>
@@ -67,6 +85,37 @@ export default function Profile(){
                                 <div><p>app1</p><a>go</a></div>
                                 <div><p>app2</p><a>go</a></div>
                             </div>
+                            </>
+                                ):(<>   <div className={styles.form}>
+                                        <label>Name</label>
+                                        <input type="text" className={styles.inputField} value={updateData.name} onChange={(e)=>{
+                                            setUpdateData((p)=>({
+                                                ...p, name: e.target.value
+                                            }))
+                                        }}   />
+                                        <label>About</label>
+                                        <input type="text" className={styles.inputField}  value={updateData.about} onChange={(e)=>{
+                                            setUpdateData((p)=>({
+                                                ...p, about: e.target.value
+                                            }))
+                                        }} />
+                                        <label>Bio</label>
+                                        <textarea value={updateData.bio} onChange={(e)=>{
+                                            setUpdateData((p)=>({
+                                                ...p, bio: e.target.value
+                                            }))
+                                        }}  />
+                                        <div className={styles.follows}>
+                                            <button className={styles.subBTN} onClick={(e)=>{
+                                                DoUpdate();
+                                            }}>Save</button>
+                                            <button className={styles.subBTN} onClick={(e)=>{
+                                                makeUpdateFalse();
+                                            }}>Cancel</button>
+                                        </div>
+                                        </div>
+                                </>)
+                            }
                         </div>
 
 

@@ -1,3 +1,6 @@
+import { json } from "stream/consumers";
+import Global from "./global";
+
 interface user {
     fullName: string;
     username: string;
@@ -42,5 +45,19 @@ export default class User implements user{
         const data = await res.json();
 
         return data;
+    }
+
+    static async update(name: string,bio: string,about: string){
+        const res = await fetch("https://localhost:2000/api/user",{
+            method: "PUT",
+            headers:{
+                "content-type": "application/json" 
+            },
+            body: JSON.stringify({name: name,bio: bio, about: about, id: Global.user_id})
+        })
+
+        const data = await res.json();
+
+        console.log(data);
     }
 }
