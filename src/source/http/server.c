@@ -2,6 +2,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include "endpoints.h"
+#include "web_sock.h"
 
 int socketfd = 0;
 
@@ -109,7 +110,9 @@ int handle_request(void *ss)
                 break;
             }
 
-            map_print(http_req);
+            //map_print(http_req);
+
+            createAcceptString(map_get(http_req,"sec-websocket-key"));
 
             
 
@@ -198,19 +201,19 @@ int handle_request(void *ss)
         switch (req_method)
         {
         case GET:
-            method_get(ssl, map_get_ref(http_req, "url"));
+            //method_get(ssl, map_get_ref(http_req, "url"));
             break;
         case POST:
-            method_post(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
+            //method_post(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
             //write_OK(ssl,"");
             break;
 
         case PUT:
-            method_put(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
+            //method_put(ssl,map_get_ref(http_req, "url"),string_create_copy(json_b->chars));
             break;
 
         case DELETE:
-            method_delete(ssl,map_get_ref(http_req, "url"));
+            //method_delete(ssl,map_get_ref(http_req, "url"));
             break;
 
         case OPTIONS:

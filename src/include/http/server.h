@@ -57,8 +57,11 @@ struct ssl_holder{
     int sock;
 };
 
+
 void signal_handler(int sig);
+
 int handle_request(void *args);
+
 void accept_connections(int socketfd);
 
 //start server
