@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "../lib/ev_strings.h"
 #include "../../include/threads/pool.h"
@@ -68,3 +70,6 @@ void accept_connections(int socketfd);
 bool set_up_server(char *port);
 
 void clean_up();
+
+extern int server_fd;
+extern SSL_CTX *server_accept_ctx;

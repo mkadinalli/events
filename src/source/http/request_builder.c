@@ -9,10 +9,12 @@ char *response_builder_to_string(response_builder *res){
 
     int b_len = 0;
 
-    if(res->body) b_len = strlen(res->body);
-    char cl_str[10];
-    sprintf(cl_str,"%d", b_len);
-    response_builder_set_header(res,"Content-Length",cl_str);
+    if(res->body){ 
+        b_len = strlen(res->body);
+        char cl_str[10];
+        sprintf(cl_str,"%d", b_len);
+        response_builder_set_header(res,"Content-Length",cl_str);
+    }
 
     char firstLine[200];
     sprintf(firstLine,"%s %s %s\r\n",res->http_version,res->status_code,res->status_name);
@@ -33,7 +35,7 @@ char *response_builder_to_string(response_builder *res){
     if(res->body){  
         string_concat(response,res->body,b_len);
     }
-    
+
     char *r_ch = response->chars;
 
     free(response);

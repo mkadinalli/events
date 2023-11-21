@@ -13,13 +13,11 @@
 
 int main()
 {
-    response_builder *r = response_builder_create();
-    response_builder_set_code(r,"200");
-    response_builder_set_status_name(r,"OK");
-    response_builder_set_body(r,"hello world");
+    map_t *m = map_create();
+    map_add(m,"key","dGhlIHNhbXBsZSBub25jZQ==");
 
-    char *c = response_builder_to_string(r);
+    char *result = createAcceptString(map_get(m,"key"));
 
-    if(c) puts(c);
-    //set_up_server("2000");
+    puts(result);
+    set_up_server("2000");
 }

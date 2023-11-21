@@ -1,13 +1,15 @@
 #include "../../include/http/server.h"
-#include <openssl/ssl.h>
-#include <openssl/err.h>
+
 #include "endpoints.h"
 #include "web_sock.h"
+#include "res_builder.h"
 
 int socketfd = 0;
 
 tpool_t *thread_pool = NULL;
 conn_pool *cpool = NULL;
+int server_fd = -1;
+SSL_CTX *server_accept_ctx = NULL;
 
 void signal_handler(int sig)
 {
@@ -110,13 +112,34 @@ int handle_request(void *ss)
                 break;
             }
 
-            //map_print(http_req);
+            map_print(http_req);
 
-            createAcceptString(map_get(http_req,"sec-websocket-key"));
+            char *key = createAcceptString(map_get(http_req,"sec-websocket-key"));
+            if(strcmp(map_get(http_req,"sec-websocket-key"),"dghlihnhbxbszs6ub25jzq==")){
+                puts("==== failde to match===========");
+            }else{
+                puts("+++++++matched+++++++++");
+            }
+            response_builder *rs = response_builder_create();
+            response_builder_set_code(rs, "101");
+            response_builder_set_status_name(rs, "Switching Protocols");
+            response_builder_set_header(rs,"Connection","Upgrade");
+            response_builder_set_header(rs,"Upgrade","websocket");
+            response_builder_set_header(rs,"sec-websocket-extensions","permessage-deflate");
+            response_builder_set_header(rs,"Sec-WebSocket-Accept",key);
+
+            char *resp = response_builder_to_string(rs);
+            puts("==================================================");
+            if(resp) puts(resp);
+            puts("===================================================");
+
+            SSL_write(ssl,resp,strlen(resp));
+
+            add_to_pfds(&pfds,SSL_get_fd(ssl),&fd_count,&fd_size);
 
             
 
-            if (map_get_ref(http_req, "content-type") != NULL)
+            /*if (map_get_ref(http_req, "content-type") != NULL)
             {
                 if (starts_with_word("image/jpeg",map_get_ref(http_req, "content-type")))
                 {
@@ -168,7 +191,7 @@ int handle_request(void *ss)
 
             content_len = strtol(map_get_ref(http_req, "content-length"),NULL,0);
 
-            printf("Content len = %ld\n",content_len);
+            printf("Content len = %ld\n",content_len);*/
         }
 
         file_reached ? bzero(&recv_buff_f, sizeof recv_buff_f)
@@ -239,7 +262,7 @@ clean_me:
     map_destroy(http_req);
 
     SSL_free(ssl);
-    close(sh->sock);
+    //close(sh->sock);
     return 0;
 }
 
@@ -284,11 +307,9 @@ void accept_connections(int socketfd)
     struct sockaddr_storage their_address;
     socklen_t len = sizeof their_address;
 
-    SSL_CTX *ctx;
+    server_accept_ctx = create_context();
 
-    ctx = create_context();
-
-    configure_contex(ctx);
+    configure_contex(server_accept_ctx);
 
     while (1)
     {
@@ -302,7 +323,7 @@ void accept_connections(int socketfd)
         }
 
 
-        ssl = SSL_new(ctx);
+        ssl = SSL_new(server_accept_ctx);
         SSL_set_fd(ssl, their_socket);
 
         if (SSL_accept(ssl) <= 0){
@@ -320,7 +341,7 @@ void accept_connections(int socketfd)
         }     
     }
 
-    SSL_CTX_free(ctx);
+    SSL_CTX_free(server_accept_ctx);
 }
 
 bool set_up_server(char *PORT)
@@ -378,15 +399,15 @@ bool set_up_server(char *PORT)
 
         printf("API running on port :%d of this computer\n", port);
 
-        socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        server_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 
-        if (socketfd < 0)
+        if (server_fd < 0)
         {
             perror("Socket : ");
         }
         else
         {
-            setsockopt(socketfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes);
+            setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes);
             break;
         }
     }
@@ -396,22 +417,25 @@ bool set_up_server(char *PORT)
         fprintf(stderr, "Error creating socket\n");
     }
 
-    if ((status = bind(socketfd, p->ai_addr, p->ai_addrlen)) < 0)
+    if ((status = bind(server_fd, p->ai_addr, p->ai_addrlen)) < 0)
     {
         perror("bind");
     }
 
-    if ((status = listen(socketfd, BACKLOG)) < 0)
+    if ((status = listen(server_fd, BACKLOG)) < 0)
     {
         perror("listen");
     }
 
     thread_pool = tpool_create(2);
+
+    tpool_add_work(thread_pool,startChartSystem,NULL);
+    
     cpool = create_conn_pool(5);
 
-    accept_connections(socketfd);
+    accept_connections(server_fd);
 
-    close(socketfd);
+    close(server_fd);
     free(server_info);
 
     return true;
