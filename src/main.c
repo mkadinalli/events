@@ -5,6 +5,7 @@
 #include "map.h"
 #include "mpesa.h"
 #include "web_sock.h"
+#include "res_builder.h"
 
 #define BUFFLEN 4096
 
@@ -12,8 +13,13 @@
 
 int main()
 {
-    int bytes[] = { 1, 2, 3};
+    response_builder *r = response_builder_create();
+    response_builder_set_code(r,"200");
+    response_builder_set_status_name(r,"OK");
+    response_builder_set_body(r,"hello world");
 
-    createIntFromByte(bytes,3);
+    char *c = response_builder_to_string(r);
+
+    if(c) puts(c);
     //set_up_server("2000");
 }
