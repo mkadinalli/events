@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "../lib/ev_strings.h"
 #include "../../include/threads/pool.h"
@@ -57,11 +59,17 @@ struct ssl_holder{
     int sock;
 };
 
+
 void signal_handler(int sig);
+
 int handle_request(void *args);
+
 void accept_connections(int socketfd);
 
 //start server
 bool set_up_server(char *port);
 
 void clean_up();
+
+extern int server_fd;
+extern SSL_CTX *server_accept_ctx;

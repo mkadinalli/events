@@ -1,0 +1,7 @@
+Source tree.
+----------------------------------------------------------
+Setting up on debian and friends . . .
+
+mysql db 8.0 and make required.
+
+git clone https://github.com/vic6326/events && cd events && chmod u+x setup.bash && ./setup.bash && make

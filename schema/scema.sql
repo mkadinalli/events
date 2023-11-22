@@ -393,8 +393,8 @@ begin
 	select
     cast( bin_to_uuid(id) as char) as id,
     name,
-    username,
-    email,
+    -- username,
+    -- email,
     (select file_path from user_images where user_id = this_id and purpose = 'avater' limit 1) as avater,
     about,
     bio,
@@ -859,15 +859,16 @@ create procedure check_matching_user(
 begin
     declare v_salt binary(16) default null;
     declare pass binary(16) default null;
+    declare u_id varchar(256) default null;
     
-    select salt, pass_word
-    into v_salt, pass
+    select bin_to_uuid(id),salt, pass_word
+    into u_id,v_salt, pass
     from users 
     where username = in_id or email = in_id;
     
     if (v_salt is not null) and (pass is not null) then
 		if decrypt_password(pass,v_salt) = in_password then
-			select 1 as matched;
+			select u_id as matched;
 		else
 			select 0 as matched;
         end if;
@@ -889,6 +890,8 @@ select *from users;
 and verify_token = uuid_to_bin('92750f21-7cbb-11ee-864c-dc215ca11a9e');
 
 call insert_user('vic','user2355455','email2786455');
+
+select cast(bin_to_uuid(id) as char) as id from users;
 /*
 select * from published;
 

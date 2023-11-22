@@ -19,9 +19,6 @@ json_object * insert_into_users(const char *name,
  * @brief update one user 
 */
 json_object * update_one_user(const char *name,
-                      const char *username,
-                      const char *email,
-                      const char * avater,
                       const char * bio,
                       const char * about,
                       const char * id);

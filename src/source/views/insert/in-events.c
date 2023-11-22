@@ -21,6 +21,7 @@ void add_event(SSL *sock, char *json_load)
         return;
     }
 
+
     if (!json_object_object_get_ex(jobj, "description", &description))
     {
         write_BAD(sock);
@@ -35,21 +36,21 @@ void add_event(SSL *sock, char *json_load)
         return;
     }
 
-    if (!json_object_object_get_ex(jobj, "event_date", &event_date))
+    if (!json_object_object_get_ex(jobj, "date", &event_date))
     {
         write_BAD(sock);
         // todo
         return;
     }
 
-    if (!json_object_object_get_ex(jobj, "deadline_date", &deadline_date))
+    if (!json_object_object_get_ex(jobj, "deadlineDate", &deadline_date))
     {
         write_BAD(sock);
         // todo
         return;
     }
 
-    if (!json_object_object_get_ex(jobj, "publisher_id", &publisher_id))
+    if (!json_object_object_get_ex(jobj, "publisherID", &publisher_id))
     {
         write_BAD(sock);
         // todo

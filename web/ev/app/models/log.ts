@@ -1,3 +1,5 @@
+import Global from "./global"
+
 interface loginDetails{
     emailOrUsername: string;
     password: string;
@@ -18,10 +20,14 @@ export default class LoginDetails implements loginDetails{
         const data = await res.json();
 
         if(!data.success) return false;
+
+        let user_id = data.results[0].matched
         
-        if(data.results[0].matched === "1")
-            return true;
+        if(user_id === "0")
+            return false;
         
-        return false;
+
+        Global.user_id = user_id;
+        return true;
     }
 }

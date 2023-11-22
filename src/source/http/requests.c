@@ -67,7 +67,12 @@ map_t *parse_http_req(char *req)
         char *sslow = string_to_lower(ss);
         char *sklow = string_to_lower(sk);
 
-        map_add(map, sklow, sslow);
+        if(!strcmp(sklow,"sec-websocket-key")){
+            map_add(map, sklow, ss);
+        }else{
+
+            map_add(map, sklow, sslow);
+        }
 
         free(sslow);
         free(sklow);
@@ -135,10 +140,17 @@ map_t * parse_http_response(char *req)
         char *ss = remove_leading_and_trailing_spaces(list_get(vc, 1));
         char *sk = remove_leading_and_trailing_spaces(list_get(vc, 0));
 
-        char *sslow = string_to_lower(ss);
         char *sklow = string_to_lower(sk);
 
-        map_add(map, sklow, sslow);
+        char *sslow = string_to_lower(ss);
+
+        if(!strcmp(sklow,"sec-websocket-key")){
+            map_add(map, sklow, ss);
+        }else{
+
+            map_add(map, sklow, sslow);
+        }
+
 
         free(sslow);
         free(sklow);
@@ -156,7 +168,7 @@ map_t * parse_http_response(char *req)
 
 char *write_http_header_from_struct(http_res *http)
 {
-    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, DELETE, UPDATE\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n";
+    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, DELETE, UPDATE, PUTSTTT\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n";
     char res[500];
 
     sprintf(res,
@@ -169,7 +181,7 @@ char *write_http_header_from_struct(http_res *http)
     return string_create_from_string(res)->chars;
 }
 
-bool upload_file(char *file_name, char *type, SSL *sock)
+bool upload_file(char *file_name, char *type, int sock)
 {
     bool success = true;
 
@@ -189,7 +201,7 @@ bool upload_file(char *file_name, char *type, SSL *sock)
     {
         fread(buff, 1, sizeof buff, myfile);
 
-        if ((SSL_write(sock, buff, sizeof buff)) < 0)
+        if ((send(sock, buff, sizeof buff,0)) < 0)
         {
             // perror("send");
             success = false;
@@ -204,9 +216,9 @@ bool upload_file(char *file_name, char *type, SSL *sock)
     return success;
 }
 
-bool write_header(char *header, SSL *sock)
+bool write_header(char *header, int sock)
 {
-    if ((SSL_write(sock, header, strlen(header))) == -1)
+    if ((send(sock, header, strlen(header),0)) == -1)
     {
         return false;
     }
@@ -214,7 +226,7 @@ bool write_header(char *header, SSL *sock)
     return true;
 }
 
-bool write_404(SSL *sock)
+bool write_404(int sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -228,13 +240,13 @@ bool write_404(SSL *sock)
 
     char * json_char = "{\"error\":\"Resource not found\"}";
 
-    SSL_write(sock,json_char,30);
+    send(sock,json_char,30,0);
 
     free(h_err);
     return bl;
 }
 
-bool write_OK(SSL *sock, char *mime)
+bool write_OK(int sock, char *mime)
 {
     http_res *hp = malloc(sizeof(http_res));
 
@@ -249,7 +261,7 @@ bool write_OK(SSL *sock, char *mime)
     return b;
 }
 
-bool write_BAD(SSL *sock)
+bool write_BAD(int sock)
 {
     http_res *h_err = malloc(sizeof(http_res));
 
@@ -263,20 +275,20 @@ bool write_BAD(SSL *sock)
 
     char * json_char = "{\"error\":\"Bad request\"}";
 
-    SSL_write(sock,json_char,23);
+    send(sock,json_char,23,0);
 
     free(h_err);
     return bl;
 }
 
-bool write_json(struct json_object *obj, SSL *sock)
+bool write_json(struct json_object *obj, int sock)
 {
     write_OK(sock, "application/json");
     const char *json = json_object_to_json_string_ext(obj,JSON_C_TO_STRING_PLAIN);
 
     puts(json);
 
-    if (SSL_write(sock, json, strlen(json)) == -1)
+    if (send(sock, json, strlen(json),0) == -1)
     {
         return false;
     }

@@ -1,0 +1,37 @@
+
+.container{ width: 100vw; height: 100vh; color: black;}
+
+.header{display: flex; flex-direction: row; height: 70px; color: white; background-color: black; align-items: center; justify-content: space-between; padding: 5px 15px;}
+
+.buttonContainer{display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px;}
+
+.btn{ height: 40px; color: black; width: 80px; }
+
+.label{ height: 50px; display: flex; align-items: center; font-size: 16px;}
+
+.inputField{ color: black;}
+
+.formContainer{color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin-top: 20px;}
+
+.form{color: black; background-color: red; display: flex; flex-direction: column; justify-content: center; width: 100%; padding: 20px;}
+.subBtn{margin-top: 10px;}
+
+.tab{ display: flex; flex-direction:  row; align-items: center; height:40px;}
+
+.tabItem{display: flex; align-items: center; justify-content: center; height: 100%; width: 100px;}
+
+.tabBtn{width: 80px; height: 70%; border: none; border-radius: 5px; color:black}
+
+.pContainer{display: grid; grid-template-columns: 1.5fr 4fr; height: auto; gap:10px; width: 100%; height: 100%; }
+
+.pGrid1{ display: flex; flex-direction: column; gap: 5px; padding: 10px; align-items: center; justify-content: center;}
+
+.dpHolder, .otherHolder, .aboutHolder{ width: 95%; height: 250px;}
+.dpHolder{display: flex; justify-content: center; align-items: center;}
+.dphoto{ width: 220px; border-radius: 150px; background-color: black; height: 220px;}
+.aboutHolder{padding: 5px; background-color: pink;}
+.about{margin-top: 10px; margin-bottom: 10px;}
+.editBtn{margin-top: 10px; width: 100%; height: 30px; color: black;}
+.follows{display: flex; flex-direction: row; color: black; align-items: center; margin-top: 20px; gap: 10px; margin-bottom: 20px;}
+.followers,.following{display: flex; flex-direction: row; color: black; align-items: center; justify-content: center; gap: 5px;}
+.username{color: rgb(87, 81, 81);}

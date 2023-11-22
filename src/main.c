@@ -4,6 +4,8 @@
 #include "url_parser.h"
 #include "map.h"
 #include "mpesa.h"
+#include "web_sock.h"
+#include "res_builder.h"
 
 #define BUFFLEN 4096
 
@@ -11,11 +13,11 @@
 
 int main()
 {
-    //set_up_server("2000");
+    map_t *m = map_create();
+    map_add(m,"key","dGhlIHNhbXBsZSBub25jZQ==");
 
-    //char * dn = get_path_from_url("http://localhost:8");
+    char *result = createAcceptString(map_get(m,"key"));
 
-    //url_t *x = url_parser_parse("https://sandbox.localhost.co.ke:3000/?hello=world&niaje=poa");
-
-    mpesa_do_stk_push("254716732614",1);
+    puts(result);
+    set_up_server("2000");
 }
