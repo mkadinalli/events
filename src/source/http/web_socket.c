@@ -192,3 +192,67 @@ int startChartSystem(void *v)
  * 
 */
 
+void parse_flags(char *bytes,int *fin, int *opcode , int *mask)
+{
+    *fin = bytes[0] & 0b10000000;
+    *opcode = bytes[0] & 0b1111;
+
+    *mask = bytes[1] & 0b10000000;
+}
+
+void parse_payload_length(char *bytes, int *payloadLength, int *maskStart)
+{
+    int payload_length = bytes[1] & 0b1111111;
+
+    int mask_key_start = 2;
+
+    if(payload_length == 126){
+        int b[] = { payload_length, (int) bytes[2], (int) bytes[3]};
+        payload_length = createIntFromByte(b,3);
+        mask_key_start = 4;
+    }else if(payload_length == 127){
+        int b[] = {
+            payload_length,
+            (int) bytes[2],
+            (int) bytes[3],
+            (int) bytes[4],
+            (int) bytes[5],
+            (int) bytes[6],
+            (int) bytes[7],
+            (int) bytes[8]
+        };
+
+        payload_length = createIntFromByte(b,8);
+        mask_key_start = 10;
+    }
+
+    *payloadLength = payload_length;
+    *maskStart = mask_key_start;
+}
+
+void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes)
+{
+    if(!mask){
+        return;
+    }
+
+    mask_bytes[0] = bytes[mask_start];
+    mask_bytes[1] = bytes[mask_start + 1];
+    mask_bytes[2] = bytes[mask_start + 2];
+    mask_bytes[3] = bytes[mask_start + 3];
+}
+
+
+void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload)
+{
+    int payload_start = maskstart;
+
+    if( maskstart != 2) payload_start = maskstart + 4;
+
+    char *encoded_payload = bytes+payload_start;
+
+    for(int i = 0; i < pay_load_length; i++){
+        decoded_payload[i] = mask_key[i % 4];
+    }
+}
+

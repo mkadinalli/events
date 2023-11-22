@@ -135,7 +135,7 @@ int handle_request(void *args)
             response_builder_set_status_name(rs, "Switching Protocols");
             response_builder_set_header(rs,"Connection","Upgrade");
             response_builder_set_header(rs,"Upgrade","websocket");
-            response_builder_set_header(rs,"sec-websocket-extensions","permessage-deflate");
+            //response_builder_set_header(rs,"sec-websocket-extensions","permessage-deflate");
             response_builder_set_header(rs,"Sec-WebSocket-Accept",key);
 
             char *resp = response_builder_to_string(rs);
