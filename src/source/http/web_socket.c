@@ -245,14 +245,15 @@ void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes)
 
 void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload)
 {
-    int payload_start = maskstart;
+    int payload_start = maskstart + 4;
 
-    if( maskstart != 2) payload_start = maskstart + 4;
+    //if( maskstart != 2) payload_start = maskstart + 4;
 
     char *encoded_payload = bytes+payload_start;
 
     for(int i = 0; i < pay_load_length; i++){
         decoded_payload[i] =  (char)encoded_payload[i] ^ mask_key[i % 4];
+        printf("[%d] %c\n",i,decoded_payload[i]);
     }
 }
 
