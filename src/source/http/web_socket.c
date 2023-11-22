@@ -252,7 +252,7 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
     char *encoded_payload = bytes+payload_start;
 
     for(int i = 0; i < pay_load_length; i++){
-        decoded_payload[i] = mask_key[i % 4];
+        decoded_payload[i] =  (char)encoded_payload[i] ^ mask_key[i % 4];
     }
 }
 

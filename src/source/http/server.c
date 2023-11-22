@@ -439,7 +439,16 @@ void accept_connections(int socketfd)
                     }
                     else
                     {
-                        puts(buf);
+                        //puts(buf);
+                        int opcode,fin,mask,plen,mask_st;
+                        parse_flags(buf,&fin,&opcode,&mask);
+                        parse_payload_length(buf,&plen,&mask_st);
+                        char key[5] = {0};
+                        parse_masking_key(mask,mask_st,buf,key);
+                        printf("mask %d fin %d opcode %d length %d mask_start %d\n", mask,fin,opcode,plen,mask_st);
+                        char message[BUFFER_SIZE] = { 0 };
+                        parse_payload(mask_st,plen,key,buf,message);
+                        printf("Decoded message is %s",message);
                         // We got some good data from a client
                         for (int j = 0; j < fd_count_g; j++)
                         {

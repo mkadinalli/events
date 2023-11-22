@@ -22,4 +22,10 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 
 int startChartSystem(void *v);
 
-bool parse_flags(char *bytes,int *fin, int *opcode , int *mask);
+void parse_flags(char *bytes,int *fin, int *opcode , int *mask);
+
+void parse_payload_length(char *bytes, int *payloadLength, int *maskStart);
+
+void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes);
+
+void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload);
