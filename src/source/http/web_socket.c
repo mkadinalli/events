@@ -1,8 +1,8 @@
 #include "web_sock.h"
 
-struct pollfd *pfds = NULL;
-int fd_count = 0;
-int fd_size = 0;
+//struct pollfd *pfds = NULL;
+//int fd_count = 0;
+//int fd_size = 0;
 
 bool validate_WS_connection(map_t *request){
     if(request == NULL){
@@ -63,33 +63,37 @@ void *get_in_addr_ws(struct sockaddr *sa)
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_count, int *fd_size)
+void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
 {
     // If we don't have room, add more space in the pfds array
-    if (*fd_count == *fd_size)
+    if (*fd_cnt == *fd_sz)
     {
-        *fd_size *= 2; // Double it
-        *pfds = realloc(*pfds, sizeof(**pfds) * (*fd_size));
+        *fd_sz *= 2; // Double it
+        *pfds = realloc(*pfds, sizeof(**pfds) * (*fd_sz));
     }
-    (*pfds)[*fd_count].fd = newfd;
-    (*pfds)[*fd_count].events = POLLIN; // Check ready-to-read
-    (*fd_count)++;
+    (*pfds)[*fd_cnt].fd = newfd;
+    (*pfds)[*fd_cnt].events = POLLIN; // Check ready-to-read
+    (*fd_cnt)++;
+    puts("ADDED ONE SOCKET FD");
+    printf("%d new fd is %d\n",*fd_cnt,newfd);
 }
 
-void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
+void del_from_pfds(struct pollfd pfds[], int i, int *fd_cnt)
 {
 
-    pfds[i] = pfds[*fd_count - 1];
-    (*fd_count)--;
+    pfds[i] = pfds[*fd_cnt - 1];
+    (*fd_cnt)--;
 }
 
-
+/**
 int startChartSystem(void *v)
 {
+    puts("Chart SYstem online");
     if(v != NULL){}
 
     fd_size = 5;
     pfds = malloc(sizeof *pfds * fd_size);
+    char buf[256];
     // Add the listener to set
     pfds[0].fd = server_fd;
     pfds[0].events = POLLIN; // Report ready to read on incoming connection
@@ -109,41 +113,19 @@ int startChartSystem(void *v)
             // Check if someone's ready to read
             if (pfds[i].revents & POLLIN)
             { 
-                if(pfds[i].fd != server_fd) puts("============ A socket is ready to read ==============");
+                if(pfds[i].fd != server_fd)
                 // We got one!!
-                /*if (pfds[i].fd == listener)
+ 
                 {
-                    // If listener is ready to read, handle new connection
-                    addrlen = sizeof remoteaddr;
-                    newfd = accept(listener, (struct sockaddr *)&remoteaddr, &addrlen);
-
-                    if (newfd == -1)
-                    {
-                        perror("accept");
-                    }
-                    else
-
-                        
-
-
-                        {
-                        add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
-                        printf("pollserver: new connection from %s on "
-                               "socket %d\n",
-                               inet_ntop(remoteaddr.ss_family,
-                                         get_in_addr((struct sockaddr *)&remoteaddr),
-                                         remoteIP, INET6_ADDRSTRLEN),
-                               newfd);
-                        }
-                }
-                else
-                {
+                    puts("ONE FD READY TO READ");
+                    printf("%d\n",fd_count);
                     // If not the listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
 
                     // decoding staff
 
                     int sender_fd = pfds[i].fd;
+
                     if (nbytes <= 0)
                     {
                         // Got error or connection closed by client
@@ -162,12 +144,15 @@ int startChartSystem(void *v)
                     else
                     {
                         // We got some good data from a client
+                        puts("_______Data___________");
+                        puts(buf);
+                        puts("________end data______________");
                         for (int j = 0; j < fd_count; j++)
                         {
                             // Send to everyone!
                             int dest_fd = pfds[j].fd;
                             // Except the listener and ourselves
-                            if (dest_fd != listener && dest_fd != sender_fd)
+                            if (dest_fd != server_fd && dest_fd != sender_fd)
                             {
                                 if (send(dest_fd, buf, nbytes, 0) == -1)
                                 {
@@ -176,11 +161,11 @@ int startChartSystem(void *v)
                             }
                         }
                     }
-                }*/
+                }
             }
         }
     }
-}
+}*/
 
 /**
  * 

@@ -45,11 +45,11 @@ parse_http_req(char *req);
 map_t * parse_http_response(char *req);
 bool upload_file(char *file_name,
                  char *type,
-                 SSL *sock);
+                 int sock);
 bool write_header(char *header,
-                  SSL *sock);
-bool write_404(SSL *sock);
-bool write_BAD(SSL *sock);
-bool write_OK(SSL *sock, char *mime);
-bool write_json(struct json_object *obj, SSL *sock);
+                  int sock);
+bool write_404(int sock);
+bool write_BAD(int sock);
+bool write_OK(int sock, char *mime);
+bool write_json(struct json_object *obj, int sock);
 

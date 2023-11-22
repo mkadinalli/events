@@ -1,8 +1,10 @@
 "use client"
 
 export default function Ws(){
+
+  var conn :WebSocket;
     const createConnection = () =>{
-    const conn = new WebSocket("wss://localhost:2000/chat");
+      conn = new WebSocket("ws://localhost:2000/chat");
 
     //conn.send("hello world");
 
@@ -34,6 +36,16 @@ export default function Ws(){
       }
     }
 
+    const sendData = ()=>{
+      if(conn){
+        conn.send("Hello world");
+        console.log("sent a message");
+        return;
+      }
+
+      console.log("message sending failed");
+    }
+
     
     return (
         <html>
@@ -44,7 +56,7 @@ export default function Ws(){
                 }}>Create Connection</button>
                 <button>Connect</button>
                 <input type="text"></input>
-                <button>Send</button>
+                <button onClick={(e)=>{sendData()}}>Send</button>
             </body>
         </html>
     )

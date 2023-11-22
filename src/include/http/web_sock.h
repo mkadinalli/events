@@ -3,8 +3,8 @@
 #include "http.h"
 
 extern struct pollfd *pfds;
-extern int fd_count;
-extern int fd_size;
+extern int fd_count_g;
+extern int fd_size_g;
 
 #define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
