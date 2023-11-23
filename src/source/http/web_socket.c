@@ -258,3 +258,68 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
     }
 }
 
+
+void encode_message(char *message,size_t message_len,bool is_last,bool is_text,char *encoded_buff)
+{
+    int first_byte = 0b00000000;
+    int second_byte = 0b00000000;
+
+    if(is_last){
+        first_byte = first_byte | 0b10000000;
+    }
+
+    encoded_buff[0] = first_byte;
+
+    int message_start = 2;
+
+    /**
+     * 11111111 11111111 11111111 11111111
+     * 
+     * 00000000 11111111 11111111 11111111 (rshift 8  & pow(32,2)) >> 16
+     * 
+     * 00000000 00000000 11111111 11111111 (rshift 16 & pow(32,2)) >> 8
+     * 
+     * 00000000 00000000 00000000 11111111 (rshift 24 & pow(32,2)) >> 0
+     * 
+     * 
+    */
+
+
+    if(message_len < 256){
+        second_byte = second_byte | message_len;
+
+        encoded_buff[1] = second_byte;
+    }else if(message_len >= 256 && message_len < 65536){
+        second_byte = second_byte | 126;
+
+        encoded_buff[1] = second_byte;
+        encoded_buff[2] = (message_len & 0b1111111111111111) >> 8;
+        encoded_buff[3] = (message_len & 0b0000000011111111);
+
+        message_start = 4;
+
+    }else{
+        second_byte = second_byte | 127;
+
+        encoded_buff[1] = second_byte;
+        
+        encoded_buff[2] = ((message_len >> 56) & 65535) >> 0;
+        encoded_buff[3] = ((message_len >> 48) & 65535) >> 8;
+        encoded_buff[4] = ((message_len >> 40) & 65535) >> 16;
+        encoded_buff[5] = ((message_len >> 32) & 65535) >> 24;
+        encoded_buff[6] = ((message_len >> 24) & 65535) >> 32;
+        encoded_buff[7] = ((message_len >> 16) & 65535) >> 40;
+        encoded_buff[8] = ((message_len >> 8) & 65535) >> 48;
+        encoded_buff[9] = ((message_len >> 0) & 65535) >> 56;
+
+        message_start = 10;
+        
+    }
+
+    int j = 0;
+    for(int i = message_start; j < message_len; i++){
+        encoded_buff[i] = message[j];
+        j++;
+    }
+}
+
