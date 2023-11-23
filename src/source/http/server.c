@@ -448,17 +448,23 @@ void accept_connections(int socketfd)
                         printf("mask %d fin %d opcode %d length %d mask_start %d\n", mask,fin,opcode,plen,mask_st);
                         char message[BUFFER_SIZE] = { 0 };
                         parse_payload(mask_st,plen,key,buf,message);
-                        printf("Decoded message is %s",message);
+                        printf("Decoded message is %s\n",message);
                         // We got some good data from a client
+
+                        char response[BUFFER_SIZE] = {0};
+                        int res_len;
+                        encode_message("Hello toobbbbbbbbbbbbbbbbbbbbbbbbbbbbereererererbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",267,true,true,response,&res_len);
+                        printf("||||||||Response length is %d",res_len);
+
                         for (int j = 0; j < fd_count_g; j++)
                         {
                             int dest_fd = pfds[j].fd;
                             //SSL_set_fd(sock_wrap,dest_fd);
                             // Send to everyone!
                             // Except the listener and ourselves
-                            if (dest_fd != server_fd && dest_fd != sender_fd)
+                            if (dest_fd != server_fd /*&& dest_fd != sender_fd*/)
                             {
-                                if (send(dest_fd, buf, nbytes,0) == -1)
+                                if (send(dest_fd, response, res_len,0) == -1)
                                 {
                                     perror("send");
                                 }

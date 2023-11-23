@@ -39,8 +39,8 @@ char *createAcceptString(char *input){
 }
 
 
-int createIntFromByte(int bytes[], size_t len){
-    int result = bytes[0];
+unsigned int createIntFromByte(unsigned int bytes[], size_t len){
+    unsigned int result = bytes[0];
 
     result = result << 8;
 
@@ -202,24 +202,30 @@ void parse_flags(char *bytes,int *fin, int *opcode , int *mask)
 
 void parse_payload_length(char *bytes, int *payloadLength, int *maskStart)
 {
-    int payload_length = bytes[1] & 0b1111111;
+    unsigned int payload_length = bytes[1] & 0b1111111;
 
     int mask_key_start = 2;
 
     if(payload_length == 126){
-        int b[] = { payload_length, (int) bytes[2], (int) bytes[3]};
-        payload_length = createIntFromByte(b,3);
+        unsigned int b[] = { 
+            (unsigned char) bytes[2], 
+            (unsigned char) bytes[3]
+         };
+        payload_length = createIntFromByte(b,2);
         mask_key_start = 4;
+        puts("*********************************************************************************");
+        printf("llllllllllllll -> %d\n",payload_length);
     }else if(payload_length == 127){
-        int b[] = {
-            payload_length,
-            (int) bytes[2],
-            (int) bytes[3],
-            (int) bytes[4],
-            (int) bytes[5],
-            (int) bytes[6],
-            (int) bytes[7],
-            (int) bytes[8]
+        puts("===============================================================================");
+        unsigned int b[] = {
+            (unsigned char) bytes[2],
+            (unsigned char) bytes[3],
+            (unsigned char) bytes[4],
+            (unsigned char) bytes[5],
+            (unsigned char) bytes[6],
+            (unsigned char) bytes[7],
+            (unsigned char) bytes[8],
+            (unsigned char) bytes[9]
         };
 
         payload_length = createIntFromByte(b,8);
@@ -246,14 +252,102 @@ void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes)
 void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload)
 {
     int payload_start = maskstart + 4;
+    
 
-    //if( maskstart != 2) payload_start = maskstart + 4;
-
-    char *encoded_payload = bytes+payload_start;
-
-    for(int i = 0; i < pay_load_length; i++){
-        decoded_payload[i] =  (char)encoded_payload[i] ^ mask_key[i % 4];
-        printf("[%d] %c\n",i,decoded_payload[i]);
+    if( mask_key == NULL ){
+        payload_start = maskstart;
+        
+        int j = 0;
+        for(int i = payload_start; j < pay_load_length; i++){
+            decoded_payload[j] =  (char)bytes[i];
+            j++;
+        }
+        return;
     }
+
+
+    for(int i = payload_start; i < pay_load_length; i++){
+        decoded_payload[i] =  (char)bytes[i] ^ mask_key[i % 4];
+    }
+}
+
+
+void encode_message(char *message,size_t message_len,bool is_last,bool is_text,char *encoded_buff,int *encoded_buff_len)
+{
+    int first_byte = 0b00000000;
+    int second_byte = 0b00000000;
+
+    if(is_last){
+        first_byte = first_byte | 0b10000000;
+    }
+
+    if(is_text){
+        first_byte = first_byte | 0b00000001;
+    }
+
+    encoded_buff[0] = first_byte;
+
+    int message_start = 2;
+
+    /**
+     * 11111111 11111111 11111111 11111111
+     * 
+     * 00000000 11111111 11111111 11111111 (rshift 8  & pow(32,2)) >> 16
+     * 
+     * 00000000 00000000 11111111 11111111 (rshift 16 & pow(32,2)) >> 8
+     * 
+     * 00000000 00000000 00000000 11111111 (rshift 24 & pow(32,2)) >> 0
+     * 
+     * 
+    */
+
+
+    if(message_len < 126){
+        second_byte = second_byte | message_len;
+
+        encoded_buff[1] = second_byte;
+    }else if(message_len >= 126 && message_len < 0b10000000000000000){
+        second_byte = second_byte | 126;
+
+        encoded_buff[1] = second_byte;
+        encoded_buff[2] = (message_len & 0b1111111111111111) >> 8;
+        encoded_buff[3] = (message_len & 0b0000000011111111);
+
+        message_start = 4;
+
+    }else{
+        second_byte = second_byte | 127;
+
+        encoded_buff[1] = second_byte;
+
+        unsigned long long len = (unsigned long long)message_len;
+        
+        encoded_buff[2] = (len & 0b1111111100000000000000000000000000000000000000000000000000000000) >> 56;
+        encoded_buff[3] = (len & 0b0000000011111111000000000000000000000000000000000000000000000000) >> 48;
+        encoded_buff[4] = (len & 0b0000000000000000111111110000000000000000000000000000000000000000) >> 40;
+        encoded_buff[5] = (len & 0b0000000000000000000000001111111100000000000000000000000000000000) >> 32;
+        encoded_buff[6] = (len & 0b0000000000000000000000000000000011111111000000000000000000000000) >> 24;
+        encoded_buff[7] = (len & 0b0000000000000000000000000000000000000000111111110000000000000000) >> 16;
+        encoded_buff[8] = (len & 0b0000000000000000000000000000000000000000000000001111111100000000) >> 8;
+        encoded_buff[9] = (len & 0b0000000000000000000000000000000000000000000000000000000011111111);
+
+        for(int i = 2; i < 10; i++){
+            printf("**int  %d  ** char %c\n",encoded_buff[i],encoded_buff[i]);
+        }
+
+        message_start = 10;
+        
+    }
+
+    unsigned int j = 0;
+    *encoded_buff_len = message_start;
+
+    for(int i = message_start; j < message_len; i++){
+        encoded_buff[i] = message[j];
+        j++;
+    }
+
+    *encoded_buff_len += j;
+
 }
 

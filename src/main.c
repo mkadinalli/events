@@ -13,11 +13,27 @@
 
 int main()
 {
-    map_t *m = map_create();
-    map_add(m,"key","dGhlIHNhbXBsZSBub25jZQ==");
+    /*char *message = "fffffffffffffffffffffffffffffffffffffkkkkkkkkkffjjjkffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffferend";
+     char result[1024 * 1024];
+     int len;
+     encode_message(message,strlen(message),true,true,result,&len);
 
-    char *result = createAcceptString(map_get(m,"key"));
+     int fin,opcode,mask,mstart,plen;
 
-    puts(result);
+     parse_flags(result,&fin,&opcode,&mask);
+
+     printf("fin %d opcode %d mask %d\n",fin,opcode,mask);
+
+     parse_payload_length(result,&plen,&mstart);
+
+     printf("length %d mask_start %d\n",plen,mstart);
+
+    char decoded[1024 * 1024] = {0};
+
+     parse_payload(mstart,plen,NULL,result,decoded);
+
+    for(int i = 0; i < plen; i++){
+        printf("[%d] %c\n",i ,decoded[i]);
+    }*/
     set_up_server("2000");
 }

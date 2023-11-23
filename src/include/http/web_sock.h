@@ -12,7 +12,7 @@ bool validate_WS_connection(map_t *request);
 
 char *createAcceptString(char *ws_key);
 
-int createIntFromByte(int *bytes, size_t len);
+unsigned int createIntFromByte(unsigned int *bytes, size_t len);
 
 void *get_in_addr_ws(struct sockaddr *sa);
 
@@ -29,3 +29,5 @@ void parse_payload_length(char *bytes, int *payloadLength, int *maskStart);
 void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes);
 
 void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload);
+
+void encode_message(char *message,size_t message_len,bool is_last,bool is_text,char *encoded_buff,int *enocoded_buff_len);
