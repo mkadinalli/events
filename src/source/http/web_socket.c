@@ -207,22 +207,24 @@ void parse_payload_length(char *bytes, int *payloadLength, int *maskStart)
     int mask_key_start = 2;
 
     if(payload_length == 126){
-        int b[] = { payload_length, (int) bytes[2], (int) bytes[3]};
-        payload_length = createIntFromByte(b,3);
+        int b[] = { 
+            bytes[2], 
+            bytes[3]
+         };
+        payload_length = createIntFromByte(b,2);
         mask_key_start = 4;
     }else if(payload_length == 127){
         int b[] = {
-            payload_length,
-            (int) bytes[2],
-            (int) bytes[3],
-            (int) bytes[4],
-            (int) bytes[5],
-            (int) bytes[6],
-            (int) bytes[7],
-            (int) bytes[8]
+            bytes[2],
+            bytes[3],
+            bytes[4],
+            bytes[5],
+            bytes[6],
+            bytes[7],
+            bytes[8]
         };
 
-        payload_length = createIntFromByte(b,8);
+        payload_length = createIntFromByte(b,7);
         mask_key_start = 10;
     }
 
@@ -253,7 +255,6 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
 
     for(int i = 0; i < pay_load_length; i++){
         decoded_payload[i] =  (char)encoded_payload[i] ^ mask_key[i % 4];
-        printf("[%d] %c\n",i,decoded_payload[i]);
     }
 }
 
