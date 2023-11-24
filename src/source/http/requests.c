@@ -295,6 +295,7 @@ bool write_json(struct json_object *obj, int sock)
 
 
 void write_ws_accept(int sock,map_t *http_req){
+        map_print(http_req);
             bool success = false;
             char *key = createAcceptString(map_get_ref(http_req,"sec-websocket-key"));
 

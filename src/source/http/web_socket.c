@@ -1,5 +1,12 @@
 #include "web_sock.h"
 
+struct pollfd *pfds = NULL;
+int fd_count_g = 0;
+int fd_size_g = 0;
+
+cnd_t poll_condition;
+mtx_t poll_mutex;
+
 
 bool validate_WS_connection(map_t *request)
 {
@@ -69,7 +76,9 @@ void *get_in_addr_ws(struct sockaddr *sa)
 
 void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
 {
+    puts("ADDING ONE SOCKET FD");
     // If we don't have room, add more space in the pfds array
+    mtx_lock(&poll_mutex);
     if (*fd_cnt == *fd_sz)
     {
         *fd_sz *= 2; // Double it
@@ -78,15 +87,17 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
     (*pfds)[*fd_cnt].fd = newfd;
     (*pfds)[*fd_cnt].events = POLLIN; // Check ready-to-read
     (*fd_cnt)++;
-    puts("ADDED ONE SOCKET FD");
-    printf("%d new fd is %d\n", *fd_cnt, newfd);
+    mtx_unlock(&poll_mutex);
+    cnd_signal(&poll_condition);
+    puts("ADDED ONE");
 }
 
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_cnt)
 {
-
+    mtx_lock(&poll_mutex);
     pfds[i] = pfds[*fd_cnt - 1];
     (*fd_cnt)--;
+    mtx_unlock(&poll_mutex);
 }
 
 int startChartSystem(void *v)
@@ -96,21 +107,39 @@ int startChartSystem(void *v)
     {
     }
 
+    cnd_init(&poll_condition);
+    mtx_init(&poll_mutex,0);
+
     char buf[BUFFER_SIZE];
 
     fd_count_g = 0;
     fd_size_g = 5;
     pfds = malloc(sizeof *pfds * fd_size_g);
 
+    //pfds[0].fd = server_fd;
+    //pfds[0].events = POLLIN;
+
+    //fd_count_g = 1;
+
+
     puts("ACCEPTING CONNECTIONS");
     for (;;)
     {
-        int poll_count = poll(pfds, fd_count_g, -1);
+        mtx_lock(&poll_mutex);
+        while(fd_count_g == 0)
+            cnd_wait(&poll_condition,&poll_mutex);
+        
+        mtx_unlock(&poll_mutex);
+
+        int poll_count = poll(pfds, fd_count_g, 1000);
+
         if (poll_count == -1)
         {
             perror("poll");
             exit(1);
         }
+
+        puts("POLLING");
 
         for (int i = 0; i < fd_count_g; i++)
         {

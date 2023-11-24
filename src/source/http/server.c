@@ -11,9 +11,7 @@ conn_pool *cpool = NULL;
 int server_fd = -1;
 SSL_CTX *server_accept_ctx = NULL;
 
-struct pollfd *pfds = NULL;
-int fd_count_g = 0;
-int fd_size_g = 0;
+
 
 void signal_handler(int sig)
 {
@@ -340,6 +338,7 @@ bool set_up_server(char *PORT)
     if ((status = bind(server_fd, p->ai_addr, p->ai_addrlen)) < 0)
     {
         perror("bind");
+        exit(1);
     }
 
     if ((status = listen(server_fd, BACKLOG)) < 0)
