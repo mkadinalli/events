@@ -1,6 +1,4 @@
-#include "../../include/http/requests.h"
-#include <string.h>
-#include <stdlib.h>
+#include "http.h"
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -293,4 +291,33 @@ bool write_json(struct json_object *obj, int sock)
         return false;
     }
     return true;
+}
+
+
+void write_ws_accept(int sock,map_t *http_req){
+            bool success = false;
+            char *key = createAcceptString(map_get_ref(http_req,"sec-websocket-key"));
+
+            response_builder *rs = response_builder_create();
+            response_builder_set_code(rs, "101");
+            response_builder_set_status_name(rs, "Switching Protocols");
+            response_builder_set_header(rs,"Connection","Upgrade");
+            response_builder_set_header(rs,"Upgrade","websocket");
+
+            response_builder_set_header(rs,"Sec-WebSocket-Accept",key);
+
+            char *resp = response_builder_to_string(rs);
+            if(resp)
+            {
+                if(send(sock,resp,strlen(resp),0) > 0){
+
+                    add_to_pfds(&pfds,sock,&fd_count_g,&fd_size_g);
+                    success = true;
+                }
+            }
+            
+            free(resp);
+            response_builder_free(rs);
+
+            if(!success) close(sock);
 }

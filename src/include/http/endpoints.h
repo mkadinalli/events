@@ -34,3 +34,5 @@ void method_post(int sock, char *url, char *json);
 void method_delete(int sock, char *url);
 
 void method_post_file(int sock,char *url,char *content_type,int content_length);
+
+void method_get_ws(int sock,map_t *req);

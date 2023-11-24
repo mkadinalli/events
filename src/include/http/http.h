@@ -7,3 +7,4 @@
 #include "server.h"
 #include "url_parser.h"
 #include "web_sock.h"
+#include "res_builder.h"

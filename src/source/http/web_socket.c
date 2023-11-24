@@ -1,8 +1,5 @@
 #include "web_sock.h"
 
-// struct pollfd *pfds = NULL;
-// int fd_count = 0;
-// int fd_size = 0;
 
 bool validate_WS_connection(map_t *request)
 {

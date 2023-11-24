@@ -204,7 +204,13 @@ int handle_request(void *args)
     switch (req_method)
     {
     case GET:
-        method_get(ssl, map_get_ref(http_req, "url"));
+            if (starts_with_word("/websock", map_get(http_req,"url")))
+            {
+                method_get_ws(ssl,http_req);
+            }else{
+
+                method_get(ssl, map_get_ref(http_req, "url"));
+            }
         break;
     case POST:
         if(file_type == JSON){
@@ -354,34 +360,3 @@ bool set_up_server(char *PORT)
 
     return true;
 }
-
-/*
-
-            map_print(http_req);
-
-            char *key = createAcceptString(map_get(http_req,"sec-websocket-key"));
-            if(strcmp(map_get(http_req,"sec-websocket-key"),"dghlihnhbxbszs6ub25jzq==")){
-                puts("==== failde to match===========");
-            }else{
-                puts("+++++++matched+++++++++");
-            }
-            response_builder *rs = response_builder_create();
-            response_builder_set_code(rs, "101");
-            response_builder_set_status_name(rs, "Switching Protocols");
-            response_builder_set_header(rs,"Connection","Upgrade");
-            response_builder_set_header(rs,"Upgrade","websocket");
-            //response_builder_set_header(rs,"sec-websocket-extensions","permessage-deflate");
-            response_builder_set_header(rs,"Sec-WebSocket-Accept",key);
-
-            char *resp = response_builder_to_string(rs);
-            puts("==================================================");
-            if(resp) puts(resp);
-            puts("===================================================");
-
-            send(ssl,resp,strlen(resp),0);
-
-            //add_to_pfds(&pfds,SSL_get_fd(ssl),&fd_count_g,&fd_size_g);
-            break;
-            //close(SSL_get_fd(ssl));
-
-*/

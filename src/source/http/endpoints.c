@@ -1,4 +1,14 @@
 #include "endpoints.h"
+#include "http.h"
+
+void method_get_ws(int sock,map_t *req){
+    if(!validate_WS_connection(req)){
+        close(sock);
+        return;
+    }
+
+    write_ws_accept(sock,req);
+}
 
 void method_get(int sock, char *url)
 {
@@ -6,6 +16,13 @@ void method_get(int sock, char *url)
     {
         upload_file("file", "image/jpeg", sock);
         close(sock);
+        return;
+    }
+
+
+    if (starts_with_word("/websock", url))
+    {
+        upload_file("file", "image/jpeg", sock);
         return;
     }
 
