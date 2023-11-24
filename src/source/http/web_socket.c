@@ -6,6 +6,7 @@ int fd_size_g = 0;
 
 cnd_t poll_condition;
 mtx_t poll_mutex;
+bool keep_chat_alive = true;
 
 
 bool validate_WS_connection(map_t *request)
@@ -76,8 +77,6 @@ void *get_in_addr_ws(struct sockaddr *sa)
 
 void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
 {
-    puts("ADDING ONE SOCKET FD");
-    // If we don't have room, add more space in the pfds array
     mtx_lock(&poll_mutex);
     if (*fd_cnt == *fd_sz)
     {
@@ -89,7 +88,6 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
     (*fd_cnt)++;
     mtx_unlock(&poll_mutex);
     cnd_signal(&poll_condition);
-    puts("ADDED ONE");
 }
 
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_cnt)
@@ -115,6 +113,7 @@ int startChartSystem(void *v)
     fd_count_g = 0;
     fd_size_g = 5;
     pfds = malloc(sizeof *pfds * fd_size_g);
+    keep_chat_alive = true;
 
     //pfds[0].fd = server_fd;
     //pfds[0].events = POLLIN;
@@ -123,7 +122,7 @@ int startChartSystem(void *v)
 
 
     puts("ACCEPTING CONNECTIONS");
-    for (;;)
+    while (keep_chat_alive)
     {
         mtx_lock(&poll_mutex);
         while(fd_count_g == 0)
@@ -131,7 +130,9 @@ int startChartSystem(void *v)
         
         mtx_unlock(&poll_mutex);
 
-        int poll_count = poll(pfds, fd_count_g, 1000);
+        if(!keep_chat_alive) break;
+
+        int poll_count = poll(pfds, fd_count_g, -1);
 
         if (poll_count == -1)
         {
@@ -227,6 +228,8 @@ int startChartSystem(void *v)
             }
         }
     }
+    puts("Chat destroyed");
+    return 0;
 }
 
 /**

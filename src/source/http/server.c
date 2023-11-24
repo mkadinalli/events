@@ -21,21 +21,28 @@ void signal_handler(int sig)
 
 void clean_up()
 {
-    if (socketfd > 0)
+    keep_chat_alive = false;
+    fd_count_g = 1;
+    cnd_signal(&poll_condition);
+
+    if (server_fd > 0)
     {
-        close(socketfd);
+        close(server_fd);
     }
+
     if (thread_pool != NULL)
         tpool_destroy(thread_pool);
+    
+    if(cpool != NULL)
+        cpool_destroy(cpool);
 
-    puts("\n===Server is off rn===\n");
+    mtx_destroy(&(poll_mutex));
+    cnd_destroy(&(poll_condition));
     exit(1);
 }
 
 int handle_request(void *args)
 {
-    puts("#########################################################");
-
     int *ss = (int *)(args);
     int ssl = *ss;
 
@@ -351,6 +358,9 @@ bool set_up_server(char *PORT)
     tpool_add_work(thread_pool, startChartSystem, NULL);
 
     cpool = create_conn_pool(5);
+
+    signal(20,signal_handler);
+    signal(2,signal_handler);
 
     accept_connections(server_fd);
 
