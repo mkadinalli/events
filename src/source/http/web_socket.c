@@ -8,7 +8,6 @@ cnd_t poll_condition;
 mtx_t poll_mutex;
 bool keep_chat_alive = true;
 
-
 bool validate_WS_connection(map_t *request)
 {
     if (request == NULL)
@@ -44,8 +43,6 @@ char *createAcceptString(char *input)
     string_destroy(conc);
     free(sha_output);
 
-    // puts(x_64ret);
-
     return (char *)x_64ret;
 }
 
@@ -80,11 +77,11 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
     mtx_lock(&poll_mutex);
     if (*fd_cnt == *fd_sz)
     {
-        *fd_sz *= 2; // Double it
+        *fd_sz *= 2; 
         *pfds = realloc(*pfds, sizeof(**pfds) * (*fd_sz));
     }
     (*pfds)[*fd_cnt].fd = newfd;
-    (*pfds)[*fd_cnt].events = POLLIN; // Check ready-to-read
+    (*pfds)[*fd_cnt].events = POLLIN;
     (*fd_cnt)++;
     mtx_unlock(&poll_mutex);
     cnd_signal(&poll_condition);
@@ -106,7 +103,7 @@ int startChartSystem(void *v)
     }
 
     cnd_init(&poll_condition);
-    mtx_init(&poll_mutex,0);
+    mtx_init(&poll_mutex, 0);
 
     char buf[BUFFER_SIZE];
 
@@ -115,22 +112,19 @@ int startChartSystem(void *v)
     pfds = malloc(sizeof *pfds * fd_size_g);
     keep_chat_alive = true;
 
-    //pfds[0].fd = server_fd;
-    //pfds[0].events = POLLIN;
-
-    //fd_count_g = 1;
-
-
-    puts("ACCEPTING CONNECTIONS");
     while (keep_chat_alive)
     {
-        mtx_lock(&poll_mutex);
-        while(fd_count_g == 0)
-            cnd_wait(&poll_condition,&poll_mutex);
-        
-        mtx_unlock(&poll_mutex);
+        if (fd_count_g == 0)
+        {
+            mtx_lock(&poll_mutex);
+            while (fd_count_g == 0)
+                cnd_wait(&poll_condition, &poll_mutex);
 
-        if(!keep_chat_alive) break;
+            mtx_unlock(&poll_mutex);
+        }
+
+        if (!keep_chat_alive)
+            break;
 
         int poll_count = poll(pfds, fd_count_g, -1);
 
@@ -140,15 +134,12 @@ int startChartSystem(void *v)
             exit(1);
         }
 
-        puts("POLLING");
-
         for (int i = 0; i < fd_count_g; i++)
         {
             if (pfds[i].revents & POLLIN)
             {
                 int sender_fd = pfds[i].fd;
                 int nbytes = recv(sender_fd, buf, sizeof buf, 0);
-
 
                 if (nbytes <= 0)
                 {
@@ -278,8 +269,6 @@ void parse_payload_length(char *bytes, int *payloadLength, int *maskStart)
             (unsigned char)bytes[3]};
         payload_length = createIntFromByte(b, 2);
         mask_key_start = 4;
-        puts("*********************************************************************************");
-        printf("llllllllllllll -> %d\n", payload_length);
     }
     else if (payload_length == 127)
     {
