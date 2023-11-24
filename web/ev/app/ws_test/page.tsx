@@ -25,6 +25,10 @@ export default function Ws(){
         }
       });
 
+      conn.addEventListener("message", (e)=>{
+        console.log(e.data);
+      })
+
       if (conn.readyState === WebSocket.CONNECTING) {
         console.log('WebSocket is connecting.');
       } else if (conn.readyState === WebSocket.OPEN) {

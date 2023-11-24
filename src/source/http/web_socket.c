@@ -259,7 +259,7 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
         
         int j = 0;
         for(int i = payload_start; j < pay_load_length; i++){
-            decoded_payload[j] =  (char)bytes[i];
+            decoded_payload[j] =  (unsigned char)bytes[i];
             j++;
         }
         return;
@@ -267,12 +267,12 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
 
 
     for(int i = payload_start; i < pay_load_length; i++){
-        decoded_payload[i] =  (char)bytes[i] ^ mask_key[i % 4];
+        decoded_payload[i] =  (unsigned char)bytes[i] ^ mask_key[i % 4];
     }
 }
 
 
-void encode_message(char *message,size_t message_len,bool is_last,bool is_text,char *encoded_buff,int *encoded_buff_len)
+void encode_message(char *message,size_t message_len,bool is_last,unsigned int opcode,char *encoded_buff,int *encoded_buff_len)
 {
     int first_byte = 0b00000000;
     int second_byte = 0b00000000;
@@ -281,9 +281,7 @@ void encode_message(char *message,size_t message_len,bool is_last,bool is_text,c
         first_byte = first_byte | 0b10000000;
     }
 
-    if(is_text){
-        first_byte = first_byte | 0b00000001;
-    }
+    first_byte = first_byte | opcode;
 
     encoded_buff[0] = first_byte;
 
@@ -329,7 +327,7 @@ void encode_message(char *message,size_t message_len,bool is_last,bool is_text,c
         encoded_buff[6] = (len & 0b0000000000000000000000000000000011111111000000000000000000000000) >> 24;
         encoded_buff[7] = (len & 0b0000000000000000000000000000000000000000111111110000000000000000) >> 16;
         encoded_buff[8] = (len & 0b0000000000000000000000000000000000000000000000001111111100000000) >> 8;
-        encoded_buff[9] = (len & 0b0000000000000000000000000000000000000000000000000000000011111111);
+        encoded_buff[9] = (len & 0b0000000000000000000000000000000000000000000000000000000011111111); 
 
         for(int i = 2; i < 10; i++){
             printf("**int  %d  ** char %c\n",encoded_buff[i],encoded_buff[i]);
@@ -349,5 +347,91 @@ void encode_message(char *message,size_t message_len,bool is_last,bool is_text,c
 
     *encoded_buff_len += j;
 
+}
+
+void send_close_frame(char *client_close_message,int sockfd,int pos){
+    
+
+    int plen,mask_st;
+    parse_payload_length(client_close_message,&plen,&mask_st);
+
+    char key[5] = {0};
+
+    parse_masking_key(1/*always 1 from client*/,mask_st,client_close_message,key);
+
+    printf("length %d mask_start %d\n",plen,mask_st);
+
+    char message[BUFFER_SIZE] = { 0 };
+    parse_payload(mask_st,plen,key,client_close_message,message);
+
+    //int status_code = 0; later use
+    size_t response_size = 0;
+    char response[10] = {0};
+
+    if(plen > 1){
+       /** unsigned int status[2] = {
+          *  (unsigned char) message[0],
+           * (unsigned char) message[1]
+            *};
+        */
+        //status_code = createIntFromByte(status,2);
+
+        response[0] = message[0];
+        response[1] = message[1];
+        response_size = 2;
+    }
+
+    char close_frame[BUFFER_SIZE] = {0};
+    int close_frame_size;
+
+    encode_message(response,response_size,true,8,close_frame,&close_frame_size);
+
+    if(send(sockfd,close_frame,close_frame_size,0) > 0)
+    {
+        puts("Sent successfully");
+    }
+
+    del_from_pfds(pfds,pos,&fd_count_g);
+    char fake_buff[10];
+    int fake_recv;
+
+    shutdown(sockfd,SHUT_WR);
+
+    while((fake_recv = recv(sockfd,fake_buff,10,0)) != 0){}
+
+    close(sockfd);
+
+
+    printf("Decoded message is %s\n",message);
+}
+
+
+void send_pong_frame(char *client_ping_message,int sockfd){
+        
+
+    int plen = 0,mask_st;
+    parse_payload_length(client_ping_message,&plen,&mask_st);
+
+    char key[5] = {0};
+
+    parse_masking_key(1/*always 1 from client*/,mask_st,client_ping_message,key);
+
+    printf("length %d mask_start %d\n",plen,mask_st);
+
+    char message[BUFFER_SIZE] = { 0 };
+    parse_payload(mask_st,plen,key,client_ping_message,message);
+
+    char pong_frame[BUFFER_SIZE] = {0};
+    int pong_frame_size;
+
+    encode_message(message,plen,true,8,pong_frame,&pong_frame_size);
+
+    if(send(sockfd,pong_frame,pong_frame_size,0) > 0)
+    {
+        puts("Sent successfully");
+    }
+
+
+    printf("Decoded message is %s\n",message);
 }
 

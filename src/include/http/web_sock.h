@@ -7,6 +7,7 @@ extern int fd_count_g;
 extern int fd_size_g;
 
 #define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+#define BUFFER_SIZE 1024 * 1024
 
 bool validate_WS_connection(map_t *request);
 
@@ -30,4 +31,10 @@ void parse_masking_key(int mask,int mask_start,char *bytes,char *mask_bytes);
 
 void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,char *decoded_payload);
 
-void encode_message(char *message,size_t message_len,bool is_last,bool is_text,char *encoded_buff,int *enocoded_buff_len);
+void encode_message(char *message,size_t message_len,bool is_last,unsigned int opcode,char *encoded_buff,int *enocoded_buff_len);
+
+void send_close_frame(char *client_close_message,int sockfd,int pos);
+
+void send_ping_frame(int sockfd);
+
+void send_pong_frame(char *client_client_ping,int sockfd);

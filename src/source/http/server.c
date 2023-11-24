@@ -4,7 +4,7 @@
 #include "web_sock.h"
 #include "res_builder.h"
 
-#define BUFFER_SIZE 1024 * 1024
+
 
 int socketfd = 0;
 
@@ -440,20 +440,51 @@ void accept_connections(int socketfd)
                     else
                     {
                         //puts(buf);
-                        int opcode,fin,mask,plen,mask_st;
+                        int opcode,fin,/*whether set*/mask,plen,mask_st;
+
                         parse_flags(buf,&fin,&opcode,&mask);
+
+                        switch (opcode)
+                        {
+                        case 0x8:
+                            puts("Close frame received--------------------------");
+                            send_close_frame(buf,sender_fd,i);
+                            continue;
+                            break;
+
+                        case 0x9:
+                            puts("ping frame received-----------------");
+                            send_pong_frame(buf,sender_fd);
+                            continue;
+                            break;
+
+                        case 0xA:
+                            continue;
+                            break;
+                        
+                        default:
+                            puts("normal frame received-----------------------");
+                            break;
+                        }
+
                         parse_payload_length(buf,&plen,&mask_st);
+
                         char key[5] = {0};
+
                         parse_masking_key(mask,mask_st,buf,key);
+
                         printf("mask %d fin %d opcode %d length %d mask_start %d\n", mask,fin,opcode,plen,mask_st);
+
                         char message[BUFFER_SIZE] = { 0 };
+
                         parse_payload(mask_st,plen,key,buf,message);
+
                         printf("Decoded message is %s\n",message);
-                        // We got some good data from a client
+                        
 
                         char response[BUFFER_SIZE] = {0};
                         int res_len;
-                        encode_message("Hello toobbbbbbbbbbbbbbbbbbbbbbbbbbbbereererererbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",267,true,true,response,&res_len);
+                        encode_message("Hello toobbbbbbbbbbbbbbbbbbbbbbbbbbbbereererererbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwf",267,true,1,response,&res_len);
                         printf("||||||||Response length is %d",res_len);
 
                         for (int j = 0; j < fd_count_g; j++)
