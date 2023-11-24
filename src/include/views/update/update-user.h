@@ -6,4 +6,4 @@
 #include "../../da/users-da.h"
 
 
-void update_user(SSL *sock,char *json_load);
+void update_user(int sock,char *json_load);

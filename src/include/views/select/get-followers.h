@@ -7,5 +7,5 @@
 #include <string.h>
 
 
-void get_followers_for_user(SSL *sock,char *url);
-void get_followed_by_user(SSL *sock,char *url);
+void get_followers_for_user(int sock,char *url);
+void get_followed_by_user(int sock,char *url);

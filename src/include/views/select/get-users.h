@@ -8,6 +8,6 @@
 
 #include <string.h>
 
-void login(char *url, SSL *sock);
-void get_one_user(SSL *sock,char *url);
+void login(char *url, int sock);
+void get_one_user(int sock,char *url);
 

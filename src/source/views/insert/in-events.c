@@ -1,6 +1,6 @@
 #include "../../../include/views/insert/in-events.h"
 
-void add_event(SSL *sock, char *json_load)
+void add_event(int sock, char *json_load)
 {
 
     // write_404(sock);

@@ -1,7 +1,7 @@
 #include "../../../include/views/select/get-followers.h"
 #include "../../../include/lib/urls.h"
 
-void get_followers_for_user(SSL *sock,char *url)
+void get_followers_for_user(int sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
     char * last_time_ = get_param_from_url(url,"last_time");
@@ -31,7 +31,7 @@ void get_followers_for_user(SSL *sock,char *url)
     free(last_time);
 }
 
-void get_followed_by_user(SSL *sock,char *url)
+void get_followed_by_user(int sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
     char * last_time_ = get_param_from_url(url,"last_time");

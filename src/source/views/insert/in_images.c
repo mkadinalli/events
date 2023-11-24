@@ -1,6 +1,6 @@
 #include <in_images.h>
 
-void insert_user_image(SSL *sock,char *url,char *filename)
+void insert_user_image(int sock,char *url,char *filename)
 {
     char * user_id = get_param_from_url(url,"id");
 
@@ -18,7 +18,7 @@ void insert_user_image(SSL *sock,char *url,char *filename)
 }
 
 
-void insert_pub_image(SSL *sock,char *url,char *filename)
+void insert_pub_image(int sock,char *url,char *filename)
 {
     char * user_id = get_param_from_url(url,"id");
 

@@ -50,6 +50,18 @@ export default function Ws(){
       console.log("message sending failed");
     }
 
+    const closeConn = () =>{
+      if(conn){
+        conn.close();
+      }
+      console.log("closed connection");
+    }
+
+
+    const pingConn = () =>{
+      if(conn){
+      }
+    }
     
     return (
         <html>
@@ -58,7 +70,9 @@ export default function Ws(){
                 <button onClick={(e)=>{
                     createConnection();
                 }}>Create Connection</button>
-                <button>Connect</button>
+                <button onClick={(e)=>{
+                  closeConn();
+                }}>Close</button>
                 <input type="text"></input>
                 <button onClick={(e)=>{sendData()}}>Send</button>
             </body>

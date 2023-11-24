@@ -25,12 +25,12 @@
 
 #include "in_images.h"
 
-void method_get(SSL *sock, char *url);
+void method_get(int sock, char *url);
 
-void method_put(SSL *sock, char *url, char *json);
+void method_put(int sock, char *url, char *json);
 
-void method_post(SSL *sock, char *url, char *json);
+void method_post(int sock, char *url, char *json);
 
-void method_delete(SSL *sock, char *url);
+void method_delete(int sock, char *url);
 
-void method_post_file(SSL *sock,char *url,char *filename);
+void method_post_file(int sock,char *url,char *content_type,int content_length);

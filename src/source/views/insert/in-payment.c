@@ -2,7 +2,7 @@
 #include "in-payment.h"
 #include "mpesa.h"
 
-void add_payment(SSL *sock, char *json_load)
+void add_payment(int sock, char *json_load)
 {
 
     // write_404(sock);
@@ -62,7 +62,7 @@ void add_payment(SSL *sock, char *json_load)
 }
 
 
-void process_payment(SSL *sock, char *json_load)
+void process_payment(int sock, char *json_load)
 {
     json_object * res = json_tokener_parse(json_load);
     json_object *res_body,*callback_data,*res_code,*m_id,*c_id, *t_id;

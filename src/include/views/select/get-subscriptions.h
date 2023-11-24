@@ -11,7 +11,7 @@
  * @param url url containing id and last fetched time as parameters
 * @brief returns first 20 users that have starred the event later than last fetched time
 */
-void get_subs_for_publish(SSL *sock,char *url);
+void get_subs_for_publish(int sock,char *url);
 
 
-void get_subs_by_user(SSL *sock,char *url);
+void get_subs_by_user(int sock,char *url);

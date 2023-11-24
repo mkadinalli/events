@@ -11,12 +11,12 @@
 #include "urls.h"
 #include <string.h>
 
-void delete_user(SSL *sock,char *url);
+void delete_user(int sock,char *url);
 
-void delete_star(SSL *sock, char *url);
+void delete_star(int sock, char *url);
 
-void delete_event(SSL *sock, char *url);
+void delete_event(int sock, char *url);
 
-void delete_follower(SSL *sock, char *url);
+void delete_follower(int sock, char *url);
 
-void delete_subscription(SSL *sock, char *url);
+void delete_subscription(int sock, char *url);

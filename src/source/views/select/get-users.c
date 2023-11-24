@@ -3,7 +3,7 @@
 #include "../../../include/da/db.h"
 
 
-void login(char *url, SSL *sock)
+void login(char *url, int sock)
 {
     char *password = get_param_from_url(url,"password");
     char * emailOrUsername = get_param_from_url(url,"id");
@@ -30,7 +30,7 @@ void login(char *url, SSL *sock)
 }
 
 
-void get_one_user(SSL *sock,char *url)
+void get_one_user(int sock,char *url)
 {
     char * id = get_param_from_url(url,"id");
 
