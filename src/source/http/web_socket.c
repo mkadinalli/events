@@ -255,19 +255,23 @@ void parse_payload(int maskstart,int pay_load_length,char *mask_key,char *bytes,
     
 
     if( mask_key == NULL ){
+        puts("MASK IS NULL............................");
         payload_start = maskstart;
         
         int j = 0;
         for(int i = payload_start; j < pay_load_length; i++){
             decoded_payload[j] =  (unsigned char)bytes[i];
+            printf("[%d] %c\n",j,decoded_payload[j]);
             j++;
         }
         return;
     }
 
-
-    for(int i = payload_start; i < pay_load_length; i++){
-        decoded_payload[i] =  (unsigned char)bytes[i] ^ mask_key[i % 4];
+    int j = 0;
+    for(int i = payload_start; j < pay_load_length; i++){
+        decoded_payload[j] =  (char)bytes[i] ^ mask_key[j % 4];
+        printf("[%d] %c\n",j,decoded_payload[j]);
+        j++;
     }
 }
 
