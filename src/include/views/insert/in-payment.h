@@ -10,6 +10,6 @@
 
 
 
-void add_payment(SSL *sock, char *json_load);
+void add_payment(int sock, char *json_load);
 
-void process_payment(SSL *sock, char *json_load);
+void process_payment(int sock, char *json_load);

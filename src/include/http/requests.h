@@ -52,4 +52,5 @@ bool write_404(int sock);
 bool write_BAD(int sock);
 bool write_OK(int sock, char *mime);
 bool write_json(struct json_object *obj, int sock);
+void write_ws_accept(int sock,map_t *req);
 

@@ -1,6 +1,6 @@
 #include "../../../include/views/update/update-event.h"
 
-void update_event(SSL *sock,char *json_load)
+void update_event(int sock,char *json_load)
 {
     json_object *jobj = json_tokener_parse(json_load);
     json_object *title, *description, *venue, *event_date, *deadline_date, *publisher_id,*id;
