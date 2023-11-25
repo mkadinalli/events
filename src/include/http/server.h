@@ -22,6 +22,7 @@
 #include "../../include/data-structures/ev_string.h"
 #include "../../include/http/requests.h"
 #include "../da/db.h"
+#include "s_message.h"
 
 
 #define IPV_4 0
@@ -73,3 +74,4 @@ void clean_up();
 
 extern int server_fd;
 extern SSL_CTX *server_accept_ctx;
+extern messge *message_queue;

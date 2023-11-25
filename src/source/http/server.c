@@ -10,6 +10,7 @@ tpool_t *thread_pool = NULL;
 conn_pool *cpool = NULL;
 int server_fd = -1;
 SSL_CTX *server_accept_ctx = NULL;
+messge *message_queue;
 
 
 
@@ -358,6 +359,8 @@ bool set_up_server(char *PORT)
     tpool_add_work(thread_pool, startChartSystem, NULL);
 
     cpool = create_conn_pool(5);
+
+    message_queue = message_create();
 
     signal(20,signal_handler);
     signal(2,signal_handler);

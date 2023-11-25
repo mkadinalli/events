@@ -7,7 +7,7 @@ int fd_size_g = 0;
 cnd_t poll_condition;
 mtx_t poll_mutex;
 bool keep_chat_alive = true;
-
+list_t *pfd_ids;
 
 bool validate_WS_connection(map_t *request)
 {
@@ -44,8 +44,6 @@ char *createAcceptString(char *input)
     string_destroy(conc);
     free(sha_output);
 
-    // puts(x_64ret);
-
     return (char *)x_64ret;
 }
 
@@ -80,11 +78,11 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_cnt, int *fd_sz)
     mtx_lock(&poll_mutex);
     if (*fd_cnt == *fd_sz)
     {
-        *fd_sz *= 2; // Double it
+        *fd_sz *= 2; 
         *pfds = realloc(*pfds, sizeof(**pfds) * (*fd_sz));
     }
     (*pfds)[*fd_cnt].fd = newfd;
-    (*pfds)[*fd_cnt].events = POLLIN; // Check ready-to-read
+    (*pfds)[*fd_cnt].events = POLLIN;
     (*fd_cnt)++;
     mtx_unlock(&poll_mutex);
     cnd_signal(&poll_condition);
@@ -106,7 +104,7 @@ int startChartSystem(void *v)
     }
 
     cnd_init(&poll_condition);
-    mtx_init(&poll_mutex,0);
+    mtx_init(&poll_mutex, 0);
 
     char buf[BUFFER_SIZE];
 
@@ -115,22 +113,19 @@ int startChartSystem(void *v)
     pfds = malloc(sizeof *pfds * fd_size_g);
     keep_chat_alive = true;
 
-    //pfds[0].fd = server_fd;
-    //pfds[0].events = POLLIN;
-
-    //fd_count_g = 1;
-
-
-    puts("ACCEPTING CONNECTIONS");
     while (keep_chat_alive)
     {
-        mtx_lock(&poll_mutex);
-        while(fd_count_g == 0)
-            cnd_wait(&poll_condition,&poll_mutex);
-        
-        mtx_unlock(&poll_mutex);
+        if (fd_count_g == 0)
+        {
+            mtx_lock(&poll_mutex);
+            while (fd_count_g == 0)
+                cnd_wait(&poll_condition, &poll_mutex);
 
-        if(!keep_chat_alive) break;
+            mtx_unlock(&poll_mutex);
+        }
+
+        if (!keep_chat_alive)
+            break;
 
         int poll_count = poll(pfds, fd_count_g, -1);
 
@@ -140,15 +135,12 @@ int startChartSystem(void *v)
             exit(1);
         }
 
-        puts("POLLING");
-
         for (int i = 0; i < fd_count_g; i++)
         {
             if (pfds[i].revents & POLLIN)
             {
                 int sender_fd = pfds[i].fd;
                 int nbytes = recv(sender_fd, buf, sizeof buf, 0);
-
 
                 if (nbytes <= 0)
                 {
@@ -213,17 +205,19 @@ int startChartSystem(void *v)
                     encode_message("Hello", 5, true, 1, response, &res_len);
                     printf("||||||||Response length is %d", res_len);
 
-                    for (int j = 0; j < fd_count_g; j++)
+                    //parse json -> asign id to fd map.
+
+                    /*for (int j = 0; j < fd_count_g; j++)
                     {
                         int dest_fd = pfds[j].fd;
-                        if (dest_fd != server_fd /*&& dest_fd != sender_fd*/)
+                        if (dest_fd != server_fd /*&& dest_fd != sender_fd)
                         {
                             if (send(dest_fd, response, res_len, 0) == -1)
                             {
                                 perror("send");
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -278,8 +272,6 @@ void parse_payload_length(char *bytes, int *payloadLength, int *maskStart)
             (unsigned char)bytes[3]};
         payload_length = createIntFromByte(b, 2);
         mask_key_start = 4;
-        puts("*********************************************************************************");
-        printf("llllllllllllll -> %d\n", payload_length);
     }
     else if (payload_length == 127)
     {
@@ -411,7 +403,7 @@ void send_close_frame(char *client_close_message, int sockfd, int pos)
 
     char key[5] = {0};
 
-    parse_masking_key(1 /*always 1 from client*/, mask_st, client_close_message, key);
+    parse_masking_key(1 /*always 1 from client*/, mask_st, client_close_message, key); 
 
     char message[BUFFER_SIZE] = {0};
     parse_payload(mask_st, plen, key, client_close_message, message);
