@@ -3,3 +3,4 @@
 #include "list.h"
 #include "map.h"
 #include "result_bind.h"
+#include "s_message.h"

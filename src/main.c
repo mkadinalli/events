@@ -6,6 +6,7 @@
 #include "mpesa.h"
 #include "web_sock.h"
 #include "res_builder.h"
+#include "data_structures.h"
 
 #define BUFFLEN 4096
 
@@ -13,27 +14,34 @@
 
 int main()
 {
-    /*char *message = "fffffffffffffffffffffffffffffffffffffkkkkkkkkkffjjjkffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffferend";
-     char result[1024 * 1024];
-     int len;
-     encode_message(message,strlen(message),true,true,result,&len);
 
-     int fin,opcode,mask,mstart,plen;
+   // set_up_server("2000");
 
-     parse_flags(result,&fin,&opcode,&mask);
+   messge *a = message_create();
 
-     printf("fin %d opcode %d mask %d\n",fin,opcode,mask);
+   list_t *l = list_create();
+   list_pushback(l,"hello");
 
-     parse_payload_length(result,&plen,&mstart);
+    list_t *r = list_create();
+   list_pushback(r,"hello 2");
 
-     printf("length %d mask_start %d\n",plen,mstart);
+    list_t *o = list_create();
+   list_pushback(o,"hello 3");
 
-    char decoded[1024 * 1024] = {0};
+   message_push_back(a,"my message",l);
+   message_push_back(a,"Another message",r);
+   message_push_back(a,"Another message ofcourse",o);
 
-     parse_payload(mstart,plen,NULL,result,decoded);
+   message_pop_front(&a);
+   message_pop_front(&a);
 
-    for(int i = 0; i < plen; i++){
-        printf("[%d] %c\n",i ,decoded[i]);
-    }*/
-    set_up_server("2000");
+   //message_destroy(a);
+
+
+   if(a->receivers != NULL){
+        list_print(a->receivers);
+   }
+
+
+   //puts(a->message);
 }
