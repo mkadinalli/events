@@ -1,4 +1,5 @@
 #include "s_message.h"
+#include "http.h"
 
 mtx_t message_mutex;
 cnd_t message_condition;
@@ -15,8 +16,6 @@ messge *message_create(){
 }
 
 bool message_push_back(messge *msg,char *msge, list_t *recs){
-
-
     if(!msg){
         return false;
     }
@@ -43,6 +42,7 @@ bool message_push_back(messge *msg,char *msge, list_t *recs){
     tmp->nxt = tmp2;
 
     mtx_unlock(&message_mutex);
+    cnd_signal(&message_condition);
     return true;
 }
 
@@ -88,4 +88,22 @@ void message_destroy(messge *msg){
         msg = tmp;
     }
     mtx_unlock(&message_mutex);
+}
+
+int start_queue(messge *msg){
+    if(msg == NULL){
+        exit(1);
+    }
+
+    while(1){
+        mtx_lock(&message_mutex);
+        while(!messages_is_empty(msg))
+            cnd_wait(&message_condition,&message_mutex);
+        
+        for(int i = 0; i < fd_count_g; i++){
+            send(pfds[i].fd,msg->message,strlen(msg->message),0);
+            
+            message_pop_front(msg);
+        }
+    }
 }

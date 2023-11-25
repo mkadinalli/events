@@ -400,7 +400,7 @@ void send_close_frame(char *client_close_message, int sockfd, int pos)
 
     char key[5] = {0};
 
-    parse_masking_key(1 /*always 1 from client*/, mask_st, client_close_message, key);
+    parse_masking_key(1 /*always 1 from client*/, mask_st, client_close_message, key); 
 
     char message[BUFFER_SIZE] = {0};
     parse_payload(mask_st, plen, key, client_close_message, message);
