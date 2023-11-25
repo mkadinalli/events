@@ -23,4 +23,4 @@ bool message_pop_front(messge **msg);
 
 bool messages_is_empty(messge *msg);
 
-int start_queue(messge *msg);
+int start_queue(void *arg);

@@ -90,7 +90,8 @@ void message_destroy(messge *msg){
     mtx_unlock(&message_mutex);
 }
 
-int start_queue(messge *msg){
+int start_queue(void *arg){
+    messge *msg = (messge *)arg;
     if(msg == NULL){
         exit(1);
     }
@@ -102,7 +103,7 @@ int start_queue(messge *msg){
         
         for(int i = 0; i < fd_count_g; i++){
             send(pfds[i].fd,msg->message,strlen(msg->message),0);
-            
+
             message_pop_front(msg);
         }
     }

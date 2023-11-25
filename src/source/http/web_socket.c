@@ -7,6 +7,7 @@ int fd_size_g = 0;
 cnd_t poll_condition;
 mtx_t poll_mutex;
 bool keep_chat_alive = true;
+list_t *pfd_ids;
 
 bool validate_WS_connection(map_t *request)
 {
@@ -204,17 +205,19 @@ int startChartSystem(void *v)
                     encode_message("Hello", 5, true, 1, response, &res_len);
                     printf("||||||||Response length is %d", res_len);
 
-                    for (int j = 0; j < fd_count_g; j++)
+                    //parse json -> asign id to fd map.
+
+                    /*for (int j = 0; j < fd_count_g; j++)
                     {
                         int dest_fd = pfds[j].fd;
-                        if (dest_fd != server_fd /*&& dest_fd != sender_fd*/)
+                        if (dest_fd != server_fd /*&& dest_fd != sender_fd)
                         {
                             if (send(dest_fd, response, res_len, 0) == -1)
                             {
                                 perror("send");
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
