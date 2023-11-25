@@ -19,8 +19,12 @@ int main()
 
    messge *a = message_create();
 
+
+
    list_t *l = list_create();
    list_pushback(l,"hello");
+
+
 
     list_t *r = list_create();
    list_pushback(r,"hello 2");
@@ -29,17 +33,25 @@ int main()
    list_pushback(o,"hello 3");
 
    message_push_back(a,"my message",l);
-   message_push_back(a,"Another message",r);
-   message_push_back(a,"Another message ofcourse",o);
+
+   //message_push_back(a,"Another message ofcourse",o);
 
    message_pop_front(&a);
    message_pop_front(&a);
+
+   message_push_back(a,"Another message",r);
+
+   if(messages_is_empty(a)){
+    puts("Message empty");
+   }else{
+    puts("message is not empty");
+   }
 
    //message_destroy(a);
 
 
-   if(a->receivers != NULL){
-        list_print(a->receivers);
+   if(a == NULL){
+        puts("NULLLLLLLLLLLLL");
    }
 
 

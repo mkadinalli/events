@@ -1,21 +1,32 @@
 #include "s_message.h"
 
+mtx_t message_mutex;
+cnd_t message_condition;
+
 messge *message_create(){
     messge *m = malloc(sizeof(messge));
     memset(m,0,sizeof(messge));
     m->message = NULL;
     m->receivers = NULL;
+    mtx_init(&message_mutex,0);
+    cnd_init(&message_condition);
 
     return m;
 }
 
 bool message_push_back(messge *msg,char *msge, list_t *recs){
-    if(!msg) return false;
+
+
+    if(!msg){
+        return false;
+    }
+    mtx_lock(&message_mutex);
 
     if(msg->message == NULL && msg->receivers == NULL){
         msg->receivers = recs;
         msg->message = malloc(strlen(msge) + 1);
         strcpy(msg->message,msge);
+        mtx_unlock(&message_mutex);
         return true;
     }
     
@@ -30,17 +41,21 @@ bool message_push_back(messge *msg,char *msge, list_t *recs){
     tmp2->message = malloc(strlen(msge)+1);
     strcpy(tmp2->message,msge);
     tmp->nxt = tmp2;
+
+    mtx_unlock(&message_mutex);
     return true;
 }
 
 bool message_pop_front(messge **msg){
-
     if(*msg == NULL) return false;
+
+    mtx_lock(&message_mutex);
     if((*msg)->nxt == NULL){
         if((*msg)->message) free((*msg)->message);
         if((*msg)->receivers) list_destroy((*msg)->receivers);
-        free(msg);
-        msg = NULL;
+        (*msg)->message = NULL;
+        (*msg)->receivers = NULL;
+        mtx_unlock(&message_mutex);
         return true;
     }
 
@@ -51,14 +66,17 @@ bool message_pop_front(messge **msg){
     if((*msg)->receivers) list_destroy((*msg)->receivers);
 
     *msg = tmp;
+    mtx_unlock(&message_mutex);
     return true;
 }
 
 bool messages_is_empty(messge *msg){
+    if(msg == NULL) return true;
     return msg->message == NULL;
 }
 
 void message_destroy(messge *msg){
+    mtx_lock(&message_mutex);
     messge *tmp = msg;
 
     while(tmp){
@@ -69,4 +87,5 @@ void message_destroy(messge *msg){
 
         msg = tmp;
     }
+    mtx_unlock(&message_mutex);
 }
