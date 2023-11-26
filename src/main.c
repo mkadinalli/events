@@ -3,5 +3,5 @@
 
 int main()
 {
-   set_up_server("2000");
+   //set_up_server("2000");
 }

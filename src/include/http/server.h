@@ -23,6 +23,7 @@
 #include "../../include/http/requests.h"
 #include "../da/db.h"
 #include "s_message.h"
+#include "fd_map.h"
 
 
 #define IPV_4 0
@@ -75,3 +76,4 @@ void clean_up();
 extern int server_fd;
 extern SSL_CTX *server_accept_ctx;
 extern messge *message_queue;
+extern fd_map_t *g_filedescriptor_map;

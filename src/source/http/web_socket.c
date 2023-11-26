@@ -210,7 +210,7 @@ int startChartSystem(void *v)
                     /*for (int j = 0; j < fd_count_g; j++)
                     {
                         int dest_fd = pfds[j].fd;
-                        if (dest_fd != server_fd /*&& dest_fd != sender_fd)
+                        if (dest_fd != server_fd && dest_fd != sender_fd)
                         {
                             if (send(dest_fd, response, res_len, 0) == -1)
                             {

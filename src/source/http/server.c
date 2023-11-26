@@ -11,6 +11,7 @@ conn_pool *cpool = NULL;
 int server_fd = -1;
 SSL_CTX *server_accept_ctx = NULL;
 messge *message_queue;
+fd_map_t *g_filedescriptor_map;
 
 
 
@@ -272,6 +273,8 @@ void accept_connections(int socketfd)
 
 bool set_up_server(char *PORT)
 {
+    signal(20,signal_handler);
+    signal(2,signal_handler);
     // PORT = port;
     struct addrinfo hints;
     struct addrinfo *server_info, *p;
@@ -360,10 +363,8 @@ bool set_up_server(char *PORT)
 
     cpool = create_conn_pool(5);
 
+    g_filedescriptor_map = fd_map_create();
     message_queue = message_create();
-
-    signal(20,signal_handler);
-    signal(2,signal_handler);
 
     accept_connections(server_fd);
 

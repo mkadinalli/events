@@ -1,5 +1,6 @@
 #include "s_message.h"
 #include "http.h"
+#include "fd_map.h"
 
 mtx_t message_mutex;
 cnd_t message_condition;
@@ -100,11 +101,18 @@ int start_queue(void *arg){
         mtx_lock(&message_mutex);
         while(!messages_is_empty(msg))
             cnd_wait(&message_condition,&message_mutex);
-        
-        for(int i = 0; i < fd_count_g; i++){
-            send(pfds[i].fd,msg->message,strlen(msg->message),0);
 
-            message_pop_front(msg);
+        
+        list_t *recvs = message_queue->receivers;
+        while(recvs){
+            int receiver_fd = fd_map_get(g_filedescriptor_map,recvs->value);
+
+            if(receiver_fd > 0)
+                send(receiver_fd,msg->message,strlen(msg->message),0);
+
+            recvs = recvs->next;
         }
+
+        message_pop_front(&msg);
     }
 }
