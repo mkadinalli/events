@@ -166,7 +166,7 @@ map_t * parse_http_response(char *req)
 
 char *write_http_header_from_struct(http_res *http)
 {
-    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, DELETE, UPDATE, PUTSTTT\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n";
+    char res_fmt[] = "HTTP/%s %d %s\r\nContent-Type: %s\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, DELETE, UPDATE, PUT\r\nAccess-Control-Allow-Headers: content-type\r\n\r\n";
     char res[500];
 
     sprintf(res,

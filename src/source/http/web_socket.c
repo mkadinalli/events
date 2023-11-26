@@ -98,6 +98,7 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_cnt)
 
 int startChartSystem(void *v)
 {
+    keep_chat_alive = true;
     puts("Chart SYstem online");
     if (v != NULL)
     {
@@ -111,7 +112,6 @@ int startChartSystem(void *v)
     fd_count_g = 0;
     fd_size_g = 5;
     pfds = malloc(sizeof *pfds * fd_size_g);
-    keep_chat_alive = true;
 
     while (keep_chat_alive)
     {

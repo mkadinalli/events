@@ -21,7 +21,7 @@ export default class Password implements password{
 
         console.log(payLoad);
 
-        const res = await fetch("https://localhost:2000/api/verify",{
+        const res = await fetch("http://localhost:2000/api/verify",{
             method: "POST",
             headers: {
                 "content-type" : "application/json"

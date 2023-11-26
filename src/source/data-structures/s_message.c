@@ -70,7 +70,11 @@ bool message_pop_front(messge **msg){
 
 bool messages_is_empty(messge *msg){
     if(msg == NULL) return true;
-    return msg->sender_id == NULL;
+    if(msg->sender_id == NULL){
+        return true;
+    }
+
+    return false;
 }
 
 void message_destroy(messge *msg){
@@ -93,11 +97,21 @@ int start_queue(void *arg){
         exit(1);
     }
 
-    while(1){
+    while(keep_chat_alive){
 
         mtx_lock(&message_mutex);
-        while(messages_is_empty(msg))
+        while(messages_is_empty(msg)){
             cnd_wait(&message_condition,&message_mutex);
+            if(messages_is_empty(msg)){
+                break;
+            }
+        }
+
+        mtx_unlock(&message_mutex);
+
+        if(messages_is_empty(msg)){
+                break;
+         }
 
         
         char *sender = message_queue->sender_id;
@@ -127,6 +141,10 @@ int start_queue(void *arg){
             
         }
 
+        result_bind_destroy(followers);
+
         message_pop_front(&msg);
     }
+
+    return 1;
 }

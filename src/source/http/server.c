@@ -26,6 +26,7 @@ void clean_up()
     keep_chat_alive = false;
     fd_count_g = 1;
     cnd_signal(&poll_condition);
+    cnd_broadcast(&message_condition);
 
     if (server_fd > 0)
     {
@@ -34,7 +35,6 @@ void clean_up()
 
     if (thread_pool != NULL)
         tpool_destroy(thread_pool);
-    
     if(cpool != NULL)
         cpool_destroy(cpool);
 
@@ -237,7 +237,9 @@ int handle_request(void *args)
         break;
 
     case OPTIONS:
+        puts("================================");
         write_OK(ssl, "");
+        close(ssl);
         break;
 
     default:
@@ -360,12 +362,13 @@ bool set_up_server(char *PORT)
     thread_pool = tpool_create(5);
 
     tpool_add_work(thread_pool, startChartSystem, NULL);
-    tpool_add_work(thread_pool,start_queue,&message_queue);
 
     cpool = create_conn_pool(5);
 
     g_filedescriptor_map = fd_map_create();
+
     message_queue = message_create();
+    tpool_add_work(thread_pool,start_queue,message_queue);
 
     accept_connections(server_fd);
 

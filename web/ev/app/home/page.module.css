@@ -1,1 +1,4 @@
-*{color: black; background-color: white;}
+.body{color: black; background-color: white;}
+.container{ width: 100vw; height: 100vh;}
+
+.header{display: flex; flex-direction: row; height: 70px; background-color: black; align-items: center; justify-content: space-between; padding: 5px 15px; color: white;}

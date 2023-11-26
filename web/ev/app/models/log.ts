@@ -13,7 +13,7 @@ export default class LoginDetails implements loginDetails{
     ){}
 
     public async login(){
-        const res = await fetch(`https://localhost:2000/api/login/?id=${this.emailOrUsername}&password=${this.password}`,{
+        const res = await fetch(`http://localhost:2000/api/login/?id=${this.emailOrUsername}&password=${this.password}`,{
             method: "GET"
         });
 

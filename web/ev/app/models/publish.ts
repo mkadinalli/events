@@ -33,7 +33,7 @@ export default class Publish implements publish{
         if(!this.initialized)
             return false;
 
-        const res = await fetch("https://localhost:2000/api/events/",{
+        const res = await fetch("http://localhost:2000/api/events/",{
             method: "POST",
             headers:{
                 "Content-Type": "application/json"
