@@ -3,6 +3,7 @@
 
 void get_events(int sock, char *json_load)
 {
+    puts(json_load);
     // write_404(sock);
     json_object *jobj = json_tokener_parse(json_load);
     json_object *res = NULL;

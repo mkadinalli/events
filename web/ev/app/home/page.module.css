@@ -2,3 +2,7 @@
 .container{ width: 100vw; height: 100vh;}
 
 .header{display: flex; flex-direction: row; height: 70px; background-color: black; align-items: center; justify-content: space-between; padding: 5px 15px; color: white;}
+
+.body{display: grid; grid-template-columns: 1fr 2fr 1fr;; width: 100vw; height: 100vh; gap: 10px;}
+
+.column{width: 100%; background-color: wheat; height: 100%;}
