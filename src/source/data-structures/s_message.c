@@ -1,6 +1,7 @@
 #include "s_message.h"
 #include "http.h"
 #include "fd_map.h"
+#include "db.h"
 
 mtx_t message_mutex;
 cnd_t message_condition;
@@ -8,24 +9,24 @@ cnd_t message_condition;
 messge *message_create(){
     messge *m = malloc(sizeof(messge));
     memset(m,0,sizeof(messge));
-    m->message = NULL;
-    m->receivers = NULL;
+    m->sender_id = NULL;
+    m->nxt = NULL;
+
     mtx_init(&message_mutex,0);
     cnd_init(&message_condition);
 
     return m;
 }
 
-bool message_push_back(messge *msg,char *msge, list_t *recs){
+bool message_push_back(messge *msg,char *sender_id){
     if(!msg){
         return false;
     }
     mtx_lock(&message_mutex);
 
-    if(msg->message == NULL && msg->receivers == NULL){
-        msg->receivers = recs;
-        msg->message = malloc(strlen(msge) + 1);
-        strcpy(msg->message,msge);
+    if(msg->sender_id == NULL){
+        msg->sender_id = malloc(strlen(sender_id) + 1);
+        strcpy(msg->sender_id,sender_id);
         mtx_unlock(&message_mutex);
         return true;
     }
@@ -37,9 +38,8 @@ bool message_push_back(messge *msg,char *msge, list_t *recs){
     }
 
     messge *tmp2 = message_create();
-    tmp2->receivers = recs;
-    tmp2->message = malloc(strlen(msge)+1);
-    strcpy(tmp2->message,msge);
+    tmp2->sender_id = malloc(strlen(sender_id)+1);
+    strcpy(tmp2->sender_id,sender_id);
     tmp->nxt = tmp2;
 
     mtx_unlock(&message_mutex);
@@ -52,10 +52,8 @@ bool message_pop_front(messge **msg){
 
     mtx_lock(&message_mutex);
     if((*msg)->nxt == NULL){
-        if((*msg)->message) free((*msg)->message);
-        if((*msg)->receivers) list_destroy((*msg)->receivers);
-        (*msg)->message = NULL;
-        (*msg)->receivers = NULL;
+        if((*msg)->sender_id) free((*msg)->sender_id);
+        (*msg)->sender_id = NULL;
         mtx_unlock(&message_mutex);
         return true;
     }
@@ -63,8 +61,7 @@ bool message_pop_front(messge **msg){
     messge *tmp = (*msg)->nxt;
 
 
-    if((*msg)->message) free((*msg)->message);
-    if((*msg)->receivers) list_destroy((*msg)->receivers);
+    if((*msg)->sender_id) free((*msg)->sender_id);
 
     *msg = tmp;
     mtx_unlock(&message_mutex);
@@ -73,7 +70,7 @@ bool message_pop_front(messge **msg){
 
 bool messages_is_empty(messge *msg){
     if(msg == NULL) return true;
-    return msg->message == NULL;
+    return msg->sender_id == NULL;
 }
 
 void message_destroy(messge *msg){
@@ -83,8 +80,7 @@ void message_destroy(messge *msg){
     while(tmp){
         tmp = tmp->nxt;
         
-        free(msg->message);
-        list_destroy(msg->receivers);
+        free(msg->sender_id);
 
         msg = tmp;
     }
@@ -103,14 +99,31 @@ int start_queue(void *arg){
             cnd_wait(&message_condition,&message_mutex);
 
         
-        list_t *recvs = message_queue->receivers;
-        while(recvs){
-            int receiver_fd = fd_map_get(g_filedescriptor_map,recvs->value);
+        char *sender = message_queue->sender_id;
+        char *query = "call get_all_followers(?)";
+        result_bind *binder = result_bind_create(1);
+        result_bind_set_string(0,binder,sender);
 
-            if(receiver_fd > 0)
-                send(receiver_fd,msg->message,strlen(msg->message),0);
+        result_bind *followers  = execute_prepared_raw_call_query(query,binder);
+        
+        while(followers){
 
-            recvs = recvs->next;
+            json_object *data_to_send = get_user(followers->value);
+
+            if(data_to_send){
+                char *json_data = json_object_to_json_string(data_to_send);
+
+                int receiver_fd = fd_map_get(g_filedescriptor_map,followers->value);
+
+                if(receiver_fd > 0)
+                    send(receiver_fd,json_data,strlen(json_data),0);
+                
+                json_object_put(data_to_send);
+
+            }
+
+            followers = followers->next;
+            
         }
 
         message_pop_front(&msg);

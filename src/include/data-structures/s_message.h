@@ -8,14 +8,13 @@ extern cnd_t message_condition;
 
 typedef struct messge messge;
 struct messge{
-    char *message;
-    list_t *receivers;
+    char *sender_id;
     messge *nxt;
 };
 
 messge *message_create();
 
-bool message_push_back(messge *msg,char *message, list_t *receivers);
+bool message_push_back(messge *msg,char *sender_id);
 
 void message_destroy(messge *msg);
 

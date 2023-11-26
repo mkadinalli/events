@@ -62,12 +62,17 @@ struct conn_pool{
 };
 
 conn_pool * create_conn_pool(size_t size);
+
 MYSQL *cpool_get_connection(conn_pool *cpool);
+
 bool cpool_drop_connection(MYSQL *con ,conn_pool *cpool);
+
 void cpool_destroy(conn_pool *cpool);
 
 json_object *execute_prepared_query(char *query, result_bind *params);
 
 json_object *execute_prepared_call_query(char *query, result_bind *params);
+
+result_bind *execute_prepared_raw_call_query(char *query, result_bind *params);
 
 extern conn_pool *cpool;
