@@ -19,7 +19,7 @@ export default class User implements user{
     }
 
     public static async checkUser(username : string){
-        const res = await fetch(`https://localhost:2000/api/checkuser/?userName=${username}`,{
+        const res = await fetch(`http://localhost:2000/api/checkuser/?userName=${username}`,{
             method : "GET"
         })
 
@@ -34,7 +34,7 @@ export default class User implements user{
     }
 
     public async postUser(){
-        const res = await fetch("https://localhost:2000/api/signup/",{
+        const res = await fetch("http://localhost:2000/api/signup/",{
             method : "POST",
             headers : {
                 "content-type": "application/json" 
@@ -48,7 +48,8 @@ export default class User implements user{
     }
 
     static async update(name: string,bio: string,about: string){
-        const res = await fetch("https://localhost:2000/api/user",{
+        console.log("000000000000000000000000000");
+        const res = await fetch("http://localhost:2000/api/user",{
             method: "PUT",
             headers:{
                 "content-type": "application/json" 
@@ -57,6 +58,7 @@ export default class User implements user{
         })
 
         const data = await res.json();
+
 
         console.log(data);
     }

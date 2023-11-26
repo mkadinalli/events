@@ -17,7 +17,7 @@ export default function Profile(){
     const [edit, setEdit] = useState(false);
 
     useEffect(()=>{
-        fetch(`https://localhost:2000/api/user/?id=${Global.user_id}`,{
+        fetch(`http://localhost:2000/api/user/?id=${Global.user_id}`,{
             method: "GET"
         }).then((d)=> d.json()).then((d)=>{
             if(d.success){

@@ -492,6 +492,198 @@ json_object *execute_prepared_call_query(char *query, result_bind *params)
     return res_h;
 }
 
+
+result_bind *execute_prepared_raw_call_query(char *query, result_bind *params)
+{
+    assert(query != NULL);
+
+    MYSQL *conn = cpool_get_connection(cpool);
+
+    MYSQL_STMT *stmt = NULL;
+    stmt = mysql_stmt_init(conn);
+
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    if(mysql_stmt_prepare(stmt, query, strlen(query)))
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+
+    if (params != NULL)
+    {
+        int param_count = mysql_stmt_param_count(stmt);
+
+        if(param_count != result_bind_get_size(params))
+        {   
+            write_mysql_error_to_file("User ERR","Params not equal to slots",__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
+
+        MYSQL_BIND p_bind[param_count];
+        memset(p_bind, 0, sizeof p_bind);
+
+        unsigned long len[15];
+
+        for (int i = 0; i < param_count; i++)
+        {       
+            len[i] = strlen(result_bind_get_string(i, params));
+
+            p_bind[i].buffer_type = result_bind_get_at(i, params)->type_name;
+            p_bind[i].is_null = 0;
+            p_bind[i].length = &(len[i]);
+
+            switch (result_bind_get_at(i, params)->type_name)
+            {
+
+            case MYSQL_TYPE_SHORT:
+                int b_int = result_bind_get_int(i, params);
+                p_bind[i].buffer = &b_int;
+                break;
+
+            case MYSQL_TYPE_LONG:
+                long b_long = result_bind_get_i32(i, params);
+                p_bind[i].buffer = &b_long;
+                break;
+
+            case MYSQL_TYPE_LONGLONG:
+                long long b_long_long = result_bind_get_i64(i, params);
+                p_bind[i].buffer = &b_long_long;
+                break;
+
+            case MYSQL_TYPE_BOOL:
+                bool b_bool = result_bind_get_bool(i, params);
+                p_bind[i].buffer = &b_bool;
+                break;
+
+            case MYSQL_TYPE_FLOAT:
+                double b_float = result_bind_get_float(i, params);
+                p_bind[i].buffer = &b_float;
+                break;
+
+            case MYSQL_TYPE_DOUBLE:
+                double b_double = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_double;
+                break;
+
+            case MYSQL_TYPE_DECIMAL:
+                double b_decimal = result_bind_get_double(i, params);
+                p_bind[i].buffer = &b_decimal;
+                break;
+
+            default:
+                char *b_str = result_bind_get_string(i, params);
+                p_bind[i].buffer = b_str;
+                p_bind[i].buffer_length = strlen(b_str);
+                break;
+            }
+
+        }
+
+        bool status = mysql_stmt_bind_param(stmt, p_bind);
+
+        if(status)
+        {
+            write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+            cpool_drop_connection(conn,cpool);
+            return NULL;
+        }
+    }
+
+    if(stmt == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    int status;
+
+    status = mysql_stmt_execute(stmt);
+
+    if(status != 0)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    MYSQL_RES *result_meta_data = mysql_stmt_result_metadata(stmt);
+
+    if(result_meta_data == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    unsigned int col_count = mysql_num_fields(result_meta_data);
+    MYSQL_FIELD *columns = mysql_fetch_fields(result_meta_data);
+
+    if(columns == NULL)
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    MYSQL_BIND result_outputs[col_count];
+    memset(result_outputs, 0, sizeof result_outputs);
+    unsigned long lengths[col_count];
+    bool is_null[col_count];
+    bool error[col_count];
+    //here
+    result_bind *bnd = result_bind_create(col_count);
+
+    for (unsigned int i = 0; i < col_count; i++)
+    {
+        result_outputs[i].buffer_type = MYSQL_TYPE_STRING;
+        result_outputs[i].is_null = &(is_null[i]);
+        result_outputs[i].length = &(lengths[i]);
+        result_outputs[i].error = &(error[i]);
+
+        result_bind_realloc(i, columns[i].length, columns[i].type, bnd);
+
+        result_outputs[i].buffer = result_bind_get_at(i, bnd)->value;
+
+        //Todo changes here
+        result_outputs[i].buffer_length = columns[i].length;
+        strlen(result_bind_get_at(i, bnd)->value);
+    }
+
+    if (mysql_stmt_bind_result(stmt, result_outputs))
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+        return NULL;
+    }
+
+    while (!mysql_stmt_fetch(stmt)){}
+
+    while(mysql_stmt_next_result(stmt) == 0){}
+
+    //result_bind_destroy(bnd);
+    mysql_free_result(result_meta_data);
+    
+    if(mysql_stmt_close(stmt))
+    {
+        write_mysql_error_to_file(mysql_sqlstate(conn),mysql_error(conn),__FILE__,__LINE__);
+        cpool_drop_connection(conn,cpool);
+    }
+
+    cpool_drop_connection(conn,cpool);
+
+    return bnd;
+}
+
 conn_pool *create_conn_pool(size_t size)
 {
     size_t checked_size = 2;

@@ -11,6 +11,7 @@ conn_pool *cpool = NULL;
 int server_fd = -1;
 SSL_CTX *server_accept_ctx = NULL;
 messge *message_queue;
+fd_map_t *g_filedescriptor_map;
 
 
 
@@ -25,6 +26,7 @@ void clean_up()
     keep_chat_alive = false;
     fd_count_g = 1;
     cnd_signal(&poll_condition);
+    cnd_broadcast(&message_condition);
 
     if (server_fd > 0)
     {
@@ -33,7 +35,6 @@ void clean_up()
 
     if (thread_pool != NULL)
         tpool_destroy(thread_pool);
-    
     if(cpool != NULL)
         cpool_destroy(cpool);
 
@@ -236,7 +237,9 @@ int handle_request(void *args)
         break;
 
     case OPTIONS:
+        puts("================================");
         write_OK(ssl, "");
+        close(ssl);
         break;
 
     default:
@@ -272,6 +275,8 @@ void accept_connections(int socketfd)
 
 bool set_up_server(char *PORT)
 {
+    signal(20,signal_handler);
+    signal(2,signal_handler);
     // PORT = port;
     struct addrinfo hints;
     struct addrinfo *server_info, *p;
@@ -360,10 +365,10 @@ bool set_up_server(char *PORT)
 
     cpool = create_conn_pool(5);
 
-    message_queue = message_create();
+    g_filedescriptor_map = fd_map_create();
 
-    signal(20,signal_handler);
-    signal(2,signal_handler);
+    message_queue = message_create();
+    tpool_add_work(thread_pool,start_queue,message_queue);
 
     accept_connections(server_fd);
 

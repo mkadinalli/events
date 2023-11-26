@@ -104,8 +104,8 @@ bool fd_map_destroy(fd_map_t *map)
     return true;
 }
 
-char *
-fd_map_get(fd_map_t *map, int fd)
+
+int fd_map_get(fd_map_t *map,char *id)
 {
     if (fd_map_len(map) < 1)
     {
@@ -116,33 +116,12 @@ fd_map_get(fd_map_t *map, int fd)
 
     while (tmp != NULL)
     {
-        if (fd == tmp->fd)
+        if (!strcmp(id,tmp->id))
         {
-            return string_create_copy(tmp->id);
-        }
-        tmp = tmp->next;
-    }
-    return NULL;
-}
-
-
-char *fd_map_get_ref(fd_map_t *map,int fd)
-{
-    if (fd_map_len(map) < 1)
-    {
-        return NULL;
-    }
-
-    fd_map_t *tmp = map;
-
-    while (tmp != NULL)
-    {
-        if (fd == tmp->fd)
-        {
-            return tmp->id;
+            return tmp->fd;
         }
         
         tmp = tmp->next;
     }
-    return NULL;
+    return -1;
 }
