@@ -94,8 +94,9 @@ int start_queue(void *arg){
     }
 
     while(1){
+
         mtx_lock(&message_mutex);
-        while(!messages_is_empty(msg))
+        while(messages_is_empty(msg))
             cnd_wait(&message_condition,&message_mutex);
 
         
@@ -105,13 +106,13 @@ int start_queue(void *arg){
         result_bind_set_string(0,binder,sender);
 
         result_bind *followers  = execute_prepared_raw_call_query(query,binder);
-        
+
         while(followers){
 
             json_object *data_to_send = get_user(followers->value);
 
             if(data_to_send){
-                char *json_data = json_object_to_json_string(data_to_send);
+                char *json_data = (char *)json_object_to_json_string(data_to_send);
 
                 int receiver_fd = fd_map_get(g_filedescriptor_map,followers->value);
 

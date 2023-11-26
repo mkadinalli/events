@@ -360,6 +360,7 @@ bool set_up_server(char *PORT)
     thread_pool = tpool_create(5);
 
     tpool_add_work(thread_pool, startChartSystem, NULL);
+    tpool_add_work(thread_pool,start_queue,&message_queue);
 
     cpool = create_conn_pool(5);
 
